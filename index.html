@@ -1,88 +1,997 @@
-<!doctype html><html><head><meta charset='utf-8'>
-<meta name='viewport' content='width=device-width,initial-scale=1'>
-<title>ClothMatics • AI Wardrobe Stylist</title>
-<link rel='stylesheet' href='styles.css'>
-</head><body>
-<header class='top'>
-<div class='wrap'>
-<div class='logo'>👔 <b>ClothMatics</b></div>
-<nav>
-<a href='#features'>Features</a>
-<a href='#how'>How it Works</a>
-<a href='#faq'>FAQ</a>
-<a href='privacy.html'>Privacy</a>
-<a href='terms.html'>Terms</a>
-</nav>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ClothMatics AI | Your AI Personal Stylist</title>
+
+    <meta name="description"
+        content="Analyze your outfits, organize your wardrobe, and receive AI-powered fashion recommendations with ClothMatics AI.">
+
+    <meta name="keywords"
+        content="AI Stylist, Wardrobe, Outfit Analyzer, Fashion AI, ClothMatics">
+
+    <meta name="author" content="ClothMatics">
+
+    <meta property="og:title" content="ClothMatics AI">
+    <meta property="og:description"
+        content="Your AI Personal Stylist">
+
+    <meta property="og:type" content="website">
+
+    <link rel="icon" href="assets/favicon.ico">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet"
+        href="css/style.css">
+
+    <link rel="stylesheet"
+        href="css/responsive.css">
+
+    <link rel="stylesheet"
+        href="css/animations.css">
+
+</head>
+
+<body>
+
+<div id="loader">
+
+    <img src="assets/logo.png"
+        alt="ClothMatics">
+
 </div>
+
+<div class="scroll-progress"></div>
+
+<header>
+
+    <div class="container">
+
+        <nav>
+
+            <a href="#"
+                class="logo">
+
+                <img src="assets/logo.png"
+                    alt="Logo">
+
+                <span>ClothMatics <strong>AI</strong></span>
+
+            </a>
+
+            <ul class="nav-links">
+
+                <li><a href="#home">Home</a></li>
+
+                <li><a href="#features">Features</a></li>
+
+                <li><a href="#how">How It Works</a></li>
+
+                <li><a href="#screenshots">Screenshots</a></li>
+
+                <li><a href="#faq">FAQ</a></li>
+
+                <li><a href="privacy.html">Privacy</a></li>
+
+            </ul>
+
+            <a href="#download"
+                class="btn primary">
+
+                Download App
+
+            </a>
+
+            <div class="menu-btn">
+
+                ☰
+
+            </div>
+
+        </nav>
+
+    </div>
+
 </header>
 
-<section class='hero'>
-<div class='wrap hero-grid'>
-<div>
-<span class='badge'>AI Powered Personal Stylist</span>
-<h1>Your wardrobe.<br>Smarter with AI.</h1>
-<p>Digitize your wardrobe, remove image backgrounds automatically, analyze outfits and receive personalized outfit recommendations based on your clothes, weather, occasion, body type and style.</p>
-<div class='buttons'>
-<a class='primary' href='#'>Download APK</a>
-<a class='secondary' href='#features'>Explore Features</a>
-</div>
-</div>
-<div class='phone'>
-<div class='screen'>
-<h3>Today's Outfit</h3>
-<div class='placeholder'>📱 Replace with your app screenshots</div>
-</div>
-</div>
-</div>
+<section
+    id="home"
+    class="hero">
+
+    <div class="hero-bg"></div>
+
+    <div class="container hero-container">
+
+        <div class="hero-left">
+
+            <div class="badge">
+
+                ✨ AI Powered Fashion Assistant
+
+            </div>
+
+            <h1>
+
+                Your AI <span>Personal Stylist</span>
+
+            </h1>
+
+            <p>
+
+                Analyze outfits, organize your wardrobe,
+                receive smart recommendations,
+                and dress confidently every day using AI.
+
+            </p>
+
+            <div class="hero-buttons">
+
+                <a href="#download"
+                    class="btn primary">
+
+                    Download App
+
+                </a>
+
+                <a href="#features"
+                    class="btn secondary">
+
+                    Explore Features
+
+                </a>
+
+            </div>
+
+            <div class="stats">
+
+                <div class="stat">
+
+                    <h2>10K+</h2>
+
+                    <p>Analyses</p>
+
+                </div>
+
+                <div class="stat">
+
+                    <h2>95%</h2>
+
+                    <p>Accuracy</p>
+
+                </div>
+
+                <div class="stat">
+
+                    <h2>4.9★</h2>
+
+                    <p>User Rating</p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="hero-right">
+
+            <div class="blob blob1"></div>
+
+            <div class="blob blob2"></div>
+
+            <img
+                src="assets/hero/phone1.png"
+                class="phone phone1"
+                alt="Phone">
+
+            <img
+                src="assets/hero/phone2.png"
+                class="phone phone2"
+                alt="Phone">
+
+        </div>
+
+    </div>
+
 </section>
 
-<section id='features' class='wrap'>
-<h2>Everything you need</h2>
-<div class='cards'>
-<div class='card'><h3>🤖 AI Stylist</h3><p>Personalized outfit recommendations using your existing wardrobe.</p></div>
-<div class='card'><h3>👕 Digital Wardrobe</h3><p>Organize every clothing item with smart categorization.</p></div>
-<div class='card'><h3>🖼 Background Removal</h3><p>Automatic clothing cut-outs for a premium wardrobe experience.</p></div>
-<div class='card'><h3>⭐ Outfit Analysis</h3><p>Style score, recommendations and improvement tips.</p></div>
-<div class='card'><h3>☁ Cloud Sync</h3><p>Securely backed by Firebase and Cloudflare R2.</p></div>
-<div class='card'><h3>🌦 Weather Aware</h3><p>Recommendations adapt to weather and occasion.</p></div>
+<section
+id="features"
+class="features">
+
+<div class="container">
+
+<div class="section-title">
+
+<h2>
+
+Everything You Need To Dress Better
+
+</h2>
+
+<p>
+
+Powered by AI.
+
+</p>
+
 </div>
+
+<div class="feature-grid">
+
+<div class="feature-card">
+
+<div class="icon">
+
+👔
+
+</div>
+
+<h3>
+
+AI Outfit Analysis
+
+</h3>
+
+<p>
+
+Receive instant outfit scores and styling suggestions.
+
+</p>
+
+</div>
+
+<div class="feature-card">
+
+<div class="icon">
+
+🧥
+
+</div>
+
+<h3>
+
+Smart Wardrobe
+
+</h3>
+
+<p>
+
+Digitally organize every clothing item.
+
+</p>
+
+</div>
+
+<div class="feature-card">
+
+<div class="icon">
+
+🤖
+
+</div>
+
+<h3>
+
+AI Stylist
+
+</h3>
+
+<p>
+
+Generate complete outfit combinations.
+
+</p>
+
+</div>
+
+<div class="feature-card">
+
+<div class="icon">
+
+🛒
+
+</div>
+
+<h3>
+
+Shopping Suggestions
+
+</h3>
+
+<p>
+
+Find missing wardrobe essentials.
+
+</p>
+
+</div>
+
+<div class="feature-card">
+
+<div class="icon">
+
+🎨
+
+</div>
+
+<h3>
+
+Color Matching
+
+</h3>
+
+<p>
+
+Understand colors that work together.
+
+</p>
+
+</div>
+
+<div class="feature-card">
+
+<div class="icon">
+
+📅
+
+</div>
+
+<h3>
+
+Occasion Based Looks
+
+</h3>
+
+<p>
+
+Office, Travel, Party, Date and more.
+
+</p>
+
+</div>
+
+<div class="feature-card">
+
+<div class="icon">
+
+📊
+
+</div>
+
+<h3>
+
+Style History
+
+</h3>
+
+<p>
+
+Track every analysis over time.
+
+</p>
+
+</div>
+
+<div class="feature-card">
+
+<div class="icon">
+
+☁️
+
+</div>
+
+<h3>
+
+Cloud Sync
+
+</h3>
+
+<p>
+
+Access your wardrobe from anywhere.
+
+</p>
+
+</div>
+
+</div>
+
+</div>
+
 </section>
 
-<section id='how' class='dark'>
-<div class='wrap'>
-<h2>How ClothMatics Works</h2>
-<div class='steps'>
-<div>1️⃣ Capture Clothing</div>
-<div>2️⃣ Background Removal</div>
-<div>3️⃣ Save to Wardrobe</div>
-<div>4️⃣ AI Creates Outfit</div>
-</div>
-</div>
+  <!-- =========================
+     HOW IT WORKS
+========================= -->
+
+<section id="how" class="how-it-works">
+
+    <div class="container">
+
+        <div class="section-title">
+
+            <span class="section-badge">
+                Simple Process
+            </span>
+
+            <h2>
+                How ClothMatics Works
+            </h2>
+
+            <p>
+                Transform your wardrobe into an AI-powered personal stylist in just a few steps.
+            </p>
+
+        </div>
+
+        <div class="steps">
+
+            <div class="step-card">
+
+                <div class="step-number">
+                    1
+                </div>
+
+                <div class="step-icon">
+                    📷
+                </div>
+
+                <h3>Capture</h3>
+
+                <p>
+                    Take a picture of your outfit or upload clothing from your wardrobe.
+                </p>
+
+            </div>
+
+            <div class="step-arrow">
+                →
+            </div>
+
+            <div class="step-card">
+
+                <div class="step-number">
+                    2
+                </div>
+
+                <div class="step-icon">
+                    🤖
+                </div>
+
+                <h3>AI Analysis</h3>
+
+                <p>
+                    ClothMatics detects colors, categories, style compatibility and fashion trends.
+                </p>
+
+            </div>
+
+            <div class="step-arrow">
+                →
+            </div>
+
+            <div class="step-card">
+
+                <div class="step-number">
+                    3
+                </div>
+
+                <div class="step-icon">
+                    ⭐
+                </div>
+
+                <h3>Style Score</h3>
+
+                <p>
+                    Receive a detailed score along with personalized suggestions.
+                </p>
+
+            </div>
+
+            <div class="step-arrow">
+                →
+            </div>
+
+            <div class="step-card">
+
+                <div class="step-number">
+                    4
+                </div>
+
+                <div class="step-icon">
+                    👔
+                </div>
+
+                <h3>Dress Better</h3>
+
+                <p>
+                    Wear AI-recommended outfits with confidence every day.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </section>
 
-<section class='wrap'>
-<h2>Why ClothMatics?</h2>
-<ul class='check'>
-<li>Uses your own clothes</li>
-<li>No unnecessary shopping</li>
-<li>Fast AI recommendations</li>
-<li>Beautiful wardrobe organization</li>
-<li>Built for everyday use</li>
-</ul>
+
+
+
+
+<!-- =========================
+SCREENSHOTS
+========================= -->
+
+<section id="screenshots" class="screenshots">
+
+    <div class="container">
+
+        <div class="section-title">
+
+            <span class="section-badge">
+
+                App Preview
+
+            </span>
+
+            <h2>
+
+                Explore ClothMatics
+
+            </h2>
+
+            <p>
+
+                Designed with a clean and intuitive experience.
+
+            </p>
+
+        </div>
+
+        <div class="phone-gallery">
+
+            <div class="phone-card">
+
+                <img src="assets/screenshots/home.png"
+                    alt="Home">
+
+                <h4>Home Dashboard</h4>
+
+            </div>
+
+            <div class="phone-card">
+
+                <img src="assets/screenshots/analyze.png"
+                    alt="Analysis">
+
+                <h4>AI Outfit Analysis</h4>
+
+            </div>
+
+            <div class="phone-card">
+
+                <img src="assets/screenshots/wardrobe.png"
+                    alt="Wardrobe">
+
+                <h4>Smart Wardrobe</h4>
+
+            </div>
+
+            <div class="phone-card">
+
+                <img src="assets/screenshots/stylist.png"
+                    alt="Stylist">
+
+                <h4>AI Stylist</h4>
+
+            </div>
+
+            <div class="phone-card">
+
+                <img src="assets/screenshots/profile.png"
+                    alt="Profile">
+
+                <h4>User Profile</h4>
+
+            </div>
+
+            <div class="phone-card">
+
+                <img src="assets/screenshots/history.png"
+                    alt="History">
+
+                <h4>History</h4>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </section>
 
-<section id='faq' class='wrap'>
-<h2>Frequently Asked Questions</h2>
-<div class='faq'><b>Is ClothMatics free?</b><p>The MVP is free while under development.</p></div>
-<div class='faq'><b>Do you store my photos?</b><p>Your images are used only to power wardrobe management features.</p></div>
-<div class='faq'><b>Does it work offline?</b><p>AI features require an internet connection.</p></div>
+
+
+
+
+<!-- =========================
+WHY CHOOSE US
+========================= -->
+
+<section class="why-us">
+
+    <div class="container">
+
+        <div class="left">
+
+            <img src="assets/hero/phone3.png"
+                alt="Phone">
+
+        </div>
+
+        <div class="right">
+
+            <span class="section-badge">
+
+                Why Choose ClothMatics
+
+            </span>
+
+            <h2>
+
+                Fashion Meets Artificial Intelligence
+
+            </h2>
+
+            <p>
+
+                ClothMatics isn't just another wardrobe app. It is an intelligent fashion assistant that learns your style and helps you look your best.
+
+            </p>
+
+            <ul class="benefits">
+
+                <li>✔ AI Powered Recommendations</li>
+
+                <li>✔ Personalized Style Advice</li>
+
+                <li>✔ Smart Wardrobe Organization</li>
+
+                <li>✔ Outfit Compatibility Score</li>
+
+                <li>✔ Secure Cloud Storage</li>
+
+                <li>✔ Fast AI Analysis</li>
+
+            </ul>
+
+        </div>
+
+    </div>
+
 </section>
+
+
+
+
+
+<!-- =========================
+DOWNLOAD APP
+========================= -->
+
+<section
+id="download"
+class="download">
+
+<div class="container">
+
+<div class="download-box">
+
+<div class="download-left">
+
+<span class="section-badge">
+
+Download
+
+</span>
+
+<h2>
+
+Start Dressing Smarter Today
+
+</h2>
+
+<p>
+
+Download ClothMatics and experience your personal AI stylist.
+
+</p>
+
+<div class="download-buttons">
+
+<a href="#">
+
+<img
+src="assets/google-play.png"
+alt="Google Play">
+
+</a>
+
+</div>
+
+</div>
+
+<div class="download-right">
+
+<img
+src="assets/hero/phone4.png"
+alt="Download">
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+<!-- =========================
+FAQ
+========================= -->
+
+<section id="faq" class="faq">
+
+    <div class="container">
+
+        <div class="section-title">
+
+            <span class="section-badge">
+                Frequently Asked Questions
+            </span>
+
+            <h2>
+                Everything You Need To Know
+            </h2>
+
+            <p>
+                Common questions about ClothMatics AI.
+            </p>
+
+        </div>
+
+        <div class="faq-container">
+
+            <div class="faq-item active">
+
+                <div class="faq-question">
+                    <h3>Is ClothMatics free to use?</h3>
+                    <span>+</span>
+                </div>
+
+                <div class="faq-answer">
+                    <p>
+                        Yes. Core wardrobe management and AI outfit analysis are available free. Premium features may be introduced in future updates.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="faq-item">
+
+                <div class="faq-question">
+                    <h3>Is my wardrobe private?</h3>
+                    <span>+</span>
+                </div>
+
+                <div class="faq-answer">
+                    <p>
+                        Absolutely. Your wardrobe belongs to you. We never sell your personal data.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="faq-item">
+
+                <div class="faq-question">
+                    <h3>Does AI recognize clothing automatically?</h3>
+                    <span>+</span>
+                </div>
+
+                <div class="faq-answer">
+                    <p>
+                        Yes. ClothMatics detects clothing categories, colors, and generates styling recommendations using AI.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="faq-item">
+
+                <div class="faq-question">
+                    <h3>Will there be more features?</h3>
+                    <span>+</span>
+                </div>
+
+                <div class="faq-answer">
+                    <p>
+                        Yes. Upcoming versions will include weather-aware recommendations, shopping integration, and advanced AI styling.
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+
+
+<!-- =========================
+CONTACT CTA
+========================= -->
+
+<section class="contact-cta">
+
+    <div class="container">
+
+        <div class="cta-box">
+
+            <h2>
+                Ready to Upgrade Your Style?
+            </h2>
+
+            <p>
+                Download ClothMatics today and let AI become your personal stylist.
+            </p>
+
+            <div class="cta-buttons">
+
+                <a href="#download" class="btn primary">
+                    Download App
+                </a>
+
+                <a href="contact.html" class="btn secondary">
+                    Contact Us
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+
+
+<!-- =========================
+FOOTER
+========================= -->
 
 <footer>
-<div class='wrap foot'>
-<div><b>ClothMatics</b><br>AI THAR KNOWS YOUR CLOSET</div>
-<div></div>
-</div>
+
+    <div class="container">
+
+        <div class="footer-grid">
+
+            <div>
+
+                <div class="footer-logo">
+
+                    <img src="assets/logo.png" alt="Logo">
+
+                    <span>ClothMatics AI</span>
+
+                </div>
+
+                <p>
+
+                    Your AI-powered personal stylist helping you build confidence through smarter fashion.
+
+                </p>
+
+            </div>
+
+            <div>
+
+                <h4>Product</h4>
+
+                <ul>
+
+                    <li><a href="#features">Features</a></li>
+
+                    <li><a href="#screenshots">Screenshots</a></li>
+
+                    <li><a href="#download">Download</a></li>
+
+                </ul>
+
+            </div>
+
+            <div>
+
+                <h4>Company</h4>
+
+                <ul>
+
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+
+                    <li><a href="terms.html">Terms & Conditions</a></li>
+
+                    <li><a href="contact.html">Contact</a></li>
+
+                </ul>
+
+            </div>
+
+            <div>
+
+                <h4>Follow Us</h4>
+
+                <div class="social-links">
+
+                    <a href="#">Instagram</a>
+
+                    <a href="#">LinkedIn</a>
+
+                    <a href="#">GitHub</a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="footer-bottom">
+
+            <p>
+
+                © 2026 ClothMatics AI. All Rights Reserved.
+
+            </p>
+
+        </div>
+
+    </div>
+
 </footer>
-<script src='script.js'></script>
-</body></html>
+
+
+
+
+
+<button id="backToTop">
+
+    ↑
+
+</button>
+
+
+
+
+
+<script src="js/main.js"></script>
+
+</body>
+
+</html>
