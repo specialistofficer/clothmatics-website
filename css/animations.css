@@ -1,0 +1,141 @@
+/* ==========================================
+   ClothMatics AI - animations.css
+   ========================================== */
+
+@keyframes floatY{
+  0%{transform:translateY(0)}
+  50%{transform:translateY(-20px)}
+  100%{transform:translateY(0)}
+}
+
+@keyframes floatX{
+  0%{transform:translateX(0)}
+  50%{transform:translateX(15px)}
+  100%{transform:translateX(0)}
+}
+
+@keyframes pulseGlow{
+  0%{box-shadow:0 0 0 rgba(91,61,245,.25)}
+  50%{box-shadow:0 20px 45px rgba(91,61,245,.35)}
+  100%{box-shadow:0 0 0 rgba(91,61,245,.25)}
+}
+
+@keyframes gradientMove{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+
+@keyframes rotateSlow{
+  from{transform:rotate(0deg)}
+  to{transform:rotate(360deg)}
+}
+
+@keyframes fadeUp{
+  from{
+    opacity:0;
+    transform:translateY(40px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+
+@keyframes fadeLeft{
+  from{
+    opacity:0;
+    transform:translateX(-40px);
+  }
+  to{
+    opacity:1;
+    transform:translateX(0);
+  }
+}
+
+@keyframes fadeRight{
+  from{
+    opacity:0;
+    transform:translateX(40px);
+  }
+  to{
+    opacity:1;
+    transform:translateX(0);
+  }
+}
+
+.phone1{
+  animation:floatY 6s ease-in-out infinite;
+}
+
+.phone2{
+  animation:floatY 8s ease-in-out infinite;
+}
+
+.blob{
+  animation:rotateSlow 40s linear infinite;
+}
+
+.hero-bg{
+  background:linear-gradient(-45deg,#5B3DF5,#7C3AED,#EC4899,#6D5EF8);
+  background-size:400% 400%;
+  animation:gradientMove 15s ease infinite;
+}
+
+.feature-card,
+.phone-card,
+.step-card{
+  animation:fadeUp .8s ease both;
+}
+
+.btn{
+  position:relative;
+  overflow:hidden;
+}
+
+.btn::after{
+  content:"";
+  position:absolute;
+  width:0;
+  height:0;
+  background:rgba(255,255,255,.3);
+  border-radius:50%;
+  transform:translate(-50%,-50%);
+  left:50%;
+  top:50%;
+  transition:.5s;
+}
+
+.btn:hover::after{
+  width:320px;
+  height:320px;
+}
+
+.feature-card:hover,
+.phone-card:hover,
+.step-card:hover{
+  animation:pulseGlow 1.2s ease;
+}
+
+.reveal{
+  opacity:0;
+  transform:translateY(30px);
+  transition:all .8s ease;
+}
+
+.reveal.active{
+  opacity:1;
+  transform:none;
+}
+
+.fade-left{
+  animation:fadeLeft .8s both;
+}
+
+.fade-right{
+  animation:fadeRight .8s both;
+}
+
+.fade-up{
+  animation:fadeUp .8s both;
+}
