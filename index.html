@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0f1024" />
+    <meta name="description" content="ClothMatics turns the clothes you own into personal, weather-aware outfit ideas." />
+    <link rel="icon" type="image/png" href="./assets/clothmatics-logo.png" />
+    <title>ClothMatics — Your wardrobe, intelligently styled</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./brand.css" />
+  </head>
+  <body>
+    <div class="noise"></div>
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="ClothMatics home">
+        <img class="brand-logo" src="./assets/clothmatics-logo.png" alt="" /><span>Cloth<span class="gradient-text">Matics</span></span>
+      </a>
+      <nav class="desktop-nav" aria-label="Main navigation">
+        <a href="#how">How it works</a><a href="#app-preview">App preview</a><a href="#features">Features</a><a href="#privacy">Privacy</a>
+      </nav>
+      <div class="header-actions">
+        <button class="button button-ghost" data-open-auth>Sign in</button>
+        <a class="button button-primary" href="#download">Get the app</a>
+      </div>
+    </header>
+
+    <main id="marketing-view">
+      <section class="hero section" id="top">
+        <div class="hero-copy reveal">
+          <div class="eyebrow"><span></span> AI styling, built around what you own</div>
+          <h1>Your wardrobe.<br /><span class="gradient-text">Endless possibilities.</span></h1>
+          <p class="hero-lede">ClothMatics understands your closet, your plans, and the weather—then creates outfits that feel unmistakably you.</p>
+          <div class="hero-actions">
+            <button class="button button-primary button-large" data-open-auth>Open my wardrobe <span>→</span></button>
+            <a class="text-link" href="#how">See how it works <span>↓</span></a>
+          </div>
+          <div class="trust-row"><span>✓ Your wardrobe stays private</span><span>✓ No website uploads</span><span>✓ Read-only closet access</span></div>
+        </div>
+        <div class="hero-visual reveal">
+          <div class="orb orb-one"></div><div class="orb orb-two"></div>
+          <div class="phone-shell">
+            <div class="phone-top"><span>9:41</span><span>● ● ●</span></div>
+            <div class="mini-brand"><img src="./assets/clothmatics-logo.png" alt="" /> ClothMatics</div>
+            <div class="phone-greeting">Good morning</div>
+            <div class="phone-title">Styled for today</div>
+            <div class="outfit-preview">
+              <div class="garment garment-shirt">⌁</div><div class="garment garment-trouser">Ⅱ</div>
+              <div class="score">92<span>/100</span></div>
+            </div>
+            <div class="phone-meta"><strong>Polished summer casual</strong><span>Office · 29°C</span></div>
+            <button>View complete outfit →</button>
+          </div>
+          <div class="float-card float-weather"><b>☀ 29°C</b><span>Weather matched</span></div>
+          <div class="float-card float-closet"><b>48 pieces</b><span>Ready to style</span></div>
+        </div>
+      </section>
+
+      <section class="proof-strip"><span>PERSONAL WARDROBE</span><i></i><span>WEATHER-AWARE</span><i></i><span>AI OUTFITS</span><i></i><span>STYLE INSIGHTS</span></section>
+
+      <section class="section story" id="how">
+        <div class="section-heading reveal"><div class="eyebrow"><span></span> Simple by design</div><h2>From closet to complete look<br />in three thoughtful steps.</h2></div>
+        <div class="steps">
+          <article class="step-card reveal"><span class="step-number">STEP 01</span><div class="step-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8.5 12 4l8 4.5-8 4.5z"/><path d="M6.5 10.3V17L12 20l5.5-3v-6.7M20 9v6"/></svg></div><h3>Build your digital closet</h3><p>Photograph garments in the mobile app. ClothMatics removes the background and organizes every piece for you.</p></article>
+          <article class="step-card featured reveal"><span class="step-number">STEP 02</span><div class="step-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/><circle cx="12" cy="12" r="4"/></svg></div><h3>Set the moment</h3><p>Choose your occasion and preferences. Weather, laundry status, and personal style are considered automatically.</p></article>
+          <article class="step-card reveal"><span class="step-number">STEP 03</span><div class="step-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 4h8l1 3 3 2-2 4-2-1v8H8v-8l-2 1-2-4 3-2z"/><path d="M9 4c.5 1.5 1.5 2.2 3 2.2S14.5 5.5 15 4"/></svg></div><h3>Wear your complete look</h3><p>Receive a coordinated outfit made only from clothes you own, with a clear explanation of why every piece works.</p></article>
+        </div>
+      </section>
+
+      <section class="product-showcase" id="app-preview">
+        <div class="showcase-heading reveal">
+          <div>
+            <div class="eyebrow light"><span></span> The complete ClothMatics experience</div>
+            <h2>From a single photo<br />to a wardrobe that thinks.</h2>
+          </div>
+          <p>Capture a garment in the mobile app, let AI prepare it for your closet, then receive personalized outfit recommendations based on your style, plans, and weather.</p>
+        </div>
+
+        <div class="showcase-covers reveal">
+          <figure><img src="./assets/screenshots/1.png" alt="ClothMatics promotional overview showing the AI wardrobe app" loading="lazy" /><figcaption>Meet your AI-powered wardrobe</figcaption></figure>
+          <figure><img src="./assets/screenshots/8.png" alt="ClothMatics dress smarter every day promotional screen" loading="lazy" /><figcaption>Your style, smarter with AI</figcaption></figure>
+        </div>
+
+        <div class="showcase-flow reveal" aria-label="How ClothMatics works">
+          <figure><span>01</span><img src="./assets/screenshots/2.png" alt="Capture your clothes in ClothMatics" loading="lazy" /><figcaption>Capture</figcaption></figure>
+          <figure><span>02</span><img src="./assets/screenshots/3.png" alt="AI garment background removal" loading="lazy" /><figcaption>Extract</figcaption></figure>
+          <figure><span>03</span><img src="./assets/screenshots/4.png" alt="Smart digital closet in ClothMatics" loading="lazy" /><figcaption>Organize</figcaption></figure>
+          <figure><span>04</span><img src="./assets/screenshots/5.png" alt="ClothMatics analyzes personal style" loading="lazy" /><figcaption>Understand</figcaption></figure>
+          <figure><span>05</span><img src="./assets/screenshots/6.png" alt="Personalized outfit recommendations" loading="lazy" /><figcaption>Recommend</figcaption></figure>
+          <figure><span>06</span><img src="./assets/screenshots/7.png" alt="Saved favorite outfits in ClothMatics" loading="lazy" /><figcaption>Save</figcaption></figure>
+        </div>
+        <p class="swipe-hint">Swipe to explore <span>→</span></p>
+      </section>
+
+      <section class="section feature-section" id="features">
+        <div class="feature-copy reveal"><div class="eyebrow light"><span></span> One wardrobe, everywhere</div><h2>Your closet is now available on the web.</h2><p>Sign in with the same ClothMatics account to browse garments, view Lookbook combinations, revisit saved outfits, and generate a new outfit online.</p><ul><li><b>Read-only wardrobe:</b> items can only be added through the mobile app.</li><li><b>Shared data:</b> favorites, Lookbook items, and images remain in sync.</li><li><b>Secure AI:</b> outfit generation runs through a protected server function.</li></ul><button class="button button-light" data-open-auth>Sign in to my closet <span aria-hidden="true">→</span></button></div>
+        <figure class="closet-preview reveal"><div class="preview-glow"></div><img src="./assets/screenshots/4.png" alt="ClothMatics smart digital closet organized by garment category" loading="lazy" /><figcaption><b>Your wardrobe, beautifully organized</b><span>Browse it on mobile and the web</span></figcaption></figure>
+      </section>
+
+      <section class="section privacy" id="privacy">
+        <div class="privacy-card reveal"><div><div class="eyebrow"><span></span> Designed with boundaries</div><h2>Your clothes are personal.<br />We treat them that way.</h2></div><div class="privacy-points"><p><b>Read only on web</b><span>The website never creates, edits, or deletes wardrobe items.</span></p><p><b>Account protected</b><span>Firebase rules restrict every wardrobe query to the signed-in owner.</span></p><p><b>Keys stay server-side</b><span>Your AI provider key is never shipped to a visitor’s browser.</span></p></div></div>
+      </section>
+
+      <section class="section final-cta" id="download"><div class="eyebrow light"><span></span> Dress with intention</div><h2>More outfits.<br />Fewer “nothing to wear” days.</h2><p>Build your wardrobe in the ClothMatics mobile app, then style it from anywhere.</p><div><button class="button button-light" data-open-auth>Open web wardrobe</button><a class="button button-outline-light" href="#app-preview">Explore app features</a></div></section>
+    </main>
+
+    <main id="app-view" class="app-view hidden">
+      <aside class="app-sidebar">
+        <a class="brand brand-light" href="./" aria-label="ClothMatics home"><img class="brand-logo" src="./assets/clothmatics-logo.png" alt="" /><span>ClothMatics</span></a>
+        <nav><button class="active" data-panel="overview">⌂ <span>Overview</span></button><button data-panel="wardrobe">▦ <span>Wardrobe</span></button><button data-panel="lookbook">◫ <span>Lookbook</span></button><button data-panel="stylist">✦ <span>AI Stylist</span></button></nav>
+        <div class="sidebar-note"><b>Read-only wardrobe</b><span>Add or edit garments in the mobile app.</span></div>
+        <button class="signout" id="signout-button">↗ Sign out</button>
+      </aside>
+      <section class="app-content">
+        <header class="app-topbar"><div><span class="app-kicker">PERSONAL WARDROBE</span><h2 id="panel-title">Good to see you</h2></div><div class="user-chip"><span id="user-initial">C</span><div><b id="user-name">ClothMatics user</b><small id="user-email"></small></div></div></header>
+        <div id="dashboard-loading" class="dashboard-loading"><span class="spinner"></span><p>Preparing your wardrobe…</p></div>
+        <div id="panel-overview" class="panel hidden">
+          <div class="stat-grid"><article><span>WARDROBE</span><b id="stat-items">0</b><small>garments</small></article><article><span>FAVORITES</span><b id="stat-favorites">0</b><small>saved pieces</small></article><article><span>LOOKBOOK</span><b id="stat-lookbook">0</b><small>items & looks</small></article></div>
+          <div class="dashboard-split"><div class="dash-card"><div class="dash-title"><div><span>RECENTLY ADDED</span><h3>Your latest pieces</h3></div><button data-go-panel="wardrobe">View all →</button></div><div class="closet-grid compact" id="recent-grid"></div></div><div class="stylist-promo"><span>✦ AI STYLIST</span><h3>Your wardrobe,<br />styled for today.</h3><p>Create a combination using only items already in your closet.</p><button data-go-panel="stylist">Create my outfit →</button></div></div>
+        </div>
+        <div id="panel-wardrobe" class="panel hidden"><div class="panel-tools"><div class="search"><span>⌕</span><input id="wardrobe-search" placeholder="Search wardrobe" /></div><select id="wardrobe-filter"><option value="all">All items</option><option value="favorite">Favorites</option><option value="clean">Clean</option></select><span class="readonly-pill">Read only</span></div><div class="closet-grid" id="wardrobe-grid"></div><div class="empty-state hidden" id="wardrobe-empty"><b>No matching garments</b><span>Add items using the ClothMatics mobile app.</span></div></div>
+        <div id="panel-lookbook" class="panel hidden"><div class="section-intro"><span>CURATED BY YOU</span><h3>Your saved combinations</h3></div><div class="looks-grid" id="looks-grid"></div><div class="section-intro item-intro"><span>LOOKBOOK PIECES</span><h3>Garments you marked for inspiration</h3></div><div class="closet-grid" id="lookbook-grid"></div></div>
+        <div id="panel-stylist" class="panel hidden"><div class="web-stylist"><div class="stylist-form"><span class="app-kicker">AI OUTFIT GENERATOR</span><h3>Create a look from your wardrobe</h3><p>No uploads needed. Select an occasion and we’ll work only with your existing items.</p><label>Occasion<select id="occasion-select"></select></label><label>Preference <span>Optional</span><textarea id="preference-input" maxlength="240" placeholder="e.g. Comfortable, avoid white, include loafers"></textarea></label><button class="button button-primary" id="generate-button">✦ Generate my outfit</button><small>Trial limits can be enforced through the included Cloudflare KV binding.</small></div><div class="outfit-result" id="outfit-result"><div class="result-placeholder"><span>✦</span><b>Your outfit will appear here</b><p>Choose an occasion to begin.</p></div></div></div></div>
+      </section>
+    </main>
+
+    <footer><a class="brand" href="#top"><img class="brand-logo" src="./assets/clothmatics-logo.png" alt="" /><span>ClothMatics</span></a><p>© <span id="year"></span> ClothMatics. Your wardrobe, intelligently styled.</p><div><a href="#privacy">Privacy</a><a href="#features">Features</a></div></footer>
+
+    <dialog id="auth-dialog"><button class="dialog-close" id="close-auth" aria-label="Close">×</button><img class="auth-logo" src="./assets/clothmatics-logo.png" alt="ClothMatics" /><span class="app-kicker">WELCOME BACK</span><h2>Open your ClothMatics</h2><p>Use the same account as the mobile app.</p><form id="auth-form"><label>Email<input id="auth-email" type="email" autocomplete="email" required /></label><label>Password<input id="auth-password" type="password" autocomplete="current-password" required /></label><button class="button button-primary" id="email-signin" type="submit">Sign in</button></form><div class="auth-divider"><span>or</span></div><button class="google-button" id="google-signin">G&nbsp;&nbsp; Continue with Google</button><p class="auth-message" id="auth-message"></p></dialog>
+    <div class="toast" id="toast"></div>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

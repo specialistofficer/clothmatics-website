@@ -1,0 +1,11 @@
+{
+  "occasions": ["Office", "Casual", "Date", "Travel", "Party", "Wedding", "Gym", "Interview", "Shopping", "Brunch", "Beach", "Formal", "College", "Concert", "Weekend"],
+  "demoGarments": [
+    {"title":"Lilac Oxford Shirt","category":"Top","image":"./assets/wardrobe-shirts.svg"},
+    {"title":"Ivory Chinos","category":"Bottom","image":"./assets/wardrobe-bottoms.svg"},
+    {"title":"Indigo Polo","category":"Top","image":"./assets/wardrobe-shirts.svg"},
+    {"title":"Brown Loafers","category":"Shoes","image":"./assets/wardrobe-shoes.svg"},
+    {"title":"Rose Camp Shirt","category":"Top","image":"./assets/wardrobe-shirts.svg"},
+    {"title":"Classic Denim","category":"Bottom","image":"./assets/wardrobe-bottoms.svg"}
+  ]
+}
