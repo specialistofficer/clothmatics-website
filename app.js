@@ -7,6 +7,7 @@ import {
   setPersistence,
   signInWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
   signOut,
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import {
@@ -62,9 +63,16 @@ $("#auth-form").addEventListener("submit", async (event) => {
 $("#google-signin").addEventListener("click", async () => {
   setAuthBusy(true);
   try {
-    await signInWithPopup(auth, new GoogleAuthProvider());
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: "select_account" });
+    await signInWithPopup(auth, provider);
     authDialog.close();
   } catch (error) {
+    if (error?.code === "auth/popup-blocked") {
+      await signInWithRedirect(auth, new GoogleAuthProvider());
+      return;
+    }
+    console.error("Google sign-in failed", error?.code, error);
     $("#auth-message").textContent = friendlyAuthError(error);
   } finally { setAuthBusy(false); }
 });
@@ -209,5 +217,17 @@ function safeUrl(value="") { try { const url=new URL(value); return ["https:","h
 function safeAssetUrl(value="") { return /^\.\/assets\/[a-z0-9._-]+$/i.test(value) ? value : ""; }
 function escapeHtml(value="") { const div=document.createElement("div"); div.textContent=String(value); return div.innerHTML; }
 function setAuthBusy(busy) { $("#email-signin").disabled=busy; $("#google-signin").disabled=busy; $("#email-signin").textContent=busy?"Signing in…":"Sign in"; $("#auth-message").textContent=""; }
-function friendlyAuthError(error) { return error?.code === "auth/invalid-credential" ? "The email or password is incorrect." : "We couldn’t sign you in. Please try again."; }
+function friendlyAuthError(error) {
+  const messages = {
+    "auth/invalid-credential": "The email or password is incorrect.",
+    "auth/unauthorized-domain": "This website domain is not authorized in Firebase Authentication.",
+    "auth/operation-not-allowed": "This sign-in method is not enabled in Firebase Authentication.",
+    "auth/popup-blocked": "Your browser blocked the Google sign-in window. Please allow pop-ups and try again.",
+    "auth/popup-closed-by-user": "The Google sign-in window was closed before sign-in finished.",
+    "auth/cancelled-popup-request": "Another sign-in window is already open.",
+    "auth/api-key-not-valid.-please-pass-a-valid-api-key.": "The Firebase Web API key is not valid for this website.",
+    "auth/network-request-failed": "The sign-in request could not reach Firebase. Check your connection and try again.",
+  };
+  return messages[error?.code] || `Google sign-in failed${error?.code ? ` (${error.code})` : ""}.`;
+}
 function toast(message) { const el=$("#toast"); el.textContent=message; el.classList.add("show"); setTimeout(()=>el.classList.remove("show"),2800); }
