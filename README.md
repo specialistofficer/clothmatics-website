@@ -14,6 +14,8 @@ upload, extraction, editing, and deletion remain mobile-app-only.
 - Firebase-token verification before every AI request.
 - Optional per-user daily generation limits using Cloudflare KV.
 - Editable marketing/demo content in `data/content.json`.
+- A claim-protected, read-only administrator dashboard at `/admin.html`.
+- Dedicated privacy policy and searchable FAQ pages.
 
 ## Data shared with the mobile app
 
@@ -123,3 +125,7 @@ WEB_DAILY_OUTFIT_LIMIT=1
 - `functions/api/generate-outfit.js` — authenticated server-side Gemini route.
 - `data/content.json` — occasions and editable demo content.
 - `_headers` — Cloudflare security and cache headers.
+- `admin.html`, `admin.js`, `admin.css` — administrator activity dashboard.
+- `privacy.html` — public privacy policy.
+- `faq.html`, `faq.js` — searchable help and FAQ page.
+- `ADMIN_SETUP.md` — one-time Firebase custom-claim instructions.

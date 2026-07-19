@@ -9,5 +9,12 @@
 /config.js
   Cache-Control: no-store
 
+/admin.html
+  Cache-Control: no-store
+  X-Robots-Tag: noindex, nofollow
+
+/admin.js
+  Cache-Control: no-store
+
 /api/*
   Cache-Control: no-store

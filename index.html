@@ -20,7 +20,7 @@
         <img class="brand-logo" src="./assets/clothmatics-logo.png" alt="" /><span>Cloth<span class="gradient-text">Matics</span></span>
       </a>
       <nav class="desktop-nav" aria-label="Main navigation">
-        <a href="#how">How it works</a><a href="#app-preview">App preview</a><a href="#features">Features</a><a href="#privacy">Privacy</a>
+        <a href="#how">How it works</a><a href="#app-preview">App preview</a><a href="#features">Features</a><a href="./faq.html">FAQ</a><a href="./privacy.html">Privacy</a>
       </nav>
       <div class="header-actions">
         <button class="button button-ghost" data-open-auth>Sign in</button>
@@ -110,7 +110,7 @@
     <main id="app-view" class="app-view hidden">
       <aside class="app-sidebar">
         <a class="brand brand-light" href="./" aria-label="ClothMatics home"><img class="brand-logo" src="./assets/clothmatics-logo.png" alt="" /><span>ClothMatics</span></a>
-        <nav><button class="active" data-panel="overview">⌂ <span>Overview</span></button><button data-panel="wardrobe">▦ <span>Wardrobe</span></button><button data-panel="lookbook">◫ <span>Lookbook</span></button><button data-panel="stylist">✦ <span>AI Stylist</span></button></nav>
+        <nav><button class="active" data-panel="overview">⌂ <span>Overview</span></button><button data-panel="wardrobe">▦ <span>Wardrobe</span></button><button data-panel="lookbook">◫ <span>Lookbook</span></button><button data-panel="stylist">✦ <span>AI Stylist</span></button><a id="admin-link" class="hidden" href="./admin.html">A <span>Admin</span></a></nav>
         <div class="sidebar-note"><b>Read-only wardrobe</b><span>Add or edit garments in the mobile app.</span></div>
         <button class="signout" id="signout-button">↗ Sign out</button>
       </aside>
@@ -127,7 +127,7 @@
       </section>
     </main>
 
-    <footer><a class="brand" href="#top"><img class="brand-logo" src="./assets/clothmatics-logo.png" alt="" /><span>ClothMatics</span></a><p>© <span id="year"></span> ClothMatics. Your wardrobe, intelligently styled.</p><div><a href="#privacy">Privacy</a><a href="#features">Features</a></div></footer>
+    <footer><a class="brand" href="#top"><img class="brand-logo" src="./assets/clothmatics-logo.png" alt="" /><span>ClothMatics</span></a><p>© <span id="year"></span> ClothMatics. Your wardrobe, intelligently styled.</p><div><a href="./privacy.html">Privacy</a><a href="./faq.html">FAQ</a><a href="#features">Features</a></div></footer>
 
     <dialog id="auth-dialog"><button class="dialog-close" id="close-auth" aria-label="Close">×</button><img class="auth-logo" src="./assets/clothmatics-logo.png" alt="ClothMatics" /><span class="app-kicker">WELCOME BACK</span><h2>Open your ClothMatics</h2><p>Use the same account as the mobile app.</p><form id="auth-form"><label>Email<input id="auth-email" type="email" autocomplete="email" required /></label><label>Password<input id="auth-password" type="password" autocomplete="current-password" required /></label><button class="button button-primary" id="email-signin" type="submit">Sign in</button></form><div class="auth-divider"><span>or</span></div><button class="google-button" id="google-signin">G&nbsp;&nbsp; Continue with Google</button><p class="auth-message" id="auth-message"></p></dialog>
     <div class="toast" id="toast"></div>

@@ -93,10 +93,23 @@ onAuthStateChanged(auth, async (user) => {
   $("#app-view").classList.remove("hidden");
   $(".site-header").classList.add("hidden");
   $("footer").classList.add("hidden");
+  await configureAdminAccess(user);
   $("#dashboard-loading").classList.remove("hidden");
   $$(".panel").forEach((panel) => panel.classList.add("hidden"));
   await loadDashboard(user);
 });
+
+async function configureAdminAccess(user) {
+  const link = $("#admin-link");
+  link.classList.add("hidden");
+  if ((user.email || "").toLowerCase() !== "chiragsharma376@gmail.com") return;
+  try {
+    const token = await user.getIdTokenResult();
+    link.classList.toggle("hidden", token.claims.admin !== true);
+  } catch (error) {
+    console.error("Could not verify admin access", error);
+  }
+}
 
 async function loadDashboard(user) {
   try {
