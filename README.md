@@ -81,11 +81,12 @@ Secrets**:
 |---|---|
 | `GEMINI_API_KEY` | Server-only Gemini credential |
 | `FIREBASE_WEB_API_KEY` | Used by the function to validate Firebase ID tokens |
-| `WEB_DAILY_OUTFIT_LIMIT` | Optional; defaults to `1` |
 
-For secure daily trial limits, create a KV namespace and bind it to the Pages
-project with the variable name `OUTFIT_LIMITS`. Without the binding, generation
-still works but the server does not impose a daily web limit.
+Create a Cloudflare KV namespace and bind it to the Pages project with the
+variable name `OUTFIT_LIMITS`. This binding records `web-ai-used:<Firebase UID>`
+without an expiry, so each account receives one successful website outfit
+recommendation. If the binding is missing, the endpoint fails closed and does
+not call Gemini.
 
 ## Local preview
 
@@ -101,7 +102,6 @@ The Pages Function also runs under this command. Add local secrets in a
 ```text
 GEMINI_API_KEY=...
 FIREBASE_WEB_API_KEY=...
-WEB_DAILY_OUTFIT_LIMIT=1
 ```
 
 ## Deployment behavior

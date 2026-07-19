@@ -11,6 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./admin.css" />
+    <link rel="stylesheet" href="./admin-coupons.css" />
   </head>
   <body>
     <div id="admin-gate" class="admin-gate">
@@ -31,6 +32,7 @@
           <a href="#users">Users</a>
           <a href="#activity">Activity</a>
           <a href="#services">AI & services</a>
+          <a href="#coupons">Coupons</a>
         </nav>
         <div class="admin-identity"><span id="admin-initial">C</span><div><b id="admin-name">Administrator</b><small id="admin-email"></small></div></div>
         <button id="admin-signout">Sign out</button>
@@ -38,7 +40,7 @@
 
       <main class="admin-main">
         <header class="admin-header">
-          <div><span>OPERATIONS</span><h1>Activity dashboard</h1><p>Read-only visibility across the ClothMatics platform.</p></div>
+          <div><span>OPERATIONS</span><h1>Activity dashboard</h1><p>Monitor ClothMatics activity and manage premium coupons.</p></div>
           <div class="header-actions"><span id="last-updated">Not loaded</span><button id="refresh-admin">Refresh data</button></div>
         </header>
 
@@ -72,6 +74,20 @@
           <section id="services" class="admin-section">
             <div class="section-title"><div><span>INFRASTRUCTURE</span><h2>AI and service usage</h2></div></div>
             <div class="service-grid"><article class="admin-card"><h3>Providers</h3><div id="provider-bars" class="bar-list compact"></div></article><article class="admin-card"><h3>Models</h3><div id="model-list" class="model-list"></div></article></div>
+          </section>
+          <section id="coupons" class="admin-section">
+            <div class="section-title"><div><span>PREMIUM ACCESS</span><h2>Create coupons</h2></div></div>
+            <div class="coupon-layout">
+              <form id="coupon-form" class="admin-card coupon-form">
+                <div><h3>New coupon</h3><p>Create a code that grants premium access in the ClothMatics mobile app.</p></div>
+                <label>Plan<select id="coupon-plan"><option value="monthly">Monthly · 30 days</option><option value="yearly">Yearly · 365 days</option></select></label>
+                <label>Coupon code <span>Leave blank to generate one</span><div class="coupon-code-row"><input id="coupon-code" maxlength="32" autocomplete="off" placeholder="MONTH-7K4P2Q" /><button id="generate-coupon-code" type="button">Generate</button></div></label>
+                <div class="coupon-fields"><label>Maximum redemptions <span>Optional</span><input id="coupon-max" type="number" min="1" step="1" placeholder="100" /></label><label>Expires after <span>Optional, days</span><input id="coupon-expiry" type="number" min="1" step="1" placeholder="30" /></label></div>
+                <div id="coupon-message" class="coupon-message hidden" role="status"></div>
+                <button id="create-coupon" class="primary-admin-button" type="submit">Create coupon</button>
+              </form>
+              <article class="admin-card coupon-list-card"><div class="card-heading"><div><span>AVAILABLE CODES</span><h2>Coupon library</h2></div><b id="coupon-count">0</b></div><div id="coupon-list" class="coupon-list"></div></article>
+            </div>
           </section>
         </div>
       </main>

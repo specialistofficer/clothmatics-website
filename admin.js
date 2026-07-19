@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
 import { browserLocalPersistence, getAuth, onAuthStateChanged, setPersistence, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-import { collection, getDocs, getFirestore } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { collection, doc, getDoc, getDocs, getFirestore, setDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 import { firebaseConfig } from "./config.js";
 
 const ADMIN_EMAIL = "chiragsharma376@gmail.com";
@@ -36,7 +36,7 @@ async function loadDashboard() {
   $("#admin-content").classList.add("hidden");
   $("#admin-error").classList.add("hidden");
   try {
-    const names = ["users", "wardrobe", "savedOutfits", "outfitHistory", "outfitWear", "aiResponses"];
+    const names = ["users", "wardrobe", "savedOutfits", "outfitHistory", "outfitWear", "aiResponses", "coupons"];
     const snapshots = await Promise.all(names.map((name) => getDocs(collection(db, name))));
     state.datasets = Object.fromEntries(names.map((name, i) => [name, snapshots[i].docs.map((doc) => ({ id: doc.id, ...doc.data() }))]));
     const apiSnapshot = await getDocs(collection(db, "analytics", "apiCalls", "logs"));
@@ -68,6 +68,53 @@ function buildDashboard() {
   buildUsers();
   buildActivity();
   renderServices(d.apiLogs);
+  renderCoupons(d.coupons);
+}
+
+function renderCoupons(coupons = []) {
+  const sorted = [...coupons].sort((a, b) => String(a.code || a.id).localeCompare(String(b.code || b.id)));
+  $("#coupon-count").textContent = sorted.length;
+  $("#coupon-list").innerHTML = sorted.length ? sorted.map((coupon) => {
+    const expires = timeOf(coupon.expiresAt), used = Number(coupon.redeemedCount || 0), cap = Number(coupon.maxRedemptions || 0);
+    const status = coupon.active === false ? "Disabled" : expires && expires < Date.now() ? "Expired" : cap && used >= cap ? "Used up" : "Active";
+    return `<div class="coupon-row"><div><b>${escapeHtml(coupon.code || coupon.id)}</b><span>${escapeHtml(coupon.plan || `${coupon.days || 0} days`)} · ${coupon.days || 0} days</span></div><div><b>${used}${cap ? ` / ${cap}` : ""}</b><span>redemptions</span></div><div><b>${expires ? formatDate(expires) : "No expiry"}</b><span class="coupon-status ${status.toLowerCase().replace(" ", "-")}">${status}</span></div></div>`;
+  }).join("") : '<div class="table-empty">No coupons have been created yet.</div>';
+}
+
+function generateCouponCode(plan) {
+  const alphabet = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  let body = "";
+  for (let i = 0; i < 6; i += 1) body += alphabet[Math.floor(Math.random() * alphabet.length)];
+  return `${plan === "yearly" ? "YEAR" : "MONTH"}-${body}`;
+}
+
+async function createCoupon(event) {
+  event.preventDefault();
+  const plan = $("#coupon-plan").value === "yearly" ? "yearly" : "monthly";
+  const code = ($("#coupon-code").value.trim() || generateCouponCode(plan)).toUpperCase().replace(/[^A-Z0-9-]/g, "");
+  const maxRedemptions = Number($("#coupon-max").value), expiresInDays = Number($("#coupon-expiry").value);
+  const button = $("#create-coupon");
+  if (!code || code.length < 4) return showCouponMessage("Enter a coupon code with at least four letters or numbers.", true);
+  button.disabled = true; button.textContent = "Creating…"; $("#coupon-message").classList.add("hidden");
+  try {
+    const ref = doc(db, "coupons", code);
+    if ((await getDoc(ref)).exists()) return showCouponMessage(`${code} already exists. Choose another code.`, true);
+    const payload = { code, plan, days: plan === "yearly" ? 365 : 30, active: true, redeemedCount: 0, createdAt: Date.now() };
+    if (Number.isInteger(maxRedemptions) && maxRedemptions > 0) payload.maxRedemptions = maxRedemptions;
+    if (Number.isInteger(expiresInDays) && expiresInDays > 0) payload.expiresAt = Date.now() + expiresInDays * 86400000;
+    await setDoc(ref, payload);
+    $("#coupon-code").value = code;
+    showCouponMessage(`Coupon ${code} was created successfully.`, false);
+    await loadDashboard();
+  } catch (error) {
+    console.error("Create coupon", error);
+    showCouponMessage(error?.code === "permission-denied" ? "Firebase denied this action. Sign out and back in after confirming your admin custom claim." : `Coupon could not be created: ${error.message}`, true);
+  } finally { button.disabled = false; button.textContent = "Create coupon"; }
+}
+
+function showCouponMessage(text, isError) {
+  const target = $("#coupon-message"); target.textContent = text;
+  target.classList.remove("hidden", "error", "success"); target.classList.add(isError ? "error" : "success");
 }
 
 function buildUsers() {
@@ -148,3 +195,5 @@ $("#refresh-admin").addEventListener("click", loadDashboard);
 $("#admin-signout").addEventListener("click", async () => { await signOut(auth); location.href = "./"; });
 $("#user-search").addEventListener("input", (event) => { const term = event.target.value.trim().toLowerCase(); renderUsers(state.userRows.filter((u) => `${u.name} ${u.email || ""} ${u.uid}`.toLowerCase().includes(term))); });
 $("#activity-filter").addEventListener("change", (event) => renderActivity(event.target.value));
+$("#coupon-form").addEventListener("submit", createCoupon);
+$("#generate-coupon-code").addEventListener("click", () => { $("#coupon-code").value = generateCouponCode($("#coupon-plan").value); });

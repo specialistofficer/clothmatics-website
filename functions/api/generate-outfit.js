@@ -13,14 +13,13 @@ export async function onRequestPost(context) {
     if (!wardrobe.length) return json({ error: "Your wardrobe is empty. Add items in the mobile app first." }, 400);
     if (wardrobe.length > 120) return json({ error: "Wardrobe request is too large." }, 400);
 
-    let limitKey = null;
-    let priorUsage = 0;
-    if (context.env.OUTFIT_LIMITS) {
-      const day = new Date().toISOString().slice(0, 10);
-      limitKey = `${identity.localId}:${day}`;
-      priorUsage = Number(await context.env.OUTFIT_LIMITS.get(limitKey) || 0);
-      const dailyLimit = Number(context.env.WEB_DAILY_OUTFIT_LIMIT || 1);
-      if (priorUsage >= dailyLimit) return json({ error: "Today’s web outfit is ready. Try again tomorrow or use Premium in the app." }, 429);
+    if (!context.env.OUTFIT_LIMITS) {
+      return json({ error: "Outfit generation is not configured safely yet. Please use the ClothMatics mobile app." }, 503);
+    }
+    const limitKey = `web-ai-used:${identity.localId}`;
+    const alreadyUsed = await context.env.OUTFIT_LIMITS.get(limitKey);
+    if (alreadyUsed) {
+      return json({ error: "You have already used your one web outfit recommendation. Continue styling in the ClothMatics mobile app." }, 429);
     }
 
     const occasion = clean(body.occasion, 40) || "casual";
@@ -29,11 +28,9 @@ export async function onRequestPost(context) {
     const outfit = await callGemini(context.env.GEMINI_API_KEY, prompt);
     outfit.wardrobeItemIds = resolveIds(outfit.wardrobeItemIds, wardrobe);
     if (!outfit.wardrobeItemIds.length) throw new Error("AI did not return usable wardrobe items.");
-    // Count only successful generations; provider failures never consume the
-    // user's daily allowance.
-    if (context.env.OUTFIT_LIMITS && limitKey) {
-      await context.env.OUTFIT_LIMITS.put(limitKey, String(priorUsage + 1), { expirationTtl: 172800 });
-    }
+    // Count only a successful generation. No TTL makes this a lifetime web
+    // allowance for this Firebase UID.
+    await context.env.OUTFIT_LIMITS.put(limitKey, JSON.stringify({ usedAt: new Date().toISOString() }));
     return json({ outfit });
   } catch (error) {
     console.error("generate-outfit", error);
