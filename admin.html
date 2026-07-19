@@ -12,6 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./admin.css" />
     <link rel="stylesheet" href="./admin-coupons.css" />
+    <link rel="stylesheet" href="./admin-explorer.css" />
   </head>
   <body>
     <div id="admin-gate" class="admin-gate">
@@ -62,12 +63,13 @@
           </section>
 
           <section id="users" class="admin-section">
-            <div class="section-title"><div><span>COMMUNITY</span><h2>Users</h2></div><label class="admin-search"><span>Search</span><input id="user-search" type="search" placeholder="Name, email, or UID" /></label></div>
-            <div class="table-wrap"><table><thead><tr><th>User</th><th>Joined</th><th>Garments</th><th>Saved looks</th><th>AI actions</th><th>Last activity</th></tr></thead><tbody id="users-body"></tbody></table><div id="users-empty" class="table-empty hidden">No matching users.</div></div>
+            <div class="section-title"><div><span>COMMUNITY</span><h2>Users</h2></div><div class="user-tools"><label class="admin-search"><span>Search</span><input id="user-search" type="search" placeholder="Name, email, or UID" /></label><button id="export-users" class="secondary-admin-button">Export CSV</button></div></div>
+            <div class="table-wrap"><table><thead><tr><th>User</th><th>Profile</th><th>Plan / coupon</th><th>Joined</th><th>Garments</th><th>Saved looks</th><th>AI actions</th><th>Last activity</th><th></th></tr></thead><tbody id="users-body"></tbody></table><div id="users-empty" class="table-empty hidden">No matching users.</div></div>
           </section>
 
           <section id="activity" class="admin-section">
-            <div class="section-title"><div><span>RECENT EVENTS</span><h2>User activity</h2></div><select id="activity-filter"><option value="all">All activity</option><option value="wardrobe">Wardrobe</option><option value="outfit">Outfits</option><option value="ai">AI activity</option><option value="account">Accounts</option></select></div>
+            <div class="section-title"><div><span>RECENT EVENTS</span><h2>User activity</h2></div><div class="activity-filters"><input id="activity-from" type="date" aria-label="Activity from date" /><input id="activity-to" type="date" aria-label="Activity to date" /><select id="activity-filter"><option value="all">All activity</option><option value="wardrobe">Wardrobe</option><option value="outfit">Outfits</option><option value="ai">AI activity</option><option value="account">Accounts</option></select><button id="clear-activity-dates" type="button">Clear dates</button></div></div>
+            <div id="activity-summary" class="activity-summary"></div>
             <div id="activity-feed" class="activity-feed"></div>
           </section>
 
@@ -91,6 +93,17 @@
           </section>
         </div>
       </main>
+    </div>
+    <div id="user-detail" class="user-detail hidden" role="dialog" aria-modal="true" aria-labelledby="detail-user-name">
+      <button id="close-user-detail" class="detail-backdrop" aria-label="Close user details"></button>
+      <section class="detail-panel">
+        <header class="detail-header"><div><span>USER EXPLORER</span><h2 id="detail-user-name">User details</h2><p id="detail-user-email"></p></div><button id="detail-close-button" aria-label="Close">×</button></header>
+        <div id="detail-profile" class="detail-profile"></div>
+        <div class="detail-stats" id="detail-stats"></div>
+        <div class="detail-date-tools"><b>Activity period</b><input id="detail-from" type="date" /><input id="detail-to" type="date" /><button id="detail-clear-dates">All time</button></div>
+        <nav class="detail-tabs"><button class="active" data-detail-tab="activity">Activity</button><button data-detail-tab="closet">Closet</button><button data-detail-tab="outfits">Saved outfits</button></nav>
+        <div id="detail-activity" class="detail-view"></div><div id="detail-closet" class="detail-view hidden"></div><div id="detail-outfits" class="detail-view hidden"></div>
+      </section>
     </div>
     <script type="module" src="./admin.js"></script>
   </body>

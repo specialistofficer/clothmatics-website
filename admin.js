@@ -10,7 +10,7 @@ const db = getFirestore(app);
 await setPersistence(auth, browserLocalPersistence);
 
 const $ = (selector) => document.querySelector(selector);
-const state = { users: [], activity: [], datasets: {}, userRows: [] };
+const state = { users: [], activity: [], datasets: {}, userRows: [], visibleUsers: [], selectedUserId: null };
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) return deny("Sign in with the administrator account before opening this page.");
@@ -138,7 +138,12 @@ function buildUsers() {
 }
 
 function renderUsers(users) {
-  $("#users-body").innerHTML = users.map((user) => `<tr><td><div class="user-cell"><span class="user-avatar">${escapeHtml(user.name.charAt(0).toUpperCase())}</span><div><b>${escapeHtml(user.name)}</b><small>${escapeHtml(user.email || "No email")}</small><small title="${escapeHtml(user.uid)}">${escapeHtml(user.uid.slice(0, 12))}…</small></div></div></td><td>${formatDate(timeOf(user.createdAt))}</td><td>${user.garmentCount}</td><td>${user.outfitCount}</td><td>${user.aiCount}</td><td>${formatRelative(user.lastActivity)}</td></tr>`).join("");
+  state.visibleUsers = users;
+  $("#users-body").innerHTML = users.map((user) => {
+    const subscription = user.subscription || {};
+    const profile = [user.gender, user.city, user.profession].filter(Boolean).slice(0, 2).join(" · ") || "Profile incomplete";
+    return `<tr><td><div class="user-cell"><span class="user-avatar">${escapeHtml(user.name.charAt(0).toUpperCase())}</span><div><b>${escapeHtml(user.name)}</b><small>${escapeHtml(user.email || "No email")}</small><small title="${escapeHtml(user.uid)}">${escapeHtml(user.uid.slice(0, 12))}…</small></div></div></td><td>${escapeHtml(profile)}</td><td><b>${escapeHtml(subscription.plan || "free")}</b><br><small>${escapeHtml(subscription.lastCoupon || "No code")}</small></td><td>${formatDate(timeOf(user.createdAt))}</td><td>${user.garmentCount}</td><td>${user.outfitCount}</td><td>${user.aiCount}</td><td>${formatRelative(user.lastActivity)}</td><td><button class="view-user" data-user-id="${escapeHtml(user.uid)}">View details</button></td></tr>`;
+  }).join("");
   $("#users-empty").classList.toggle("hidden", users.length > 0);
 }
 
@@ -154,12 +159,16 @@ function buildActivity() {
   d.aiResponses.forEach((x) => events.push(eventOf("ai", `Generated ${x.feature || x.type || "an AI response"}`, x, x.createdAt || x.timestamp)));
   d.apiLogs.forEach((x) => events.push(eventOf("ai", `${x.type || "API"} request ${x.status || "logged"}`, x, x.timestamp)));
   state.activity = events.filter((x) => x.time).map((x) => { const u = users.get(x.userId) || {}; return { ...x, user: u.fullName || u.displayName || u.email || x.userId || "System" }; }).sort((a, b) => b.time - a.time);
-  renderActivity("all");
+  renderActivity();
 }
 
 function eventOf(type, label, source, timestamp) { return { type, label, userId: source.userId || source.uid || source.id, time: timeOf(timestamp), detail: source.status === "failure" ? source.errorMessage || "Failed request" : "" }; }
-function renderActivity(filter) {
-  const items = state.activity.filter((x) => filter === "all" || x.type === filter).slice(0, 75);
+function renderActivity() {
+  const filter = $("#activity-filter").value;
+  const from = startOfDate($("#activity-from").value), to = endOfDate($("#activity-to").value);
+  const filtered = state.activity.filter((x) => (filter === "all" || x.type === filter) && (!from || x.time >= from) && (!to || x.time <= to));
+  const items = filtered.slice(0, 100);
+  $("#activity-summary").innerHTML = `<article><b>${filtered.length}</b><span>events</span></article><article><b>${new Set(filtered.map((x) => x.userId).filter(Boolean)).size}</b><span>active users</span></article><article><b>${new Set(filtered.map((x) => dateKey(x.time))).size}</b><span>active dates</span></article>`;
   const icons = { account: "U", wardrobe: "W", outfit: "O", ai: "AI" };
   $("#activity-feed").innerHTML = items.length ? items.map((item) => `<article class="activity-item"><span class="activity-icon">${icons[item.type]}</span><div><b>${escapeHtml(item.label)}</b><small>${escapeHtml(item.user)}${item.detail ? ` · ${escapeHtml(item.detail)}` : ""}</small></div><time>${formatRelative(item.time)}</time></article>`).join("") : '<div class="table-empty">No activity is available for this filter.</div>';
 }
@@ -183,6 +192,57 @@ function renderServices(logs) {
   $("#model-list").innerHTML = Object.entries(modelCounts).sort((a, b) => b[1] - a[1]).map(([name, count]) => `<div class="model-row"><span title="${escapeHtml(name)}">${escapeHtml(name)}</span><b>${count}</b></div>`).join("") || '<p class="muted">No model-specific logs yet.</p>';
 }
 
+function openUserDetail(userId) {
+  const user = state.userRows.find((x) => x.uid === userId);
+  if (!user) return;
+  state.selectedUserId = userId;
+  $("#detail-user-name").textContent = user.name;
+  $("#detail-user-email").textContent = `${user.email || "No email"} · ${user.uid}`;
+  const analysis = user.aiAnalysis || {};
+  const subscription = user.subscription || {};
+  const fields = [
+    ["Gender", user.gender], ["City", user.city], ["Profession", user.profession], ["Height", user.height ? `${user.height} cm` : ""],
+    ["Body type", user.bodyType || analysis.bodyType], ["Skin tone", user.skinTone || analysis.skinTone], ["Hair color", analysis.hairColor],
+    ["Plan", subscription.plan || "free"], ["Coupon used", subscription.lastCoupon || "No coupon"], ["Premium until", formatDate(timeOf(subscription.premiumUntil))], ["Joined", formatDate(timeOf(user.createdAt))], ["Last activity", formatDate(user.lastActivity)],
+  ];
+  $("#detail-profile").innerHTML = fields.map(([label, value]) => `<p><span>${escapeHtml(label)}</span><b>${escapeHtml(value || "—")}</b></p>`).join("");
+  renderUserDetail();
+  $("#user-detail").classList.remove("hidden");
+  document.body.classList.add("modal-open");
+}
+
+function renderUserDetail() {
+  const id = state.selectedUserId;
+  if (!id) return;
+  const d = state.datasets;
+  const from = startOfDate($("#detail-from").value), to = endOfDate($("#detail-to").value);
+  const events = state.activity.filter((x) => x.userId === id && (!from || x.time >= from) && (!to || x.time <= to));
+  const closet = d.wardrobe.filter((x) => x.userId === id && dateWithin(activityTime(x), from, to));
+  const outfits = d.savedOutfits.filter((x) => x.userId === id && dateWithin(activityTime(x), from, to));
+  const ai = events.filter((x) => x.type === "ai").length;
+  $("#detail-stats").innerHTML = [[events.length,"Events"],[new Set(events.map((x)=>dateKey(x.time))).size,"Active days"],[closet.length,"Closet items"],[outfits.length,"Saved outfits"],[ai,"AI actions"]].map(([value,label])=>`<article><b>${value}</b><span>${label}</span></article>`).join("");
+  $("#detail-activity").innerHTML = events.length ? events.map((item) => `<article class="detail-event"><span>${escapeHtml(item.type.toUpperCase())}</span><div><b>${escapeHtml(item.label)}</b><small>${formatDateTime(item.time)}</small></div></article>`).join("") : '<div class="detail-empty">No activity in this period.</div>';
+  $("#detail-closet").innerHTML = closet.length ? `<div class="detail-closet-grid">${closet.map((item) => `<article><img src="${escapeHtml(item.image || item.imageUrl || "")}" alt="" loading="lazy" /><div><b>${escapeHtml(item.title || "Garment")}</b><span>${escapeHtml([item.category,item.primaryColor,item.laundryStatus].filter(Boolean).join(" · "))}</span><small>Added ${formatDate(activityTime(item))}</small></div></article>`).join("")}</div>` : '<div class="detail-empty">No closet items in this period.</div>';
+  $("#detail-outfits").innerHTML = outfits.length ? outfits.map((outfit) => `<article class="detail-outfit"><div><b>${escapeHtml(outfit.outfit?.title || outfit.title || "Saved outfit")}</b><span>${escapeHtml(outfit.occasion || "No occasion")}</span></div><small>${formatDate(activityTime(outfit))}</small></article>`).join("") : '<div class="detail-empty">No saved outfits in this period.</div>';
+}
+
+function closeUserDetail() { $("#user-detail").classList.add("hidden"); document.body.classList.remove("modal-open"); state.selectedUserId = null; }
+
+function exportUsersCsv() {
+  const columns = ["UID","Name","Email","Gender","City","Profession","Plan","Coupon used","Premium until","Joined","Last activity","Garments","Saved outfits","AI actions"];
+  const rows = state.visibleUsers.map((u) => [u.uid,u.name,u.email,u.gender,u.city,u.profession,u.subscription?.plan || "free",u.subscription?.lastCoupon || "",formatDate(timeOf(u.subscription?.premiumUntil)),formatDate(timeOf(u.createdAt)),formatDate(u.lastActivity),u.garmentCount,u.outfitCount,u.aiCount]);
+  const csv = [columns, ...rows].map((row) => row.map(csvCell).join(",")).join("\r\n");
+  const url = URL.createObjectURL(new Blob(["\ufeff", csv], { type: "text/csv;charset=utf-8" }));
+  const link = document.createElement("a"); link.href = url; link.download = `clothmatics-users-${dateKey(Date.now())}.csv`; link.click(); URL.revokeObjectURL(url);
+}
+
+function csvCell(value) { return `"${String(value ?? "").replace(/"/g, '""')}"`; }
+function startOfDate(value) { return value ? new Date(`${value}T00:00:00`).getTime() : 0; }
+function endOfDate(value) { return value ? new Date(`${value}T23:59:59.999`).getTime() : 0; }
+function dateWithin(time, from, to) { return (!from || time >= from) && (!to || time <= to); }
+function dateKey(ms) { return new Date(ms).toLocaleDateString("en-CA"); }
+function formatDateTime(ms) { return ms ? new Intl.DateTimeFormat(undefined, { dateStyle:"medium", timeStyle:"short" }).format(ms) : "—"; }
+
 function renderBars(target, entries) { const max = Math.max(1, ...entries.map((x) => x[1])); target.innerHTML = entries.map(([label, value]) => `<div class="bar-row"><span title="${escapeHtml(label)}">${escapeHtml(label)}</span><div class="bar-track"><i style="width:${Math.max(value ? 4 : 0, value / max * 100)}%"></i></div><b>${value}</b></div>`).join(""); }
 function countBy(items, keyFn) { return items.reduce((acc, item) => { const key = keyFn(item); acc[key] = (acc[key] || 0) + 1; return acc; }, {}); }
 function timeOf(value) { if (!value) return 0; if (typeof value.toMillis === "function") return value.toMillis(); if (typeof value.seconds === "number") return value.seconds * 1000; const parsed = new Date(value).getTime(); return Number.isFinite(parsed) ? parsed : 0; }
@@ -194,6 +254,18 @@ function escapeHtml(value = "") { const div = document.createElement("div"); div
 $("#refresh-admin").addEventListener("click", loadDashboard);
 $("#admin-signout").addEventListener("click", async () => { await signOut(auth); location.href = "./"; });
 $("#user-search").addEventListener("input", (event) => { const term = event.target.value.trim().toLowerCase(); renderUsers(state.userRows.filter((u) => `${u.name} ${u.email || ""} ${u.uid}`.toLowerCase().includes(term))); });
-$("#activity-filter").addEventListener("change", (event) => renderActivity(event.target.value));
+$("#activity-filter").addEventListener("change", renderActivity);
+$("#activity-from").addEventListener("change", renderActivity);
+$("#activity-to").addEventListener("change", renderActivity);
+$("#clear-activity-dates").addEventListener("click", () => { $("#activity-from").value = ""; $("#activity-to").value = ""; renderActivity(); });
+$("#users-body").addEventListener("click", (event) => { const button = event.target.closest("[data-user-id]"); if (button) openUserDetail(button.dataset.userId); });
+$("#export-users").addEventListener("click", exportUsersCsv);
+$("#close-user-detail").addEventListener("click", closeUserDetail);
+$("#detail-close-button").addEventListener("click", closeUserDetail);
+$("#detail-from").addEventListener("change", renderUserDetail);
+$("#detail-to").addEventListener("change", renderUserDetail);
+$("#detail-clear-dates").addEventListener("click", () => { $("#detail-from").value = ""; $("#detail-to").value = ""; renderUserDetail(); });
+document.addEventListener("keydown", (event) => { if (event.key === "Escape") closeUserDetail(); });
+document.querySelectorAll("[data-detail-tab]").forEach((button) => button.addEventListener("click", () => { document.querySelectorAll("[data-detail-tab]").forEach((x) => x.classList.toggle("active", x === button)); document.querySelectorAll(".detail-view").forEach((x) => x.classList.add("hidden")); $(`#detail-${button.dataset.detailTab}`).classList.remove("hidden"); }));
 $("#coupon-form").addEventListener("submit", createCoupon);
 $("#generate-coupon-code").addEventListener("click", () => { $("#coupon-code").value = generateCouponCode($("#coupon-plan").value); });
