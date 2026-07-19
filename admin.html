@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="theme-color" content="#15112d" />
+    <title>ClothMatics Admin</title>
+    <link rel="icon" type="image/png" href="./assets/clothmatics-logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./admin.css" />
+  </head>
+  <body>
+    <div id="admin-gate" class="admin-gate">
+      <div class="gate-card">
+        <img src="./assets/clothmatics-logo.png" alt="ClothMatics" />
+        <span>SECURE ADMIN</span>
+        <h1>Checking access…</h1>
+        <p id="gate-message">Verifying your Firebase session and administrator claim.</p>
+        <a id="gate-action" class="gate-action hidden" href="./">Return to sign in</a>
+      </div>
+    </div>
+
+    <div id="admin-app" class="admin-shell hidden">
+      <aside class="admin-sidebar">
+        <a class="admin-brand" href="./"><img src="./assets/clothmatics-logo.png" alt="" /><span>ClothMatics<b>Admin</b></span></a>
+        <nav>
+          <a class="active" href="#overview">Overview</a>
+          <a href="#users">Users</a>
+          <a href="#activity">Activity</a>
+          <a href="#services">AI & services</a>
+        </nav>
+        <div class="admin-identity"><span id="admin-initial">C</span><div><b id="admin-name">Administrator</b><small id="admin-email"></small></div></div>
+        <button id="admin-signout">Sign out</button>
+      </aside>
+
+      <main class="admin-main">
+        <header class="admin-header">
+          <div><span>OPERATIONS</span><h1>Activity dashboard</h1><p>Read-only visibility across the ClothMatics platform.</p></div>
+          <div class="header-actions"><span id="last-updated">Not loaded</span><button id="refresh-admin">Refresh data</button></div>
+        </header>
+
+        <div id="admin-error" class="admin-error hidden"></div>
+        <div id="admin-loading" class="admin-loading"><span></span><p>Loading platform activity…</p></div>
+
+        <div id="admin-content" class="hidden">
+          <section id="overview" class="admin-section">
+            <div class="metric-grid">
+              <article><span>TOTAL USERS</span><b id="metric-users">0</b><small id="metric-new-users">0 joined this week</small></article>
+              <article><span>WARDROBE ITEMS</span><b id="metric-garments">0</b><small>across all closets</small></article>
+              <article><span>SAVED OUTFITS</span><b id="metric-outfits">0</b><small>saved combinations</small></article>
+              <article><span>AI ACTIVITY</span><b id="metric-ai">0</b><small>responses and style checks</small></article>
+            </div>
+            <div class="overview-grid">
+              <article class="admin-card"><div class="card-heading"><div><span>ENGAGEMENT</span><h2>Platform usage</h2></div></div><div id="engagement-bars" class="bar-list"></div></article>
+              <article class="admin-card health-card"><div class="card-heading"><div><span>API HEALTH</span><h2>Service reliability</h2></div></div><div class="health-score"><b id="health-rate">—</b><span>successful requests</span></div><div class="health-meta"><p><b id="health-today">0</b><span>calls today</span></p><p><b id="health-latency">—</b><span>avg. response</span></p><p><b id="health-failures">0</b><span>failures</span></p></div></article>
+            </div>
+          </section>
+
+          <section id="users" class="admin-section">
+            <div class="section-title"><div><span>COMMUNITY</span><h2>Users</h2></div><label class="admin-search"><span>Search</span><input id="user-search" type="search" placeholder="Name, email, or UID" /></label></div>
+            <div class="table-wrap"><table><thead><tr><th>User</th><th>Joined</th><th>Garments</th><th>Saved looks</th><th>AI actions</th><th>Last activity</th></tr></thead><tbody id="users-body"></tbody></table><div id="users-empty" class="table-empty hidden">No matching users.</div></div>
+          </section>
+
+          <section id="activity" class="admin-section">
+            <div class="section-title"><div><span>RECENT EVENTS</span><h2>User activity</h2></div><select id="activity-filter"><option value="all">All activity</option><option value="wardrobe">Wardrobe</option><option value="outfit">Outfits</option><option value="ai">AI activity</option><option value="account">Accounts</option></select></div>
+            <div id="activity-feed" class="activity-feed"></div>
+          </section>
+
+          <section id="services" class="admin-section">
+            <div class="section-title"><div><span>INFRASTRUCTURE</span><h2>AI and service usage</h2></div></div>
+            <div class="service-grid"><article class="admin-card"><h3>Providers</h3><div id="provider-bars" class="bar-list compact"></div></article><article class="admin-card"><h3>Models</h3><div id="model-list" class="model-list"></div></article></div>
+          </section>
+        </div>
+      </main>
+    </div>
+    <script type="module" src="./admin.js"></script>
+  </body>
+</html>

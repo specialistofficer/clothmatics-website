@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="description" content="Answers to common questions about ClothMatics accounts, wardrobe access, outfit generation, privacy, and troubleshooting." /><title>FAQ | ClothMatics</title><link rel="icon" type="image/png" href="./assets/clothmatics-logo.png" /><link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin /><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" /><link rel="stylesheet" href="./legal.css" /></head>
+  <body>
+    <header class="legal-header"><a class="legal-brand" href="./"><img src="./assets/clothmatics-logo.png" alt="" />ClothMatics</a><nav><a href="./">Home</a><a href="./privacy.html">Privacy</a><a class="button" href="./">Open wardrobe</a></nav></header>
+    <main><section class="legal-hero"><span class="legal-kicker">HELP CENTER</span><h1>Questions, meet answers.</h1><p>Everything you need to know about your account, digital wardrobe, AI outfits, privacy, and the ClothMatics website.</p></section>
+      <div class="faq-layout"><div class="faq-tools"><input id="faq-search" type="search" placeholder="Search questions…" aria-label="Search frequently asked questions" /></div>
+        <div id="faq-content">
+          <section class="faq-group"><span>GETTING STARTED</span><h2>Account and access</h2>
+            <details class="faq-item"><summary>Can I use the same account on the app and website?</summary><div class="faq-answer"><p>Yes. Sign in with the same Firebase email/password or Google account. Your Firebase user ID connects the website to the wardrobe and saved outfits created in the mobile app.</p></div></details>
+            <details class="faq-item"><summary>Why can’t I sign in with Google?</summary><div class="faq-answer"><p>Allow pop-ups, confirm you are using the same Google account as the app, and try a fresh browser tab. The website domain must also be authorized in Firebase Authentication. If the problem continues, send the displayed Firebase error code to support.</p></div></details>
+            <details class="faq-item"><summary>Does closing the browser sign me out?</summary><div class="faq-answer"><p>No. ClothMatics uses browser-local Firebase session persistence. Use the Sign out button on a shared device.</p></div></details>
+          </section>
+          <section class="faq-group"><span>WARDROBE</span><h2>Your clothes and looks</h2>
+            <details class="faq-item"><summary>Can I add clothes through the website?</summary><div class="faq-answer"><p>No. Website wardrobe access is intentionally read-only. Add, extract, edit, or delete garments through the ClothMatics mobile app.</p></div></details>
+            <details class="faq-item"><summary>Why is my website wardrobe empty?</summary><div class="faq-answer"><p>Make sure you signed in with the same account used in the mobile app. If the account is correct, refresh after confirming that the app finished saving the items.</p></div></details>
+            <details class="faq-item"><summary>Are favorites and saved outfits synchronized?</summary><div class="faq-answer"><p>Yes. The website reads favorites, Lookbook items, and saved outfits from the same Firestore project used by the mobile app.</p></div></details>
+            <details class="faq-item"><summary>Can the website change laundry status?</summary><div class="faq-answer"><p>No. The website can filter and use laundry status while styling, but changes must be made in the mobile app.</p></div></details>
+          </section>
+          <section class="faq-group"><span>AI STYLIST</span><h2>Outfit generation</h2>
+            <details class="faq-item"><summary>How does the web outfit generator work?</summary><div class="faq-answer"><p>Choose an occasion and optional preference. ClothMatics sends relevant wardrobe metadata to a protected Cloudflare server function, which requests one outfit using only item IDs from your wardrobe.</p></div></details>
+            <details class="faq-item"><summary>Does web outfit generation send my garment photos to AI?</summary><div class="faq-answer"><p>No. The website generator sends descriptive metadata such as category, color, material, fit, season, occasion, and laundry status. It does not send garment image bytes.</p></div></details>
+            <details class="faq-item"><summary>Why did the AI choose an unavailable item?</summary><div class="faq-answer"><p>Confirm the laundry status in the mobile app and try again. AI suggestions can be imperfect, so review every recommendation before wearing it.</p></div></details>
+            <details class="faq-item"><summary>Is there a daily generation limit?</summary><div class="faq-answer"><p>A daily web limit may be applied to control cost and prevent abuse. The app may provide different limits depending on your plan.</p></div></details>
+          </section>
+          <section class="faq-group"><span>PRIVACY & SUPPORT</span><h2>Data and help</h2>
+            <details class="faq-item"><summary>Who can see my wardrobe?</summary><div class="faq-answer"><p>Firestore Security Rules restrict normal queries to the authenticated owner. A specifically authorized administrator may access operational data for support, security, and service administration.</p></div></details>
+            <details class="faq-item"><summary>How do I request my data or delete my account?</summary><div class="faq-answer"><p>Email <a href="mailto:chiragsharma376@gmail.com">chiragsharma376@gmail.com</a> from your registered account and use “Privacy Request” in the subject. See the <a href="./privacy.html">Privacy Policy</a> for details.</p></div></details>
+            <details class="faq-item"><summary>Where can I report a problem?</summary><div class="faq-answer"><p>Email <a href="mailto:chiragsharma376@gmail.com">chiragsharma376@gmail.com</a> with your device, browser or app version, the action you attempted, and any visible error code. Never send your password or API keys.</p></div></details>
+          </section>
+        </div><div id="faq-empty" class="faq-empty hidden">No matching questions. Try a different search.</div>
+      </div>
+    </main>
+    <footer class="legal-footer"><span>© 2026 ClothMatics</span><div><a href="./">Home</a><a href="./privacy.html">Privacy</a></div></footer>
+    <script src="./faq.js" defer></script>
+  </body>
+</html>
