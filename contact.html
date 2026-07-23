@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Get help with ClothMatics, report an issue, or submit a privacy request." />
+    <title>Help and Contact | ClothMatics</title>
+    <link rel="icon" type="image/png" href="./assets/clothmatics-logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./legal.css" />
+    <link rel="stylesheet" href="./contact.css" />
+  </head>
+  <body>
+    <header class="legal-header"><a class="legal-brand" href="./"><img src="./assets/clothmatics-logo.png" alt="" />ClothMatics</a><nav><a href="./">Home</a><a href="./faq.html">FAQ</a><a href="./privacy.html">Privacy</a><a class="button" href="./">Open wardrobe</a></nav></header>
+    <main class="support-main">
+      <section class="support-intro"><span class="legal-kicker">HELP AND CONTACT</span><h1>Tell us what went wrong.<br />We’ll help you move forward.</h1><p>Prepare an email with the details below and send it using your preferred email app. Please never include your password, OTP, API keys, or payment information.</p>
+        <div class="support-promises"><span>✓ Direct email support</span><span>✓ No Cloudflare setup required</span><span>✓ Review before sending</span></div>
+      </section>
+      <section class="support-layout">
+        <aside class="support-guide">
+          <span>BEFORE YOU SEND</span><h2>Help us solve it faster</h2>
+          <ol><li><b>Choose the closest category</b><small>This routes the request with useful context.</small></li><li><b>Describe what you expected</b><small>Tell us what happened instead and when.</small></li><li><b>Include app details</b><small>App version and platform help us reproduce technical issues.</small></li></ol>
+          <div><b>Account or privacy request?</b><p>Use the email connected to your ClothMatics account. We may request verification before changing or deleting account data.</p></div>
+        </aside>
+        <div class="support-card">
+          <form id="support-form">
+            <div class="form-heading"><span>CONTACT SUPPORT</span><h2>How can we help?</h2><p>Fields marked with * are required.</p></div>
+            <div class="form-grid">
+              <label>Full name *<input id="support-name" name="name" maxlength="80" autocomplete="name" required /></label>
+              <label>Reply email *<input id="support-email" name="email" type="email" maxlength="160" autocomplete="email" required /></label>
+              <label class="full">Issue category *<select id="support-category" name="category" required><option value="">Choose a category</option><option>Sign-in or account access</option><option>Wardrobe or garment issue</option><option>AI outfit recommendation</option><option>Subscription or coupon</option><option>Planner, wear, or insights</option><option>Closet Quest</option><option>Privacy or data request</option><option>Bug or technical issue</option><option>Feedback or suggestion</option><option>Other</option></select></label>
+              <label class="full">Subject *<input id="support-subject" name="subject" maxlength="120" required placeholder="Short summary of the issue" /></label>
+              <label class="full">What happened? *<textarea id="support-message" name="message" minlength="20" maxlength="4000" required placeholder="What were you trying to do, what did you expect, and what happened instead?"></textarea><small><span id="message-count">0</span>/4000</small></label>
+              <label>Platform<select id="support-platform" name="platform"><option value="">Not specified</option><option>Android</option><option>Website</option><option>Both Android and website</option></select></label>
+              <label>App version<input id="support-version" name="appVersion" maxlength="30" placeholder="e.g. 1.2.0" /></label>
+              <label class="full">Account UID <span>Optional</span><input id="support-uid" name="accountUid" maxlength="160" placeholder="Find this in your ClothMatics profile if available" /></label>
+            </div>
+            <label class="consent-row"><input id="support-consent" type="checkbox" required /><span>I understand that clicking below will open my email app with these details so I can review and send the message.</span></label>
+            <div id="support-error" class="support-error hidden" role="alert"></div>
+            <button id="support-submit" class="support-submit" type="submit">Prepare support email <span>→</span></button>
+            <p class="direct-email">Prefer to write it yourself? <a href="mailto:clothmatics@gmail.com">Email ClothMatics support</a>.</p>
+          </form>
+        </div>
+      </section>
+    </main>
+    <footer class="legal-footer"><span>© 2026 ClothMatics</span><div><a href="./">Home</a><a href="./faq.html">FAQ</a><a href="./privacy.html">Privacy</a></div></footer>
+    <script type="module" src="./contact.js"></script>
+  </body>
+</html>

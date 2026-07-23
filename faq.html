@@ -2,7 +2,7 @@
 <html lang="en">
   <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="description" content="Answers to common questions about ClothMatics accounts, wardrobe access, outfit generation, privacy, and troubleshooting." /><title>FAQ | ClothMatics</title><link rel="icon" type="image/png" href="./assets/clothmatics-logo.png" /><link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin /><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" /><link rel="stylesheet" href="./legal.css" /></head>
   <body>
-    <header class="legal-header"><a class="legal-brand" href="./"><img src="./assets/clothmatics-logo.png" alt="" />ClothMatics</a><nav><a href="./">Home</a><a href="./privacy.html">Privacy</a><a class="button" href="./">Open wardrobe</a></nav></header>
+    <header class="legal-header"><a class="legal-brand" href="./"><img src="./assets/clothmatics-logo.png" alt="" />ClothMatics</a><nav><a href="./">Home</a><a href="./privacy.html">Privacy</a><a href="./contact">Help</a><a class="button" href="./">Open wardrobe</a></nav></header>
     <main><section class="legal-hero"><span class="legal-kicker">HELP CENTER</span><h1>Questions, meet answers.</h1><p>Everything you need to know about your account, digital wardrobe, AI outfits, privacy, and the ClothMatics website.</p></section>
       <div class="faq-layout"><div class="faq-tools"><input id="faq-search" type="search" placeholder="Search questions…" aria-label="Search frequently asked questions" /></div>
         <div id="faq-content">
@@ -21,17 +21,17 @@
             <details class="faq-item"><summary>How does the web outfit generator work?</summary><div class="faq-answer"><p>Choose an occasion and optional preference. ClothMatics sends relevant wardrobe metadata to a protected Cloudflare server function, which requests one outfit using only item IDs from your wardrobe.</p></div></details>
             <details class="faq-item"><summary>Does web outfit generation send my garment photos to AI?</summary><div class="faq-answer"><p>No. The website generator sends descriptive metadata such as category, color, material, fit, season, occasion, and laundry status. It does not send garment image bytes.</p></div></details>
             <details class="faq-item"><summary>Why did the AI choose an unavailable item?</summary><div class="faq-answer"><p>Confirm the laundry status in the mobile app and try again. AI suggestions can be imperfect, so review every recommendation before wearing it.</p></div></details>
-            <details class="faq-item"><summary>Is there a daily generation limit?</summary><div class="faq-answer"><p>A daily web limit may be applied to control cost and prevent abuse. The app may provide different limits depending on your plan.</p></div></details>
+            <details class="faq-item"><summary>Is there a website generation limit?</summary><div class="faq-answer"><p>Each account currently receives one successful outfit recommendation through the website. Continue styling in the mobile app after using it.</p></div></details>
           </section>
           <section class="faq-group"><span>PRIVACY & SUPPORT</span><h2>Data and help</h2>
             <details class="faq-item"><summary>Who can see my wardrobe?</summary><div class="faq-answer"><p>Firestore Security Rules restrict normal queries to the authenticated owner. A specifically authorized administrator may access operational data for support, security, and service administration.</p></div></details>
-            <details class="faq-item"><summary>How do I request my data or delete my account?</summary><div class="faq-answer"><p>Email <a href="mailto:chiragsharma376@gmail.com">chiragsharma376@gmail.com</a> from your registered account and use “Privacy Request” in the subject. See the <a href="./privacy.html">Privacy Policy</a> for details.</p></div></details>
-            <details class="faq-item"><summary>Where can I report a problem?</summary><div class="faq-answer"><p>Email <a href="mailto:chiragsharma376@gmail.com">chiragsharma376@gmail.com</a> with your device, browser or app version, the action you attempted, and any visible error code. Never send your password or API keys.</p></div></details>
+            <details class="faq-item"><summary>How do I request my data or delete my account?</summary><div class="faq-answer"><p>Open the <a href="./contact">Help and Contact form</a>, select “Privacy or data request,” and use the email connected to your ClothMatics account. See the <a href="./privacy.html">Privacy Policy</a> for details.</p></div></details>
+            <details class="faq-item"><summary>Where can I report a problem?</summary><div class="faq-answer"><p>Use the <a href="./contact">Help and Contact form</a> and include your platform, app version, what you attempted, and any visible error code. Never send your password, OTP, API keys, or payment information.</p></div></details>
           </section>
         </div><div id="faq-empty" class="faq-empty hidden">No matching questions. Try a different search.</div>
       </div>
     </main>
-    <footer class="legal-footer"><span>© 2026 ClothMatics</span><div><a href="./">Home</a><a href="./privacy.html">Privacy</a></div></footer>
+    <footer class="legal-footer"><span>© 2026 ClothMatics</span><div><a href="./">Home</a><a href="./privacy.html">Privacy</a><a href="./contact">Help</a></div></footer>
     <script src="./faq.js" defer></script>
   </body>
 </html>
