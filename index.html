@@ -4,7 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#0f1024" />
-    <meta name="description" content="ClothMatics turns the clothes you own into personal, weather-aware outfit ideas." />
+    <meta name="description" content="ClothMatics is an AI wardrobe and outfit planner that organizes the clothes you own, creates personal outfit ideas, tracks wears, and helps you plan looks." />
+    <meta name="robots" content="index,follow,max-image-preview:large" />
+    <link rel="canonical" href="https://clothmatics.pages.dev/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="ClothMatics" />
+    <meta property="og:title" content="ClothMatics — AI wardrobe and personal outfit planner" />
+    <meta property="og:description" content="Organize your digital closet, plan outfits, track wears, and get AI styling ideas based on clothes you already own." />
+    <meta property="og:url" content="https://clothmatics.pages.dev/" />
+    <meta property="og:image" content="https://clothmatics.pages.dev/assets/screenshots/1.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="ClothMatics — AI wardrobe and outfit planner" />
+    <meta name="twitter:description" content="Turn the clothes you own into organized, personal outfit possibilities." />
     <link rel="icon" type="image/png" href="./assets/clothmatics-logo.png" />
     <title>ClothMatics — Your wardrobe, intelligently styled</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -13,6 +24,9 @@
     <link rel="stylesheet" href="./styles.css" />
     <link rel="stylesheet" href="./companion.css" />
     <link rel="stylesheet" href="./brand.css" />
+    <script type="application/ld+json">
+      {"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://clothmatics.pages.dev/#organization","name":"ClothMatics","url":"https://clothmatics.pages.dev/","logo":"https://clothmatics.pages.dev/assets/clothmatics-logo.png"},{"@type":"WebSite","@id":"https://clothmatics.pages.dev/#website","url":"https://clothmatics.pages.dev/","name":"ClothMatics","publisher":{"@id":"https://clothmatics.pages.dev/#organization"}},{"@type":"SoftwareApplication","name":"ClothMatics","url":"https://clothmatics.pages.dev/","applicationCategory":"LifestyleApplication","operatingSystem":"Android, Web","description":"AI wardrobe organizer and personal outfit planner for clothes you already own.","featureList":["Digital wardrobe","Personal outfit recommendations","Outfit planner","Wear history","Cost-per-wear insights","Closet Quest"]}]}
+    </script>
   </head>
   <body>
     <div class="noise"></div>
@@ -134,7 +148,7 @@
       </section>
     </main>
 
-    <footer><a class="brand" href="#top"><img class="brand-logo" src="./assets/clothmatics-logo.png" alt="" /><span>ClothMatics</span></a><p>© <span id="year"></span> ClothMatics. Your wardrobe, intelligently styled.</p><div><a href="./privacy.html">Privacy</a><a href="./faq.html">FAQ</a><a href="#features">Features</a></div></footer>
+    <footer><a class="brand" href="#top"><img class="brand-logo" src="./assets/clothmatics-logo.png" alt="" /><span>ClothMatics</span></a><p>© <span id="year"></span> ClothMatics. Your wardrobe, intelligently styled.</p><div><a href="./photo-guide">Photo guide</a><a href="./privacy.html">Privacy</a><a href="./faq.html">FAQ</a><a href="./contact">Help</a><a href="#features">Features</a></div></footer>
 
     <dialog id="auth-dialog"><button class="dialog-close" id="close-auth" aria-label="Close">×</button><img class="auth-logo" src="./assets/clothmatics-logo.png" alt="ClothMatics" /><span class="app-kicker">WELCOME BACK</span><h2>Open your ClothMatics</h2><p>Use the same account as the mobile app.</p><form id="auth-form"><label>Email<input id="auth-email" type="email" autocomplete="email" required /></label><label>Password<input id="auth-password" type="password" autocomplete="current-password" required /></label><button class="button button-primary" id="email-signin" type="submit">Sign in</button></form><div class="auth-divider"><span>or</span></div><button class="google-button" id="google-signin">G&nbsp;&nbsp; Continue with Google</button><p class="auth-message" id="auth-message"></p></dialog>
     <div class="toast" id="toast"></div>
