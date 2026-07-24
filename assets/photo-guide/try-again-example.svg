@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img" aria-labelledby="title desc">
+  <title id="title">Example of an unsuitable outfit photo</title>
+  <desc id="desc">A dark backlit photo where the person is too close, their head and shoes are cut off, and an object overlaps the outfit.</desc>
+  <defs><linearGradient id="room" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#39334f"/><stop offset="1" stop-color="#777185"/></linearGradient><linearGradient id="window" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#d8d1ff"/></linearGradient></defs>
+  <rect width="800" height="500" rx="28" fill="url(#room)"/>
+  <rect x="510" y="48" width="212" height="270" rx="18" fill="url(#window)" opacity=".92"/><path d="M616 48v270M510 183h212" stroke="#b6aed3" stroke-width="8" opacity=".7"/><circle cx="616" cy="112" r="39" fill="#fff" opacity=".75"/>
+  <path d="M76 120V65h55M669 65h55v55M76 380v55h55M669 435h55v-55" fill="none" stroke="#ff739f" stroke-width="7" stroke-linecap="round"/>
+  <g opacity=".92"><circle cx="290" cy="-9" r="67" fill="#7e6259"/><path d="M174 90c20-52 61-78 116-78 56 0 97 26 117 78l70 257-79 22-44-178v205H226V191l-44 178-79-22z" fill="#29213d"/><path d="M226 316h128l34 228H296l-7-146-10 146h-91z" fill="#171426"/></g>
+  <path d="M390 280h238c31 0 56 25 56 56v164H390z" fill="#625d6b" opacity=".97"/>
+  <g transform="translate(611 42)"><rect width="135" height="42" rx="21" fill="#fff"/><circle cx="23" cy="21" r="12" fill="#d94668"/><path d="m18 16 10 10m0-10L18 26" stroke="#fff" stroke-width="3" stroke-linecap="round"/><text x="44" y="27" font-family="Arial, sans-serif" font-size="14" font-weight="700" fill="#bd3654">RETAKE</text></g>
+</svg>

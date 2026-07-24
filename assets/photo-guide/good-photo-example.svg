@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img" aria-labelledby="title desc">
+  <title id="title">Example of a good full outfit photo</title>
+  <desc id="desc">A person standing straight in bright even light with their complete outfit and shoes visible inside the camera frame.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#eeeaff"/><stop offset="1" stop-color="#fff8fc"/></linearGradient>
+    <linearGradient id="top" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#7657ed"/><stop offset="1" stop-color="#a052d3"/></linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="180%"><feDropShadow dx="0" dy="12" stdDeviation="12" flood-color="#2b1d55" flood-opacity=".16"/></filter>
+  </defs>
+  <rect width="800" height="500" rx="28" fill="url(#bg)"/>
+  <circle cx="118" cy="88" r="58" fill="#fff" opacity=".7"/><circle cx="690" cy="410" r="95" fill="#eadfff" opacity=".65"/>
+  <path d="M76 120V65h55M669 65h55v55M76 380v55h55M669 435h55v-55" fill="none" stroke="#6c63ff" stroke-width="7" stroke-linecap="round"/>
+  <ellipse cx="400" cy="429" rx="112" ry="18" fill="#443875" opacity=".12"/>
+  <g filter="url(#shadow)">
+    <circle cx="400" cy="105" r="39" fill="#d7a07d"/><path d="M363 99c2-34 20-49 40-49 24 0 39 18 37 50-18-7-33-18-43-31-8 16-19 25-34 30z" fill="#27213e"/>
+    <path d="M337 164c14-31 38-45 63-45s50 14 64 45l32 123-42 12-23-90v94h-62v-94l-23 90-42-12z" fill="url(#top)"/>
+    <path d="M369 293h62l17 112h-42l-6-82-7 82h-42z" fill="#292440"/>
+    <path d="M344 397h51v24c-19 10-43 10-67 0 0-13 5-21 16-24zm61 0h51c11 3 16 11 16 24-24 10-48 10-67 0z" fill="#18152a"/>
+    <path d="M378 151h44" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".75"/>
+  </g>
+  <g transform="translate(620 42)"><rect width="126" height="42" rx="21" fill="#fff"/><circle cx="23" cy="21" r="12" fill="#1a9954"/><path d="m17 21 4 4 8-9" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><text x="44" y="27" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#168c4c">READY</text></g>
+</svg>
