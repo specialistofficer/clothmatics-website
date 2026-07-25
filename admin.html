@@ -65,26 +65,28 @@
           <section id="users" class="admin-section">
             <div class="section-title"><div><span>COMMUNITY</span><h2>Users</h2></div><div class="user-tools"><label class="admin-search"><span>Search</span><input id="user-search" type="search" placeholder="Name, email, or UID" /></label><button id="export-users" class="secondary-admin-button">Export CSV</button></div></div>
             <div class="table-wrap"><table><thead><tr><th>User</th><th>Profile</th><th>Plan / coupon</th><th>Joined</th><th>Garments</th><th>Saved looks</th><th>AI actions</th><th>Last activity</th><th></th></tr></thead><tbody id="users-body"></tbody></table><div id="users-empty" class="table-empty hidden">No matching users.</div></div>
+            <div class="pagination" id="users-pagination" aria-label="User list pagination"><button id="users-prev" type="button">Previous</button><span id="users-page-info">Page 1</span><button id="users-next" type="button">Next</button></div>
           </section>
 
           <section id="activity" class="admin-section">
             <div class="section-title"><div><span>RECENT EVENTS</span><h2>User activity</h2></div><div class="activity-filters"><input id="activity-from" type="date" aria-label="Activity from date" /><input id="activity-to" type="date" aria-label="Activity to date" /><select id="activity-filter"><option value="all">All activity</option><option value="wardrobe">Wardrobe</option><option value="outfit">Outfits</option><option value="ai">AI activity</option><option value="account">Accounts</option></select><button id="clear-activity-dates" type="button">Clear dates</button></div></div>
             <div id="activity-summary" class="activity-summary"></div>
             <div id="activity-feed" class="activity-feed"></div>
+            <div class="pagination" id="activity-pagination" aria-label="Activity pagination"><button id="activity-prev" type="button">Previous</button><span id="activity-page-info">Page 1</span><button id="activity-next" type="button">Next</button></div>
           </section>
 
           <section id="services" class="admin-section">
             <div class="section-title"><div><span>INFRASTRUCTURE</span><h2>AI and service usage</h2></div></div>
-            <div class="service-grid"><article class="admin-card"><h3>Providers</h3><div id="provider-bars" class="bar-list compact"></div></article><article class="admin-card"><h3>Models</h3><div id="model-list" class="model-list"></div></article></div>
+            <div class="service-grid"><article class="admin-card"><h3>AI providers and services</h3><p class="service-description">Requests grouped by provider or processing service.</p><div id="provider-bars" class="bar-list compact"></div><h4 class="service-subheading">AI features used</h4><div id="feature-bars" class="bar-list compact"></div></article><article class="admin-card model-card"><h3>Model-level performance</h3><p class="service-description">Calls, reliability, response time, features, and latest use for each recorded model.</p><div id="model-list" class="model-list"></div></article></div>
           </section>
           <section id="coupons" class="admin-section">
             <div class="section-title"><div><span>PREMIUM ACCESS</span><h2>Create coupons</h2></div></div>
             <div class="coupon-layout">
               <form id="coupon-form" class="admin-card coupon-form">
                 <div><h3>New coupon</h3><p>Create a code that grants premium access in the ClothMatics mobile app.</p></div>
-                <label>Plan<select id="coupon-plan"><option value="monthly">Monthly · 30 days</option><option value="yearly">Yearly · 365 days</option></select></label>
+                <label>Plan<select id="coupon-plan"><option value="monthly">Monthly</option><option value="yearly">Yearly</option><option value="custom">Custom campaign</option></select></label>
                 <label>Coupon code <span>Leave blank to generate one</span><div class="coupon-code-row"><input id="coupon-code" maxlength="32" autocomplete="off" placeholder="MONTH-7K4P2Q" /><button id="generate-coupon-code" type="button">Generate</button></div></label>
-                <div class="coupon-fields"><label>Maximum redemptions <span>Optional</span><input id="coupon-max" type="number" min="1" step="1" placeholder="100" /></label><label>Expires after <span>Optional, days</span><input id="coupon-expiry" type="number" min="1" step="1" placeholder="30" /></label></div>
+                <div class="coupon-fields"><label>Premium access <span>Number of days granted</span><input id="coupon-days" type="number" min="1" max="3650" step="1" value="30" required /></label><label>Maximum redemptions <span>Optional</span><input id="coupon-max" type="number" min="1" step="1" placeholder="100" /></label><label>Code expires after <span>Optional, days from creation</span><input id="coupon-expiry" type="number" min="1" step="1" placeholder="30" /></label><label>Campaign label <span>Optional, admin reference</span><input id="coupon-label" maxlength="80" placeholder="Launch promotion" /></label></div>
                 <div id="coupon-message" class="coupon-message hidden" role="status"></div>
                 <button id="create-coupon" class="primary-admin-button" type="submit">Create coupon</button>
               </form>

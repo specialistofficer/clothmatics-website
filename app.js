@@ -219,8 +219,8 @@ function renderSelectedDate() {
   const records = state.wear.filter((x) => x.wearDate === state.selectedDate);
   $("#selected-date-label").textContent = new Date(`${state.selectedDate}T12:00:00`).toLocaleDateString(undefined, { weekday:"long", day:"numeric", month:"long" });
   $("#selected-date-plans").innerHTML = records.length ? records.map((record) => {
-    const items = (record.wardrobeItemIds || []).map((id)=>state.wardrobe.find((x)=>x.id===id)).filter(Boolean);
-    return `<article class="plan-card"><span class="status-pill ${record.status === "worn" ? "worn" : ""}">${escapeHtml(record.status || "planned")}</span><h4>${escapeHtml(record.outfit?.title || record.occasion || "Planned look")}</h4><p>${escapeHtml(record.occasion || "General")}${record.notes ? ` · ${escapeHtml(record.notes)}` : ""}</p><div>${items.slice(0,4).map((item)=>`<button data-item-id="${escapeHtml(item.id)}"><img src="${safeUrl(item.image)}" alt="${escapeHtml(item.title)}"></button>`).join("")}</div>${record.reminderAt ? `<small>Mobile reminder: ${escapeHtml(record.reminderTiming === "evening_before" ? "evening before" : "morning of")}</small>` : ""}</article>`;
+    const items = outfitItems(record);
+    return `<article class="plan-card"><span class="status-pill ${record.status === "worn" ? "worn" : ""}">${escapeHtml(record.status || "planned")}</span><h4>${escapeHtml(record.outfit?.title || record.occasion || "Planned look")}</h4><p>${escapeHtml(record.occasion || "General")}${record.notes ? ` · ${escapeHtml(record.notes)}` : ""}</p><div class="plan-outfit-preview">${items.slice(0,4).map((item)=>`<img src="${safeUrl(item.image)}" alt="${escapeHtml(item.title)}">`).join("")}</div><button class="open-complete-outfit" data-outfit-scope="wear" data-outfit-id="${escapeHtml(record.id)}"><svg aria-hidden="true"><use href="#icon-outfit"></use></svg>Open complete outfit</button>${record.reminderAt ? `<small>Mobile reminder: ${escapeHtml(record.reminderTiming === "evening_before" ? "evening before" : "morning of")}</small>` : ""}</article>`;
   }).join("") : emptyBlock("Nothing planned", "Use the mobile app to plan a look for this date.");
 }
 
@@ -238,8 +238,11 @@ function renderQuest() {
   const best = Math.max(0,...history.map((x)=>Number(x.score?.total||0))), streak = currentStreak(history);
   $("#quest-summary").innerHTML = metricCards([[points,"Total points"],[history.length,"Quests completed"],[best,"Personal best"],[streak,"Day streak"]]);
   const badges = buildBadges(history, points, best, streak);
-  $("#badge-grid").innerHTML = badges.map((badge)=>`<article class="${badge.earned?"earned":"locked"}"><span>${badge.earned?"◆":"◇"}</span><b>${badge.label}</b><small>${badge.detail}</small><em>${badge.earned?"Earned":badge.progress}</em></article>`).join("");
-  $("#quest-history").innerHTML = history.length ? history.map((entry)=>`<article><div><b>${escapeHtml(entry.challengeTitle || entry.challengeSnapshot?.title || "Closet Quest")}</b><span>${formatIsoDate(entry.challengeDateKey)} · ${escapeHtml(entry.challengeSnapshot?.occasion || "")}</span></div><strong>${Number(entry.score?.total||0)}/100<small>+${Number(entry.pointsEarned||0)} points</small></strong></article>`).join("") : emptyBlock("No completed quests yet", "Play Closet Quest in the mobile app to build your history.");
+  $("#badge-grid").innerHTML = badges.map((badge)=>`<article class="${badge.earned?"earned":"locked"}"><span><svg aria-hidden="true"><use href="#icon-${badge.icon}"></use></svg></span><b>${badge.label}</b><small>${badge.detail}</small><em>${badge.earned?"Earned":badge.progress}</em></article>`).join("");
+  $("#quest-history").innerHTML = history.length ? history.map((entry)=>{
+    const items = outfitItems(entry);
+    return `<article class="quest-history-card"><div class="quest-look-preview">${items.slice(0,4).map((item)=>`<img src="${safeUrl(item.image)}" alt="${escapeHtml(item.title)}">`).join("") || '<span class="no-preview">No image</span>'}</div><div class="quest-copy"><b>${escapeHtml(entry.challengeTitle || entry.challengeSnapshot?.title || "Closet Quest")}</b><span>${formatIsoDate(entry.challengeDateKey)} · ${escapeHtml(entry.challengeSnapshot?.occasion || "")}</span><button class="quest-open-look" data-outfit-scope="quest" data-outfit-id="${escapeHtml(entry.id)}">View complete outfit</button></div><strong>${Number(entry.score?.total||0)}/100<small>+${Number(entry.pointsEarned||0)} points</small></strong></article>`;
+  }).join("") : emptyBlock("No completed quests yet", "Play Closet Quest in the mobile app to build your history.");
 }
 
 function renderProfile() {
@@ -255,30 +258,38 @@ function renderHomeInsights() {
   const next = state.wear.filter((x)=>x.status==="planned"&&x.wearDate>=localDateKey(new Date())).sort((a,b)=>a.wearDate.localeCompare(b.wearDate))[0];
   const underused = state.wardrobe.filter((x)=>Number(x.timesWorn||0)===0).length;
   const clean = state.wardrobe.filter((x)=>x.laundryStatus==="Clean").length;
+  const todayItems = outfitItems(state.todayOutfit || {});
+  const nextItems = outfitItems(next || {});
   const cards = [
-    ["Today's outfit", state.todayOutfit?.outfit?.title || state.todayOutfit?.title || "No cached outfit for today"],
-    ["Next planned look", next ? `${formatIsoDate(next.wearDate)} · ${next.outfit?.title || next.occasion || "Planned outfit"}` : "Nothing upcoming"],
-    ["Closet readiness", `${clean} clean garments available`],
-    ["Rediscover", `${underused} garments have no recorded wears`],
-    ["Style Check history", `${state.outfitHistory.length} saved analyses`],
+    { title:"Today's outfit", text:state.todayOutfit?.outfit?.title || state.todayOutfit?.title || "No cached outfit for today", icon:"sparkles", items:todayItems },
+    { title:"Next planned look", text:next ? `${formatIsoDate(next.wearDate)} · ${next.outfit?.title || next.occasion || "Planned outfit"}` : "Nothing upcoming", icon:"calendar", items:nextItems },
+    { title:"Closet readiness", text:`${clean} clean garments available`, icon:"wardrobe" },
+    { title:"Rediscover", text:`${underused} garments have no recorded wears`, icon:"chart" },
+    { title:"Style Check history", text:`${state.outfitHistory.length} saved analyses`, icon:"outfit" },
   ];
-  $("#home-insights").innerHTML = cards.map(([title,text])=>`<article><span>INSIGHT</span><b>${escapeHtml(title)}</b><p>${escapeHtml(text)}</p></article>`).join("");
+  $("#home-insights").innerHTML = cards.map((card)=>`<article class="home-insight-card"><div class="insight-visual">${card.items?.length ? card.items.slice(0,3).map((item)=>`<img src="${safeUrl(item.image)}" alt="">`).join("") : `<svg aria-hidden="true"><use href="#icon-${card.icon}"></use></svg>`}</div><div><span>INSIGHT</span><b>${escapeHtml(card.title)}</b><p>${escapeHtml(card.text)}</p></div></article>`).join("");
 }
 
 $("#wardrobe-search").addEventListener("input", filterWardrobe);
 $("#wardrobe-filter").addEventListener("change", filterWardrobe);
 function filterWardrobe() {
-  const term = $("#wardrobe-search").value.trim().toLowerCase();
+  const terms = searchTokens($("#wardrobe-search").value);
   const filter = $("#wardrobe-filter").value;
   const filtered = state.wardrobe.filter((item) => {
-    const haystack = `${item.title || ""} ${item.category || ""} ${item.primaryColor || ""}`.toLowerCase();
-    return haystack.includes(term) && (filter === "all" || (filter === "favorite" && item.favorite) || (filter === "clean" && item.laundryStatus === "Clean"));
+    const haystack = garmentSearchText(item);
+    const matchesSearch = !terms.length || terms.every((term) => haystack.includes(term) || searchAliases(term).some((alias) => haystack.includes(alias)));
+    return matchesSearch && (filter === "all" || (filter === "favorite" && item.favorite) || (filter === "clean" && item.laundryStatus === "Clean"));
   });
   renderGarments($("#wardrobe-grid"), filtered);
   $("#wardrobe-empty").classList.toggle("hidden", filtered.length > 0);
 }
 
 document.addEventListener("click", (event) => {
+  const outfitTarget = event.target.closest("[data-outfit-scope][data-outfit-id]");
+  if (outfitTarget) {
+    openOutfitDetail(outfitTarget.dataset.outfitScope, outfitTarget.dataset.outfitId);
+    return;
+  }
   const itemTarget = event.target.closest("[data-item-id]");
   if (itemTarget) openGarmentDetail(itemTarget.dataset.itemId);
   const dateTarget = event.target.closest("[data-date]");
@@ -295,6 +306,7 @@ $$("[data-outfit-filter]").forEach((button)=>button.addEventListener("click",()=
 $("#month-prev").addEventListener("click",()=>{ state.calendarDate=new Date(state.calendarDate.getFullYear(),state.calendarDate.getMonth()-1,1); renderCalendar(); });
 $("#month-next").addEventListener("click",()=>{ state.calendarDate=new Date(state.calendarDate.getFullYear(),state.calendarDate.getMonth()+1,1); renderCalendar(); });
 $("#close-garment").addEventListener("click",()=>$("#garment-dialog").close());
+$("#close-outfit").addEventListener("click",()=>$("#outfit-dialog").close());
 
 function openGarmentDetail(id) {
   const item=state.wardrobe.find((x)=>x.id===id);
@@ -302,6 +314,63 @@ function openGarmentDetail(id) {
   const fields=[["Category",item.category],["Subcategory",item.subCategory],["Brand",item.brand],["Primary color",item.primaryColor],["Secondary colors",listText(item.secondaryColors)],["Pattern",item.pattern],["Fit",item.fit],["Material",item.material||item.fabric],["Sleeves",item.sleeveType],["Neckline",item.neckline],["Season",listText(item.season)],["Occasions",listText(item.userOccasions||item.occasion)],["Formality",item.formality],["Laundry",item.laundryStatus],["Times worn",item.timesWorn??0],["Last worn",item.lastWorn?formatIsoDate(item.lastWorn):"Never"],["Purchase year",item.purchaseYear],["Purchase price",item.purchasePrice?formatCurrency(item.purchasePrice):""],["Rating",item.rating?`${item.rating}/5`:""],["AI visibility",item.hiddenFromAI?"Hidden":"Available"],["Background prepared",item.bgRemoved===true?"Yes":item.bgRemoved===false?"No":""],["Tags",listText(item.tags)]];
   $("#garment-detail").innerHTML=`<div class="garment-hero"><img src="${safeUrl(item.image)}" alt="${escapeHtml(item.title||"Garment")}"><div><span class="app-kicker">GARMENT INTELLIGENCE</span><h2>${escapeHtml(item.title||"Untitled garment")}</h2><p>${escapeHtml(item.aiDescription||item.remarks||"Saved in your ClothMatics wardrobe.")}</p><div class="garment-flags">${item.favorite?"<span>Favorite</span>":""}${item.inLookbook||item.type==="lookbook"?"<span>Lookbook</span>":""}${item.userConfirmed?"<span>Confirmed</span>":""}</div></div></div><div class="garment-fields">${fields.filter(([,v])=>v!==""&&v!=null).map(([label,value])=>`<p><span>${escapeHtml(label)}</span><b>${escapeHtml(value)}</b></p>`).join("")}</div><div class="mobile-action-note"><b>Want to change these details?</b><span>Open this garment in the ClothMatics mobile app.</span></div>`;
   $("#garment-dialog").showModal();
+}
+
+function outfitIds(source = {}) {
+  const candidate = source.wardrobeItemIds || source.outfit?.wardrobeItemIds || source.recommendation?.wardrobeItemIds;
+  const direct = Array.isArray(candidate) ? candidate : [];
+  if (direct.length) return direct;
+  const saved = source.outfitId ? state.outfits.find((outfit) => outfit.id === source.outfitId) : null;
+  const savedIds = saved?.wardrobeItemIds || saved?.outfit?.wardrobeItemIds;
+  return Array.isArray(savedIds) ? savedIds : [];
+}
+
+function outfitItems(source = {}) {
+  return outfitIds(source).map((id) => state.wardrobe.find((item) => item.id === id)).filter(Boolean);
+}
+
+function openOutfitDetail(scope, id) {
+  const source = scope === "quest" ? state.challenges.find((entry) => entry.id === id) : state.wear.find((entry) => entry.id === id);
+  if (!source) return;
+  const items = outfitItems(source);
+  const title = source.outfit?.title || source.challengeTitle || source.challengeSnapshot?.title || source.occasion || "Complete outfit";
+  const context = scope === "quest"
+    ? [source.challengeSnapshot?.occasion, source.challengeSnapshot?.mood, `${Number(source.score?.total || 0)}/100`].filter(Boolean).join(" · ")
+    : [formatIsoDate(source.wearDate), source.occasion, pretty(source.status)].filter(Boolean).join(" · ");
+  $("#outfit-detail").innerHTML = `<div class="complete-outfit-head"><span class="app-kicker">${scope === "quest" ? "CLOSET QUEST LOOK" : "PLANNED COMPLETE LOOK"}</span><h2>${escapeHtml(title)}</h2><p>${escapeHtml(context)}</p></div>${items.length ? `<div class="complete-outfit-grid">${items.map((item) => `<article><img src="${safeUrl(item.image)}" alt="${escapeHtml(item.title || "Outfit garment")}"><div><b>${escapeHtml(item.title || "Garment")}</b><span>${escapeHtml([item.primaryColor,item.category].filter(Boolean).join(" · "))}</span></div></article>`).join("")}</div>` : emptyBlock("Outfit images unavailable", "The garment references for this older outfit are no longer in the wardrobe.")}<div class="mobile-action-note"><b>View-only complete outfit</b><span>Use the ClothMatics mobile app to edit this look or change its plan.</span></div>`;
+  $("#outfit-dialog").showModal();
+}
+
+function normalizeSearch(value = "") {
+  return String(value).toLowerCase().replace(/&/g, " and ").replace(/[^a-z0-9]+/g, "");
+}
+
+function searchTokens(value = "") {
+  return String(value).trim().split(/\s+/).map(normalizeSearch).filter(Boolean);
+}
+
+function searchAliases(term) {
+  const groups = [
+    ["tshirt","tshirts","tee","tees","teeshirt","teeshirts"],
+    ["shirt","shirts","buttondown","buttondowns","buttonup"],
+    ["hoodie","hoodies","sweatshirt","sweatshirts"],
+    ["trousers","trouser","pants","pant","slacks"],
+    ["jeans","denim"],
+    ["sneakers","sneaker","trainers","trainer","sportsshoes"],
+    ["footwear","shoes","shoe","sandals","sandal"],
+    ["outerwear","jacket","coat","blazer"],
+    ["onepiece","dress","dresses","jumpsuit","romper"],
+    ["traditionalset","ethnicwear","kurta","kurti","saree","lehenga"],
+  ];
+  const group = groups.find((values) => values.includes(term));
+  return group || [term];
+}
+
+function garmentSearchText(item) {
+  const values = [item.title,item.category,item.subCategory,item.categoryRole,item.layerRole,item.primaryColor,item.secondaryColors,item.pattern,item.fit,item.material,item.fabric,item.sleeveType,item.neckline,item.season,item.occasion,item.userOccasions,item.activitySuitability,item.tags,item.brand,item.aiDescription,item.remarks];
+  const normalized = values.flatMap((value) => Array.isArray(value) ? value : [value]).filter(Boolean).map(normalizeSearch);
+  const expanded = normalized.flatMap((value) => [value, ...searchAliases(value)]);
+  return [...new Set(expanded)].join(" ");
 }
 
 $$('[data-panel]').forEach((button) => button.addEventListener("click", () => openPanel(button.dataset.panel)));
@@ -360,12 +429,12 @@ function pretty(value) { return value?String(value).replace(/_/g," ").replace(/\
 function coverageText(rules) { if(!rules)return ""; return [rules.sleevelessAllowed?"Sleeveless allowed":"No sleeveless",rules.shortsAllowed?"Shorts allowed":"No shorts",rules.fittedAllowed?"Fitted allowed":"No fitted"].join(", "); }
 function currentStreak(history) { const dates=[...new Set(history.map((x)=>x.challengeDateKey).filter(Boolean))].sort().reverse(); if(!dates.length)return 0; const day=(v)=>{const [y,m,d]=v.split("-").map(Number);return Math.floor(Date.UTC(y,m-1,d)/86400000)}; const today=new Date(),now=Math.floor(Date.UTC(today.getFullYear(),today.getMonth(),today.getDate())/86400000); if(now-day(dates[0])>1)return 0; let streak=1; for(let i=1;i<dates.length;i++){if(day(dates[i-1])-day(dates[i])!==1)break;streak++;} return streak; }
 function buildBadges(history,points,best,streak) { return [
-  {label:"First Quest",detail:"Complete your first quest",earned:history.length>=1,progress:`${Math.min(history.length,1)}/1`},
-  {label:"Style Spark",detail:"Earn 250 style points",earned:points>=250,progress:`${Math.min(points,250)}/250`},
-  {label:"On Fire",detail:"Build a 3-day streak",earned:streak>=3,progress:`${Math.min(streak,3)}/3`},
-  {label:"Perfect Week",detail:"Complete seven days",earned:streak>=7,progress:`${Math.min(streak,7)}/7`},
-  {label:"Style Master",detail:"Score 90 or higher",earned:best>=90,progress:`${Math.min(best,90)}/90`},
-  {label:"Quest Legend",detail:"Complete 25 quests",earned:history.length>=25,progress:`${Math.min(history.length,25)}/25`}
+  {label:"First Quest",icon:"outfit",detail:"Complete your first quest",earned:history.length>=1,progress:`${Math.min(history.length,1)}/1`},
+  {label:"Style Spark",icon:"sparkles",detail:"Earn 250 style points",earned:points>=250,progress:`${Math.min(points,250)}/250`},
+  {label:"On Fire",icon:"chart",detail:"Build a 3-day streak",earned:streak>=3,progress:`${Math.min(streak,3)}/3`},
+  {label:"Perfect Week",icon:"calendar",detail:"Complete seven days",earned:streak>=7,progress:`${Math.min(streak,7)}/7`},
+  {label:"Style Master",icon:"award",detail:"Score 90 or higher",earned:best>=90,progress:`${Math.min(best,90)}/90`},
+  {label:"Quest Legend",icon:"shield",detail:"Complete 25 quests",earned:history.length>=25,progress:`${Math.min(history.length,25)}/25`}
 ]; }
 function safeUrl(value="") { try { const url=new URL(value); return ["https:","http:"].includes(url.protocol) ? url.href : ""; } catch { return ""; } }
 function safeAssetUrl(value="") { return /^\.\/assets\/[a-z0-9._-]+$/i.test(value) ? value : ""; }

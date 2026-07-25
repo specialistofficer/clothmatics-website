@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
 import { browserLocalPersistence, getAuth, onAuthStateChanged, setPersistence, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-import { collection, doc, getDoc, getDocs, getFirestore, setDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { collection, doc, getDoc, getDocs, getFirestore, serverTimestamp, setDoc, Timestamp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 import { firebaseConfig } from "./config.js";
 
 const ADMIN_EMAIL = "chiragsharma376@gmail.com";
@@ -10,7 +10,9 @@ const db = getFirestore(app);
 await setPersistence(auth, browserLocalPersistence);
 
 const $ = (selector) => document.querySelector(selector);
-const state = { users: [], activity: [], datasets: {}, userRows: [], visibleUsers: [], selectedUserId: null };
+const state = { users: [], activity: [], datasets: {}, userRows: [], visibleUsers: [], selectedUserId: null, userPage: 1, activityPage: 1 };
+const USER_PAGE_SIZE = 20;
+const ACTIVITY_PAGE_SIZE = 30;
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) return deny("Sign in with the administrator account before opening this page.");
@@ -36,7 +38,7 @@ async function loadDashboard() {
   $("#admin-content").classList.add("hidden");
   $("#admin-error").classList.add("hidden");
   try {
-    const names = ["users", "wardrobe", "savedOutfits", "outfitHistory", "outfitWear", "aiResponses", "coupons"];
+    const names = ["users", "wardrobe", "savedOutfits", "outfitHistory", "outfitWear", "styleChallengeSubmissions", "aiResponses", "coupons"];
     const snapshots = await Promise.all(names.map((name) => getDocs(collection(db, name))));
     state.datasets = Object.fromEntries(names.map((name, i) => [name, snapshots[i].docs.map((doc) => ({ id: doc.id, ...doc.data() }))]));
     const apiSnapshot = await getDocs(collection(db, "analytics", "apiCalls", "logs"));
@@ -61,13 +63,13 @@ function buildDashboard() {
   $("#metric-ai").textContent = d.aiResponses.length + d.outfitHistory.length;
 
   const engagement = [
-    ["Wardrobe", d.wardrobe.length], ["Saved outfits", d.savedOutfits.length], ["Style checks", d.outfitHistory.length], ["Wears logged", d.outfitWear.length], ["AI responses", d.aiResponses.length],
+    ["Wardrobe", d.wardrobe.length], ["Saved outfits", d.savedOutfits.length], ["Style checks", d.outfitHistory.length], ["Wears logged", d.outfitWear.length], ["Closet Quests", d.styleChallengeSubmissions.length], ["AI responses", d.aiResponses.length],
   ];
   renderBars($("#engagement-bars"), engagement);
   renderHealth(d.apiLogs);
   buildUsers();
   buildActivity();
-  renderServices(d.apiLogs);
+  renderServices(d.apiLogs, d.aiResponses);
   renderCoupons(d.coupons);
 }
 
@@ -77,7 +79,7 @@ function renderCoupons(coupons = []) {
   $("#coupon-list").innerHTML = sorted.length ? sorted.map((coupon) => {
     const expires = timeOf(coupon.expiresAt), used = Number(coupon.redeemedCount || 0), cap = Number(coupon.maxRedemptions || 0);
     const status = coupon.active === false ? "Disabled" : expires && expires < Date.now() ? "Expired" : cap && used >= cap ? "Used up" : "Active";
-    return `<div class="coupon-row"><div><b>${escapeHtml(coupon.code || coupon.id)}</b><span>${escapeHtml(coupon.plan || `${coupon.days || 0} days`)} · ${coupon.days || 0} days</span></div><div><b>${used}${cap ? ` / ${cap}` : ""}</b><span>redemptions</span></div><div><b>${expires ? formatDate(expires) : "No expiry"}</b><span class="coupon-status ${status.toLowerCase().replace(" ", "-")}">${status}</span></div></div>`;
+    return `<div class="coupon-row"><div><b>${escapeHtml(coupon.code || coupon.id)}</b><span>${escapeHtml(coupon.plan || "custom")} · ${coupon.days || 0} premium days${coupon.campaignLabel ? ` · ${escapeHtml(coupon.campaignLabel)}` : ""}</span></div><div><b>${used}${cap ? ` / ${cap}` : ""}</b><span>redemptions</span></div><div><b>${expires ? formatDate(expires) : "No expiry"}</b><span class="coupon-status ${status.toLowerCase().replace(" ", "-")}">${status}</span></div></div>`;
   }).join("") : '<div class="table-empty">No coupons have been created yet.</div>';
 }
 
@@ -85,23 +87,26 @@ function generateCouponCode(plan) {
   const alphabet = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
   let body = "";
   for (let i = 0; i < 6; i += 1) body += alphabet[Math.floor(Math.random() * alphabet.length)];
-  return `${plan === "yearly" ? "YEAR" : "MONTH"}-${body}`;
+  return `${plan === "yearly" ? "YEAR" : plan === "custom" ? "CUSTOM" : "MONTH"}-${body}`;
 }
 
 async function createCoupon(event) {
   event.preventDefault();
-  const plan = $("#coupon-plan").value === "yearly" ? "yearly" : "monthly";
+  const plan = ["monthly", "yearly", "custom"].includes($("#coupon-plan").value) ? $("#coupon-plan").value : "monthly";
   const code = ($("#coupon-code").value.trim() || generateCouponCode(plan)).toUpperCase().replace(/[^A-Z0-9-]/g, "");
-  const maxRedemptions = Number($("#coupon-max").value), expiresInDays = Number($("#coupon-expiry").value);
+  const days = Number($("#coupon-days").value), maxRedemptions = Number($("#coupon-max").value), expiresInDays = Number($("#coupon-expiry").value);
+  const campaignLabel = $("#coupon-label").value.trim();
   const button = $("#create-coupon");
   if (!code || code.length < 4) return showCouponMessage("Enter a coupon code with at least four letters or numbers.", true);
+  if (!Number.isInteger(days) || days < 1 || days > 3650) return showCouponMessage("Premium access must be between 1 and 3650 days.", true);
   button.disabled = true; button.textContent = "Creating…"; $("#coupon-message").classList.add("hidden");
   try {
     const ref = doc(db, "coupons", code);
     if ((await getDoc(ref)).exists()) return showCouponMessage(`${code} already exists. Choose another code.`, true);
-    const payload = { code, plan, days: plan === "yearly" ? 365 : 30, active: true, redeemedCount: 0, createdAt: Date.now() };
+    const payload = { code, plan, days, active: true, redeemedCount: 0, createdAt: serverTimestamp() };
     if (Number.isInteger(maxRedemptions) && maxRedemptions > 0) payload.maxRedemptions = maxRedemptions;
-    if (Number.isInteger(expiresInDays) && expiresInDays > 0) payload.expiresAt = Date.now() + expiresInDays * 86400000;
+    if (Number.isInteger(expiresInDays) && expiresInDays > 0) payload.expiresAt = Timestamp.fromMillis(Date.now() + expiresInDays * 86400000);
+    if (campaignLabel) payload.campaignLabel = campaignLabel;
     await setDoc(ref, payload);
     $("#coupon-code").value = code;
     showCouponMessage(`Coupon ${code} was created successfully.`, false);
@@ -120,7 +125,7 @@ function showCouponMessage(text, isError) {
 function buildUsers() {
   const d = state.datasets;
   const latestByUser = new Map();
-  [...d.wardrobe, ...d.savedOutfits, ...d.outfitHistory, ...d.outfitWear, ...d.aiResponses, ...d.apiLogs].forEach((item) => {
+  [...d.wardrobe, ...d.savedOutfits, ...d.outfitHistory, ...d.outfitWear, ...d.styleChallengeSubmissions, ...d.aiResponses, ...d.apiLogs].forEach((item) => {
     if (!item.userId) return;
     const timestamp = activityTime(item);
     if (timestamp > (latestByUser.get(item.userId) || 0)) latestByUser.set(item.userId, timestamp);
@@ -139,12 +144,19 @@ function buildUsers() {
 
 function renderUsers(users) {
   state.visibleUsers = users;
-  $("#users-body").innerHTML = users.map((user) => {
+  const pageCount = Math.max(1, Math.ceil(users.length / USER_PAGE_SIZE));
+  state.userPage = Math.min(Math.max(1, state.userPage), pageCount);
+  const start = (state.userPage - 1) * USER_PAGE_SIZE;
+  const pageUsers = users.slice(start, start + USER_PAGE_SIZE);
+  $("#users-body").innerHTML = pageUsers.map((user) => {
     const subscription = user.subscription || {};
     const profile = [user.gender, user.city, user.profession].filter(Boolean).slice(0, 2).join(" · ") || "Profile incomplete";
     return `<tr><td><div class="user-cell"><span class="user-avatar">${escapeHtml(user.name.charAt(0).toUpperCase())}</span><div><b>${escapeHtml(user.name)}</b><small>${escapeHtml(user.email || "No email")}</small><small title="${escapeHtml(user.uid)}">${escapeHtml(user.uid.slice(0, 12))}…</small></div></div></td><td>${escapeHtml(profile)}</td><td><b>${escapeHtml(subscription.plan || "free")}</b><br><small>${escapeHtml(subscription.lastCoupon || "No code")}</small></td><td>${formatDate(timeOf(user.createdAt))}</td><td>${user.garmentCount}</td><td>${user.outfitCount}</td><td>${user.aiCount}</td><td>${formatRelative(user.lastActivity)}</td><td><button class="view-user" data-user-id="${escapeHtml(user.uid)}">View details</button></td></tr>`;
   }).join("");
   $("#users-empty").classList.toggle("hidden", users.length > 0);
+  $("#users-page-info").textContent = users.length ? `Page ${state.userPage} of ${pageCount} · ${users.length} users` : "No users";
+  $("#users-prev").disabled = state.userPage <= 1;
+  $("#users-next").disabled = state.userPage >= pageCount;
 }
 
 function buildActivity() {
@@ -156,21 +168,38 @@ function buildActivity() {
   d.savedOutfits.forEach((x) => events.push(eventOf("outfit", `Saved ${x.outfit?.title || x.occasion || "an outfit"}`, x, x.createdAt)));
   d.outfitHistory.forEach((x) => events.push(eventOf("ai", "Completed a style check", x, x.createdAt || x.timestamp)));
   d.outfitWear.forEach((x) => events.push(eventOf("outfit", "Logged an outfit wear", x, x.createdAt || x.wornAt || x.date)));
+  d.styleChallengeSubmissions.forEach((x) => events.push(eventOf("outfit", `Completed ${x.challengeTitle || "a Closet Quest"}`, x, x.createdAt)));
   d.aiResponses.forEach((x) => events.push(eventOf("ai", `Generated ${x.feature || x.type || "an AI response"}`, x, x.createdAt || x.timestamp)));
   d.apiLogs.forEach((x) => events.push(eventOf("ai", `${x.type || "API"} request ${x.status || "logged"}`, x, x.timestamp)));
   state.activity = events.filter((x) => x.time).map((x) => { const u = users.get(x.userId) || {}; return { ...x, user: u.fullName || u.displayName || u.email || x.userId || "System" }; }).sort((a, b) => b.time - a.time);
   renderActivity();
 }
 
-function eventOf(type, label, source, timestamp) { return { type, label, userId: source.userId || source.uid || source.id, time: timeOf(timestamp), detail: source.status === "failure" ? source.errorMessage || "Failed request" : "" }; }
+function eventOf(type, label, source, timestamp) {
+  const metadata = [source.feature, source.model, source.provider].filter(Boolean).join(" · ");
+  const failure = source.status === "failure" ? source.errorMessage || "Failed request" : "";
+  return { type, label, userId: source.userId || source.uid || source.id, time: timeOf(timestamp), detail: [metadata, failure].filter(Boolean).join(" · ") };
+}
 function renderActivity() {
   const filter = $("#activity-filter").value;
   const from = startOfDate($("#activity-from").value), to = endOfDate($("#activity-to").value);
   const filtered = state.activity.filter((x) => (filter === "all" || x.type === filter) && (!from || x.time >= from) && (!to || x.time <= to));
-  const items = filtered.slice(0, 100);
+  const pageCount = Math.max(1, Math.ceil(filtered.length / ACTIVITY_PAGE_SIZE));
+  state.activityPage = Math.min(Math.max(1, state.activityPage), pageCount);
+  const start = (state.activityPage - 1) * ACTIVITY_PAGE_SIZE;
+  const items = filtered.slice(start, start + ACTIVITY_PAGE_SIZE);
   $("#activity-summary").innerHTML = `<article><b>${filtered.length}</b><span>events</span></article><article><b>${new Set(filtered.map((x) => x.userId).filter(Boolean)).size}</b><span>active users</span></article><article><b>${new Set(filtered.map((x) => dateKey(x.time))).size}</b><span>active dates</span></article>`;
   const icons = { account: "U", wardrobe: "W", outfit: "O", ai: "AI" };
-  $("#activity-feed").innerHTML = items.length ? items.map((item) => `<article class="activity-item"><span class="activity-icon">${icons[item.type]}</span><div><b>${escapeHtml(item.label)}</b><small>${escapeHtml(item.user)}${item.detail ? ` · ${escapeHtml(item.detail)}` : ""}</small></div><time>${formatRelative(item.time)}</time></article>`).join("") : '<div class="table-empty">No activity is available for this filter.</div>';
+  let previousDate = "";
+  $("#activity-feed").innerHTML = items.length ? items.map((item) => {
+    const day = dateKey(item.time);
+    const heading = day !== previousDate ? `<div class="activity-day"><b>${escapeHtml(formatActivityDay(item.time))}</b><span>${filtered.filter((event) => dateKey(event.time) === day).length} events</span></div>` : "";
+    previousDate = day;
+    return `${heading}<article class="activity-item"><span class="activity-icon">${icons[item.type]}</span><div><b>${escapeHtml(item.label)}</b><small>${escapeHtml(item.user)}${item.detail ? ` · ${escapeHtml(item.detail)}` : ""}</small></div><time title="${escapeHtml(formatDateTime(item.time))}">${formatRelative(item.time)}</time></article>`;
+  }).join("") : '<div class="table-empty">No activity is available for this filter.</div>';
+  $("#activity-page-info").textContent = filtered.length ? `Page ${state.activityPage} of ${pageCount} · ${filtered.length} events` : "No events";
+  $("#activity-prev").disabled = state.activityPage <= 1;
+  $("#activity-next").disabled = state.activityPage >= pageCount;
 }
 
 function renderHealth(logs) {
@@ -185,11 +214,37 @@ function renderHealth(logs) {
   $("#health-failures").textContent = failures;
 }
 
-function renderServices(logs) {
-  const providerCounts = countBy(logs, (x) => x.type || x.provider || "unknown");
-  const modelCounts = countBy(logs.filter((x) => x.model), (x) => `${x.provider || "ai"}/${x.model}`);
-  renderBars($("#provider-bars"), Object.entries(providerCounts));
-  $("#model-list").innerHTML = Object.entries(modelCounts).sort((a, b) => b[1] - a[1]).map(([name, count]) => `<div class="model-row"><span title="${escapeHtml(name)}">${escapeHtml(name)}</span><b>${count}</b></div>`).join("") || '<p class="muted">No model-specific logs yet.</p>';
+function renderServices(logs, responses = []) {
+  const providerCounts = countBy(logs, (x) => x.provider || x.type || "unknown");
+  renderBars($("#provider-bars"), Object.entries(providerCounts).sort((a,b) => b[1] - a[1]));
+  const featureCounts = countBy(responses, (x) => prettyLabel(x.feature || x.type || "Other AI response"));
+  renderBars($("#feature-bars"), Object.entries(featureCounts).sort((a,b) => b[1] - a[1]));
+  const configuredModels = [
+    "primary-gemini/gemini-3.1-flash-lite",
+    "groq/openai/gpt-oss-20b",
+    "groq/qwen/qwen3.6-27b",
+    "groq/openai/gpt-oss-120b",
+    "secondary-gemini/gemini-3.1-flash-lite",
+  ];
+  const modelGroups = new Map(configuredModels.map((name) => [name, []]));
+  logs.forEach((log) => {
+    const model = log.model || "Unspecified model";
+    const provider = log.provider || log.type || "AI service";
+    const key = `${provider}/${model}`;
+    if (!modelGroups.has(key)) modelGroups.set(key, []);
+    modelGroups.get(key).push(log);
+  });
+  $("#model-list").innerHTML = [...modelGroups.entries()].sort((a,b) => b[1].length - a[1].length).map(([name, entries]) => {
+    const success = entries.filter((x) => x.status === "success").length;
+    const failures = entries.filter((x) => x.status === "failure").length;
+    const measured = success + failures;
+    const rate = measured ? `${Math.round(success / measured * 100)}%` : "No data";
+    const latencies = entries.map((x) => Number(x.responseTime ?? x.durationMs ?? x.latencyMs)).filter(Number.isFinite);
+    const average = latencies.length ? `${Math.round(latencies.reduce((sum,value)=>sum+value,0)/latencies.length)} ms` : "Not recorded";
+    const features = [...new Set(entries.map((x)=>x.feature || x.operation || x.endpoint || x.type).filter(Boolean))].slice(0,3).join(", ") || "General AI";
+    const latest = entries.length ? Math.max(...entries.map(activityTime)) : 0;
+    return `<article class="model-performance"><header><div><b>${escapeHtml(name)}</b><span>${escapeHtml(features)}</span></div><strong>${entries.length} calls</strong></header><div><p><b>${escapeHtml(rate)}</b><span>success</span></p><p><b>${failures}</b><span>failures</span></p><p><b>${escapeHtml(average)}</b><span>average response</span></p><p><b>${escapeHtml(latest ? formatRelative(latest) : "Never")}</b><span>last used</span></p></div></article>`;
+  }).join("") || '<p class="muted">No model-specific logs yet. New logs will appear here when they include a model or service name.</p>';
 }
 
 function openUserDetail(userId) {
@@ -242,8 +297,16 @@ function endOfDate(value) { return value ? new Date(`${value}T23:59:59.999`).get
 function dateWithin(time, from, to) { return (!from || time >= from) && (!to || time <= to); }
 function dateKey(ms) { return new Date(ms).toLocaleDateString("en-CA"); }
 function formatDateTime(ms) { return ms ? new Intl.DateTimeFormat(undefined, { dateStyle:"medium", timeStyle:"short" }).format(ms) : "—"; }
+function formatActivityDay(ms) {
+  const date = new Date(ms);
+  const today = new Date(), yesterday = new Date(); yesterday.setDate(today.getDate() - 1);
+  if (dateKey(date.getTime()) === dateKey(today.getTime())) return `Today · ${date.toLocaleDateString(undefined, { day:"numeric", month:"long", year:"numeric" })}`;
+  if (dateKey(date.getTime()) === dateKey(yesterday.getTime())) return `Yesterday · ${date.toLocaleDateString(undefined, { day:"numeric", month:"long", year:"numeric" })}`;
+  return date.toLocaleDateString(undefined, { weekday:"long", day:"numeric", month:"long", year:"numeric" });
+}
 
-function renderBars(target, entries) { const max = Math.max(1, ...entries.map((x) => x[1])); target.innerHTML = entries.map(([label, value]) => `<div class="bar-row"><span title="${escapeHtml(label)}">${escapeHtml(label)}</span><div class="bar-track"><i style="width:${Math.max(value ? 4 : 0, value / max * 100)}%"></i></div><b>${value}</b></div>`).join(""); }
+function renderBars(target, entries) { const max = Math.max(1, ...entries.map((x) => x[1])); target.innerHTML = entries.length ? entries.map(([label, value]) => `<div class="bar-row"><span title="${escapeHtml(label)}">${escapeHtml(label)}</span><div class="bar-track"><i style="width:${Math.max(value ? 4 : 0, value / max * 100)}%"></i></div><b>${value}</b></div>`).join("") : '<p class="muted">No activity recorded yet.</p>'; }
+function prettyLabel(value) { return String(value || "").replace(/[_-]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase()); }
 function countBy(items, keyFn) { return items.reduce((acc, item) => { const key = keyFn(item); acc[key] = (acc[key] || 0) + 1; return acc; }, {}); }
 function timeOf(value) { if (!value) return 0; if (typeof value.toMillis === "function") return value.toMillis(); if (typeof value.seconds === "number") return value.seconds * 1000; const parsed = new Date(value).getTime(); return Number.isFinite(parsed) ? parsed : 0; }
 function activityTime(item) { return timeOf(item.timestamp || item.createdAt || item.updatedAt || item.wornAt || item.date); }
@@ -253,11 +316,15 @@ function escapeHtml(value = "") { const div = document.createElement("div"); div
 
 $("#refresh-admin").addEventListener("click", loadDashboard);
 $("#admin-signout").addEventListener("click", async () => { await signOut(auth); location.href = "./"; });
-$("#user-search").addEventListener("input", (event) => { const term = event.target.value.trim().toLowerCase(); renderUsers(state.userRows.filter((u) => `${u.name} ${u.email || ""} ${u.uid}`.toLowerCase().includes(term))); });
-$("#activity-filter").addEventListener("change", renderActivity);
-$("#activity-from").addEventListener("change", renderActivity);
-$("#activity-to").addEventListener("change", renderActivity);
-$("#clear-activity-dates").addEventListener("click", () => { $("#activity-from").value = ""; $("#activity-to").value = ""; renderActivity(); });
+$("#user-search").addEventListener("input", (event) => { state.userPage = 1; const term = event.target.value.trim().toLowerCase(); renderUsers(state.userRows.filter((u) => `${u.name} ${u.email || ""} ${u.uid}`.toLowerCase().includes(term))); });
+$("#users-prev").addEventListener("click", () => { state.userPage -= 1; renderUsers(state.visibleUsers); });
+$("#users-next").addEventListener("click", () => { state.userPage += 1; renderUsers(state.visibleUsers); });
+$("#activity-filter").addEventListener("change", () => { state.activityPage = 1; renderActivity(); });
+$("#activity-from").addEventListener("change", () => { state.activityPage = 1; renderActivity(); });
+$("#activity-to").addEventListener("change", () => { state.activityPage = 1; renderActivity(); });
+$("#activity-prev").addEventListener("click", () => { state.activityPage -= 1; renderActivity(); });
+$("#activity-next").addEventListener("click", () => { state.activityPage += 1; renderActivity(); });
+$("#clear-activity-dates").addEventListener("click", () => { $("#activity-from").value = ""; $("#activity-to").value = ""; state.activityPage = 1; renderActivity(); });
 $("#users-body").addEventListener("click", (event) => { const button = event.target.closest("[data-user-id]"); if (button) openUserDetail(button.dataset.userId); });
 $("#export-users").addEventListener("click", exportUsersCsv);
 $("#close-user-detail").addEventListener("click", closeUserDetail);
@@ -269,3 +336,8 @@ document.addEventListener("keydown", (event) => { if (event.key === "Escape") cl
 document.querySelectorAll("[data-detail-tab]").forEach((button) => button.addEventListener("click", () => { document.querySelectorAll("[data-detail-tab]").forEach((x) => x.classList.toggle("active", x === button)); document.querySelectorAll(".detail-view").forEach((x) => x.classList.add("hidden")); $(`#detail-${button.dataset.detailTab}`).classList.remove("hidden"); }));
 $("#coupon-form").addEventListener("submit", createCoupon);
 $("#generate-coupon-code").addEventListener("click", () => { $("#coupon-code").value = generateCouponCode($("#coupon-plan").value); });
+$("#coupon-plan").addEventListener("change", () => {
+  const plan = $("#coupon-plan").value;
+  if (plan === "monthly") $("#coupon-days").value = "30";
+  if (plan === "yearly") $("#coupon-days").value = "365";
+});

@@ -125,7 +125,18 @@
     <main id="app-view" class="app-view hidden">
       <aside class="app-sidebar">
         <a class="brand brand-light" href="./" aria-label="ClothMatics home"><img class="brand-logo" src="./assets/clothmatics-logo.png" alt="" /><span>ClothMatics</span></a>
-        <nav><button class="active" data-panel="overview">⌂ <span>Overview</span></button><button data-panel="wardrobe">▦ <span>Wardrobe</span></button><button data-panel="lookbook">◫ <span>Lookbook</span></button><button data-panel="outfits">◇ <span>Outfits</span></button><button data-panel="planner">□ <span>Planner</span></button><button data-panel="insights">↗ <span>Insights</span></button><button data-panel="quest">◆ <span>Closet Quest</span></button><button data-panel="profile">○ <span>Profile</span></button><button data-panel="stylist">✦ <span>AI Stylist</span></button><a id="admin-link" class="hidden" href="./admin.html">A <span>Admin</span></a></nav>
+        <nav>
+          <button class="active" data-panel="overview"><svg class="nav-icon" aria-hidden="true"><use href="#icon-home"></use></svg><span>Overview</span></button>
+          <button data-panel="wardrobe"><svg class="nav-icon" aria-hidden="true"><use href="#icon-wardrobe"></use></svg><span>Wardrobe</span></button>
+          <button data-panel="lookbook"><svg class="nav-icon" aria-hidden="true"><use href="#icon-lookbook"></use></svg><span>Lookbook</span></button>
+          <button data-panel="outfits"><svg class="nav-icon" aria-hidden="true"><use href="#icon-outfit"></use></svg><span>Outfits</span></button>
+          <button data-panel="planner"><svg class="nav-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg><span>Planner</span></button>
+          <button data-panel="insights"><svg class="nav-icon" aria-hidden="true"><use href="#icon-chart"></use></svg><span>Insights</span></button>
+          <button data-panel="quest"><svg class="nav-icon" aria-hidden="true"><use href="#icon-award"></use></svg><span>Closet Quest</span></button>
+          <button data-panel="profile"><svg class="nav-icon" aria-hidden="true"><use href="#icon-user"></use></svg><span>Profile</span></button>
+          <button data-panel="stylist"><svg class="nav-icon" aria-hidden="true"><use href="#icon-sparkles"></use></svg><span>AI Stylist</span></button>
+          <a id="admin-link" class="hidden" href="./admin.html"><svg class="nav-icon" aria-hidden="true"><use href="#icon-shield"></use></svg><span>Admin</span></a>
+        </nav>
         <div class="sidebar-note"><b>Want to update your closet?</b><span>Use the ClothMatics mobile app to add, edit, or remove garments.</span></div>
         <button class="signout" id="signout-button">↗ Sign out</button>
       </aside>
@@ -153,6 +164,19 @@
     <dialog id="auth-dialog"><button class="dialog-close" id="close-auth" aria-label="Close">×</button><img class="auth-logo" src="./assets/clothmatics-logo.png" alt="ClothMatics" /><span class="app-kicker">WELCOME BACK</span><h2>Open your ClothMatics</h2><p>Use the same account as the mobile app.</p><form id="auth-form"><label>Email<input id="auth-email" type="email" autocomplete="email" required /></label><label>Password<input id="auth-password" type="password" autocomplete="current-password" required /></label><button class="button button-primary" id="email-signin" type="submit">Sign in</button></form><div class="auth-divider"><span>or</span></div><button class="google-button" id="google-signin">G&nbsp;&nbsp; Continue with Google</button><p class="auth-message" id="auth-message"></p></dialog>
     <div class="toast" id="toast"></div>
     <dialog id="garment-dialog" class="garment-dialog"><button id="close-garment" class="dialog-close" aria-label="Close">×</button><div id="garment-detail"></div></dialog>
+    <dialog id="outfit-dialog" class="garment-dialog outfit-dialog"><button id="close-outfit" class="dialog-close" aria-label="Close complete outfit">×</button><div id="outfit-detail"></div></dialog>
+    <svg class="svg-sprite" aria-hidden="true">
+      <symbol id="icon-home" viewBox="0 0 24 24"><path d="m3 11 9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></symbol>
+      <symbol id="icon-wardrobe" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M12 3v18M9 12h.01M15 12h.01"/></symbol>
+      <symbol id="icon-lookbook" viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H11v17H6.5A2.5 2.5 0 0 0 4 22zM20 5.5A2.5 2.5 0 0 0 17.5 3H13v17h4.5A2.5 2.5 0 0 1 20 22z"/></symbol>
+      <symbol id="icon-outfit" viewBox="0 0 24 24"><path d="m9 4 3 2 3-2 5 4-3 4-2-1v10H9V11l-2 1-3-4z"/></symbol>
+      <symbol id="icon-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></symbol>
+      <symbol id="icon-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+      <symbol id="icon-award" viewBox="0 0 24 24"><circle cx="12" cy="9" r="6"/><path d="m8 14-2 7 6-3 6 3-2-7"/></symbol>
+      <symbol id="icon-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+      <symbol id="icon-sparkles" viewBox="0 0 24 24"><path d="m12 3 1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6zM19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></symbol>
+      <symbol id="icon-shield" viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.1 7.5 9.5 4.3-1.4 7.5-4.9 7.5-9.5V6z"/><path d="M9 12.5 11 15l4.5-5"/></symbol>
+    </svg>
     <script type="module" src="./app.js"></script>
   </body>
 </html>
