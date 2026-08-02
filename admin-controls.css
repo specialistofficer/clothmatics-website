@@ -1,0 +1,33 @@
+.admin-sidebar nav{min-height:0;overflow-y:auto}
+.ai-control-card{margin-bottom:14px;border-color:#d9d3ff}
+.ai-control-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
+.ai-control-heading span,.detail-security>div:first-child span{color:var(--purple);font-size:9px;font-weight:800;letter-spacing:1.2px}
+.ai-control-heading h3,.detail-security h3{margin:5px 0;font:800 20px Manrope}
+.ai-control-heading p,.detail-security p{margin:0;color:var(--muted);font-size:10px;line-height:1.5}
+.ai-control-heading strong{padding:7px 10px;border-radius:999px;font-size:10px;white-space:nowrap}
+.ai-control-heading strong.enabled{color:#166534;background:#ecfdf3}
+.ai-control-heading strong.disabled{color:#b42318;background:#fff1f2}
+.ai-control-fields{display:grid;grid-template-columns:.45fr 1.55fr;gap:12px;margin-top:16px}
+.ai-control-fields label,.detail-security label{display:grid;gap:6px;font-size:11px;font-weight:800}
+.ai-control-fields input,.detail-security input{min-width:0;padding:11px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.ai-control-actions,.detail-security-actions{display:flex;gap:8px;margin-top:12px}
+.danger-admin-button{padding:13px;border:0;border-radius:12px;color:#fff;background:#d92d20;font-weight:800;cursor:pointer}
+.danger-admin-button.restore{background:#168a48}
+.danger-admin-button:disabled{opacity:.5;cursor:not-allowed}
+#ai-control-message,#detail-security-status{min-height:16px;margin:10px 0 0;font-size:11px}
+#ai-control-message.success,#detail-security-status.success{color:#166534}
+#ai-control-message.error,#detail-security-status.error{color:#b42318}
+.coupon-row{grid-template-columns:1.2fr .55fr .7fr auto!important;align-items:center}
+.coupon-actions{display:flex!important;flex-direction:row!important;gap:6px}
+.coupon-actions button{padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);font-weight:800;cursor:pointer}
+.coupon-actions .delete-coupon{border-color:#fecaca;color:#b42318;background:#fff7f7}
+.coupon-actions button:disabled{opacity:.5;cursor:wait}
+.detail-security{display:grid;grid-template-columns:1.25fr 1fr;align-items:end;gap:13px;margin-top:14px;padding:17px;border:1px solid #d9d3ff;border-radius:17px;background:#fff}
+.detail-security label span{color:var(--muted);font-size:9px;font-weight:500}
+.detail-security-actions{grid-column:1/-1;margin-top:0}
+.detail-security-actions button{flex:1}
+#detail-security-status{grid-column:1/-1;margin:0}
+.user-security-pill{display:inline-flex;margin-top:5px;padding:3px 7px;border-radius:999px;font-size:8px;font-weight:800}
+.user-security-pill.enabled{color:#166534;background:#ecfdf3}
+.user-security-pill.blocked{color:#b42318;background:#fff1f2}
+@media(max-width:700px){.ai-control-fields,.detail-security{grid-template-columns:1fr}.ai-control-heading{flex-direction:column}.ai-control-actions,.detail-security-actions{flex-direction:column}.coupon-row{grid-template-columns:1fr!important}}

@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="./admin.css" />
     <link rel="stylesheet" href="./admin-coupons.css" />
     <link rel="stylesheet" href="./admin-explorer.css" />
+    <link rel="stylesheet" href="./admin-controls.css" />
   </head>
   <body>
     <div id="admin-gate" class="admin-gate">
@@ -31,8 +32,10 @@
         <nav>
           <a class="active" href="#overview">Overview</a>
           <a href="#users">Users</a>
+          <a href="#deletion-requests">Deletion requests</a>
           <a href="#activity">Activity</a>
           <a href="#services">AI & services</a>
+          <a href="#push-campaigns">Push notifications</a>
           <a href="#coupons">Coupons</a>
         </nav>
         <div class="admin-identity"><span id="admin-initial">C</span><div><b id="admin-name">Administrator</b><small id="admin-email"></small></div></div>
@@ -68,6 +71,26 @@
             <div class="pagination" id="users-pagination" aria-label="User list pagination"><button id="users-prev" type="button">Previous</button><span id="users-page-info">Page 1</span><button id="users-next" type="button">Next</button></div>
           </section>
 
+          <section id="deletion-requests" class="admin-section">
+            <div class="section-title">
+              <div><span>PRIVACY OPERATIONS</span><h2>Account deletion requests</h2></div>
+              <b id="deletion-request-count" class="request-count">0 pending</b>
+            </div>
+            <article class="admin-card deletion-notice">
+              Approval permanently removes the Firebase Authentication account,
+              all Firestore data linked to the user, and every image under the
+              user’s R2 upload prefix. This action cannot be undone.
+            </article>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>User</th><th>Requested</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody id="deletion-requests-body"></tbody>
+              </table>
+              <div id="deletion-requests-empty" class="table-empty hidden">No pending deletion requests.</div>
+            </div>
+            <p id="deletion-request-message" class="deletion-request-message hidden" role="status"></p>
+          </section>
+
           <section id="activity" class="admin-section">
             <div class="section-title"><div><span>RECENT EVENTS</span><h2>User activity</h2></div><div class="activity-filters"><input id="activity-from" type="date" aria-label="Activity from date" /><input id="activity-to" type="date" aria-label="Activity to date" /><select id="activity-filter"><option value="all">All activity</option><option value="wardrobe">Wardrobe</option><option value="outfit">Outfits</option><option value="ai">AI activity</option><option value="account">Accounts</option></select><button id="clear-activity-dates" type="button">Clear dates</button></div></div>
             <div id="activity-summary" class="activity-summary"></div>
@@ -77,6 +100,7 @@
 
           <section id="services" class="admin-section">
             <div class="section-title"><div><span>INFRASTRUCTURE</span><h2>AI and service usage</h2></div></div>
+            <article class="admin-card ai-control-card" aria-labelledby="ai-control-title"><div class="ai-control-heading"><div><span>SERVER-ENFORCED SAFETY</span><h3 id="ai-control-title">Global AI controls</h3><p>A user-specific daily limit overrides the global value. Zero blocks AI calls for that user or globally.</p></div><strong id="ai-control-status">Loading…</strong></div><div class="ai-control-fields"><label>Default calls per user per day<input id="global-ai-limit" type="number" min="0" max="10000" step="1" value="5"></label><label>Message shown while AI is disabled<input id="global-ai-message" maxlength="240" value="AI features are temporarily unavailable. Please try again later."></label></div><div class="ai-control-actions"><button id="save-enable-ai" type="button" class="primary-admin-button">Save and enable AI</button><button id="kill-all-ai" type="button" class="danger-admin-button">Disable all app AI</button></div><p id="ai-control-message" role="status"></p></article>
             <div class="service-grid"><article class="admin-card"><h3>AI providers and services</h3><p class="service-description">Requests grouped by provider or processing service.</p><div id="provider-bars" class="bar-list compact"></div><h4 class="service-subheading">AI features used</h4><div id="feature-bars" class="bar-list compact"></div></article><article class="admin-card model-card"><h3>Model-level performance</h3><p class="service-description">Calls, reliability, response time, features, and latest use for each recorded model.</p><div id="model-list" class="model-list"></div></article></div>
           </section>
           <section id="coupons" class="admin-section">
@@ -101,6 +125,7 @@
       <section class="detail-panel">
         <header class="detail-header"><div><span>USER EXPLORER</span><h2 id="detail-user-name">User details</h2><p id="detail-user-email"></p></div><button id="detail-close-button" aria-label="Close">×</button></header>
         <div id="detail-profile" class="detail-profile"></div>
+        <form id="detail-security" class="detail-security"><div><span>ACCOUNT SECURITY</span><h3>User access and AI limits</h3><p>These controls are enforced by Firebase Authentication and the shared mobile AI quota function.</p></div><label>Daily AI calls <span>Blank uses global limit; zero blocks AI for this user</span><input id="detail-ai-limit" type="number" min="0" max="10000" step="1" placeholder="Use global limit"></label><div class="detail-security-actions"><button id="save-user-security" type="submit" class="primary-admin-button">Save AI limit</button><button id="toggle-user-login" type="button" class="danger-admin-button">Block user login</button></div><p id="detail-security-status" role="status"></p></form>
         <div class="detail-stats" id="detail-stats"></div>
         <div class="detail-date-tools"><b>Activity period</b><input id="detail-from" type="date" /><input id="detail-to" type="date" /><button id="detail-clear-dates">All time</button></div>
         <nav class="detail-tabs"><button class="active" data-detail-tab="activity">Activity</button><button data-detail-tab="closet">Closet</button><button data-detail-tab="outfits">Saved outfits</button></nav>

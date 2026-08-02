@@ -20,6 +20,19 @@ test("admin AI drafting is claim-gated and delivery remains explicit",async()=>{
   assert.match(endpoint,/hasAdminClaim\(identity\)/);assert.match(endpoint,/GATEWAY_URL/);assert.doesNotMatch(endpoint,/pushCampaigns|setDoc|addDoc/);
   assert.doesNotMatch(admin,/deleteDoc\(doc\(db,"pushCampaigns"/);
 });
+test("admin operational controls reuse server-enforced mobile contracts",async()=>{
+  const admin=await readFile(new URL("admin.js",root),"utf8");
+  const html=await readFile(new URL("admin.html",root),"utf8");
+  assert.match(admin,/httpsCallable\(functions, "setUserSecurityControls"\)/);
+  assert.match(admin,/doc\(db, "appConfig", "aiControls"\)/);
+  assert.match(admin,/data-toggle-coupon/);
+  assert.match(admin,/deleteDoc\(doc\(db, "coupons", code\)\)/);
+  assert.match(admin,/knownUserIds\.has\(userId\)/);
+  assert.match(html,/href="#push-campaigns">Push notifications/);
+  assert.match(html,/id="kill-all-ai"/);
+  assert.match(html,/id="detail-ai-limit"/);
+  assert.match(html,/id="toggle-user-login"/);
+});
 test("public deletion form calls the authenticated deletion callable",async()=>{
   const html=await readFile(new URL("contact.html",root),"utf8");
   const contact=await readFile(new URL("contact.js",root),"utf8");

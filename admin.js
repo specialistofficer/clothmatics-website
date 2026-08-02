@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
 import { browserLocalPersistence, getAuth, onAuthStateChanged, setPersistence, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-import { collection, doc, getDoc, getDocs, getFirestore, serverTimestamp, setDoc, Timestamp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { collection, deleteDoc, doc, getDoc, getDocs, getFirestore, serverTimestamp, setDoc, Timestamp, updateDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-functions.js";
 import { firebaseConfig } from "./config.js";
 
@@ -12,6 +12,7 @@ const functions = getFunctions(app, "us-central1");
 const reviewAccountDeletion = httpsCallable(functions, "reviewAccountDeletion");
 const deletePushCampaign = httpsCallable(functions, "deletePushCampaign");
 const estimatePushCampaignReach = httpsCallable(functions, "estimatePushCampaignReach");
+const setUserSecurityControls = httpsCallable(functions, "setUserSecurityControls");
 const UPLOAD_WORKER_URL = "https://clothmatics-upload-worker.chiragsharma376.workers.dev";
 await setPersistence(auth, browserLocalPersistence);
 
@@ -22,7 +23,7 @@ const ACTIVITY_PAGE_SIZE = 30;
 installAdminEnhancements();
 
 function installAdminEnhancements(){
-  $(".admin-sidebar nav")?.insertAdjacentHTML("beforeend",'<a href="#push-campaigns">Push campaigns</a>');
+  if (!$('.admin-sidebar nav a[href="#push-campaigns"]')) $(".admin-sidebar nav")?.insertAdjacentHTML("beforeend",'<a href="#push-campaigns">Push notifications</a>');
   $("#overview .overview-grid")?.insertAdjacentHTML("beforeend",'<article class="admin-card"><div class="card-heading"><div><span>ATTRIBUTED SHARING</span><h2>Share performance</h2></div></div><div id="share-metrics" class="health-meta"></div></article>');
   $("#admin-content")?.insertAdjacentHTML("beforeend",`<section id="push-campaigns" class="admin-section"><div class="section-title"><div><span>MOBILE ENGAGEMENT</span><h2>Push campaigns</h2><p>Draft with Gemini only when you choose. Generation never queues, schedules, sends, or changes the audience.</p></div></div><div class="push-layout"><form id="push-form" class="admin-card push-form"><div class="push-copy-grid"><label>Title <span id="push-title-count">0/55</span><input id="push-title" maxlength="55" required></label><label>Body <span id="push-body-count">0/140</span><textarea id="push-body" maxlength="140" required></textarea></label></div><label>Public HTTPS image<input id="push-image" type="url" placeholder="https://…"></label><details class="push-ai-assistant"><summary>Gemini draft assistant <span>Admin only</span></summary><div class="push-ai-body"><label>Campaign brief<textarea id="push-ai-brief" maxlength="1200" placeholder="Describe the goal, offer, tone, and any wording to avoid."></textarea></label><div class="push-ai-options"><label>Language<select id="push-ai-language"><option>English</option><option>Hinglish</option><option>Hindi</option></select></label><label class="check-row"><input id="push-ai-image" type="checkbox"> Create optional notification art</label></div><button id="push-ai-generate" type="button" class="primary-admin-button">Generate draft only</button><p id="push-ai-message" role="status"></p><div id="push-ai-results" class="push-ai-results hidden"><div id="push-ai-alternatives"></div><p id="push-ai-rationale"></p><figure id="push-ai-art" class="hidden"><img id="push-ai-preview" alt="Generated garment-only notification artwork preview"><figcaption>Preview only. The image uploads only when you explicitly test or queue this campaign.</figcaption><button id="push-ai-remove-image" type="button">Remove image</button></figure></div></div></details><div class="push-notification-preview"><span>PREVIEW</span><img id="push-live-image" class="hidden" alt="Notification artwork preview"><div><b id="push-live-title">Notification title</b><p id="push-live-body">Notification body</p></div></div><label>Channel<select id="push-channel"><option value="announcements">Announcements</option><option value="daily_outfit">Daily outfit</option><option value="wardrobe_activity">Wardrobe activity</option><option value="style_challenges">Style challenges</option><option value="subscription">Subscription</option></select></label><label>Audience<select id="push-audience"><option value="all">All eligible users</option><option value="free">Free</option><option value="subscribed">Subscribed</option><option value="inactive">Inactive</option><option value="small_wardrobe">Small wardrobe</option><option value="daily_ready">Daily ready</option><option value="specific">Specific user</option></select></label><label>Specific UID<input id="push-specific-uid" maxlength="160"></label><label>Destination<select id="push-destination"><option value="Main">Home</option><option value="OutfitCalendar">Outfit Calendar</option><option value="WeeklyClosetReport">Weekly Closet Report</option><option value="SmartPurchaseCheck">Smart Purchase Check</option><option value="StyleChallengeHub">Closet Quest</option><option value="TripPacking">Trip Packing</option></select></label><label>Festival campaign ID <span>admin campaign data only</span><input id="push-festival" maxlength="120"></label><label>Festival name<input id="push-festival-name" maxlength="80"></label><label>Festival mode ID<input id="push-festival-mode" maxlength="80"></label><label>Festival delivery<select id="push-festival-delivery"><option value="notification">Notification only — opens Home</option><option value="personal_outfit">Personal outfit on open — opens mobile AI Stylist</option></select></label><label>Schedule (your browser time)<input id="push-schedule" type="datetime-local"></label><p id="push-ist">Send now. Scheduled times are stored as an absolute timestamp.</p><label class="check-row"><input id="push-bypass" type="checkbox"> Bypass the normal frequency cap</label><div class="reach-row"><button id="push-reach" type="button">Preview eligible reach</button><div id="push-reach-result" role="status"></div></div><div class="card-actions"><button type="submit" class="primary-admin-button">Queue campaign</button><button id="push-test" type="button">Test on my device</button></div><p id="push-message" role="status"></p></form><article class="admin-card"><details open><summary><span>DELIVERY</span> Campaign history</summary><div id="push-list" class="push-list"></div></details></article></div></section>`);
   $("#push-form")?.addEventListener("submit",event=>savePushCampaign(event,false));
@@ -78,7 +79,7 @@ async function loadDashboard() {
   $("#admin-content").classList.add("hidden");
   $("#admin-error").classList.add("hidden");
   try {
-    const names = ["users", "wardrobe", "savedOutfits", "outfitHistory", "outfitWear", "styleChallengeSubmissions", "aiResponses", "coupons", "accountDeletionRequests", "pushCampaigns", "festivalCampaigns", "shareLinks", "shareAttribution"];
+    const names = ["users", "wardrobe", "savedOutfits", "outfitHistory", "outfitWear", "styleChallengeSubmissions", "aiResponses", "coupons", "accountDeletionRequests", "pushCampaigns", "festivalCampaigns", "shareLinks", "shareAttribution", "appConfig"];
     const snapshots = await Promise.all(names.map((name) => getDocs(collection(db, name)).catch((error)=>{console.warn(`Optional admin collection ${name} unavailable`,error.code);return{docs:[]}})));
     state.datasets = Object.fromEntries(names.map((name, i) => [name, snapshots[i].docs.map((doc) => ({ id: doc.id, ...doc.data() }))]));
     const apiSnapshot = await getDocs(collection(db, "analytics", "apiCalls", "logs"));
@@ -110,6 +111,7 @@ function buildDashboard() {
   buildUsers();
   buildActivity();
   renderServices(d.apiLogs, d.aiResponses);
+  renderAiControls(d.appConfig?.find((entry) => entry.id === "aiControls") || {});
   renderCoupons(d.coupons);
   renderDeletionRequests(d.accountDeletionRequests, d.users);
   renderPushCampaigns(d.pushCampaigns||[]);
@@ -192,8 +194,36 @@ function renderCoupons(coupons = []) {
   $("#coupon-list").innerHTML = sorted.length ? sorted.map((coupon) => {
     const expires = timeOf(coupon.expiresAt), used = Number(coupon.redeemedCount || 0), cap = Number(coupon.maxRedemptions || 0);
     const status = coupon.active === false ? "Disabled" : expires && expires < Date.now() ? "Expired" : cap && used >= cap ? "Used up" : "Active";
-    return `<div class="coupon-row"><div><b>${escapeHtml(coupon.code || coupon.id)}</b><span>${escapeHtml(coupon.plan || "custom")} · ${coupon.days || 0} premium days${coupon.campaignLabel ? ` · ${escapeHtml(coupon.campaignLabel)}` : ""}</span></div><div><b>${used}${cap ? ` / ${cap}` : ""}</b><span>redemptions</span></div><div><b>${expires ? formatDate(expires) : "No expiry"}</b><span class="coupon-status ${status.toLowerCase().replace(" ", "-")}">${status}</span></div></div>`;
+    return `<div class="coupon-row"><div><b>${escapeHtml(coupon.code || coupon.id)}</b><span>${escapeHtml(coupon.plan || "custom")} · ${coupon.days || 0} premium days${coupon.campaignLabel ? ` · ${escapeHtml(coupon.campaignLabel)}` : ""}</span></div><div><b>${used}${cap ? ` / ${cap}` : ""}</b><span>redemptions</span></div><div><b>${expires ? formatDate(expires) : "No expiry"}</b><span class="coupon-status ${status.toLowerCase().replace(" ", "-")}">${status}</span></div><div class="coupon-actions"><button type="button" data-toggle-coupon="${escapeHtml(coupon.id)}" data-coupon-active="${coupon.active !== false}">${coupon.active === false ? "Enable" : "Disable"}</button><button type="button" class="delete-coupon" data-delete-coupon="${escapeHtml(coupon.id)}">Delete</button></div></div>`;
   }).join("") : '<div class="table-empty">No coupons have been created yet.</div>';
+}
+
+async function handleCouponAction(event) {
+  const toggle = event.target.closest("[data-toggle-coupon]");
+  const remove = event.target.closest("[data-delete-coupon]");
+  if (!toggle && !remove) return;
+  const button = toggle || remove, code = toggle?.dataset.toggleCoupon || remove.dataset.deleteCoupon;
+  const coupon = state.datasets.coupons.find((entry) => entry.id === code);
+  if (!coupon) return;
+  button.disabled = true;
+  try {
+    if (toggle) {
+      const active = toggle.dataset.couponActive !== "true";
+      await updateDoc(doc(db, "coupons", code), { active, updatedAt:serverTimestamp(), updatedBy:auth.currentUser.uid });
+      showCouponMessage(`${code} is now ${active ? "enabled" : "disabled"}.`, false);
+    } else {
+      const used = Number(coupon.redeemedCount || 0);
+      const warning = used > 0
+        ? `${code} has ${used} redemption${used === 1 ? "" : "s"}. Deleting it will not revoke premium time already granted. Delete the code permanently?`
+        : `Delete coupon ${code} permanently? This cannot be undone.`;
+      if (!confirm(warning)) return;
+      await deleteDoc(doc(db, "coupons", code));
+      showCouponMessage(`Coupon ${code} was permanently deleted.`, false);
+    }
+    await loadDashboard();
+  } catch (error) {
+    showCouponMessage(`Coupon could not be updated: ${error.message}`, true);
+  } finally { button.disabled = false; }
 }
 
 function generateCouponCode(plan) {
@@ -264,7 +294,7 @@ function renderUsers(users) {
   $("#users-body").innerHTML = pageUsers.map((user) => {
     const subscription = user.subscription || {};
     const profile = [user.gender, user.city, user.profession].filter(Boolean).slice(0, 2).join(" · ") || "Profile incomplete";
-    return `<tr><td><div class="user-cell"><span class="user-avatar">${escapeHtml(user.name.charAt(0).toUpperCase())}</span><div><b>${escapeHtml(user.name)}</b><small>${escapeHtml(user.email || "No email")}</small><small title="${escapeHtml(user.uid)}">${escapeHtml(user.uid.slice(0, 12))}…</small></div></div></td><td>${escapeHtml(profile)}</td><td><b>${escapeHtml(subscription.plan || "free")}</b><br><small>${escapeHtml(subscription.lastCoupon || "No code")}</small></td><td>${formatDate(timeOf(user.createdAt))}</td><td>${user.garmentCount}</td><td>${user.outfitCount}</td><td>${user.aiCount}</td><td>${formatRelative(user.lastActivity)}</td><td><button class="view-user" data-user-id="${escapeHtml(user.uid)}">View details</button></td></tr>`;
+    return `<tr><td><div class="user-cell"><span class="user-avatar">${escapeHtml(user.name.charAt(0).toUpperCase())}</span><div><b>${escapeHtml(user.name)}</b><small>${escapeHtml(user.email || "No email")}</small><small title="${escapeHtml(user.uid)}">${escapeHtml(user.uid.slice(0, 12))}…</small></div></div></td><td>${escapeHtml(profile)}<br><span class="user-security-pill ${user.loginBlocked === true ? "blocked" : "enabled"}">${user.loginBlocked === true ? "Login blocked" : "Login enabled"}</span></td><td><b>${escapeHtml(subscription.plan || "free")}</b><br><small>${escapeHtml(subscription.lastCoupon || "No code")}</small><br><small>AI/day: ${Number.isFinite(Number(user.aiDailyLimit)) ? Number(user.aiDailyLimit) : "global"}</small></td><td>${formatDate(timeOf(user.createdAt))}</td><td>${user.garmentCount}</td><td>${user.outfitCount}</td><td>${user.aiCount}</td><td>${formatRelative(user.lastActivity)}</td><td><button class="view-user" data-user-id="${escapeHtml(user.uid)}">Manage</button></td></tr>`;
   }).join("");
   $("#users-empty").classList.toggle("hidden", users.length > 0);
   $("#users-page-info").textContent = users.length ? `Page ${state.userPage} of ${pageCount} · ${users.length} users` : "No users";
@@ -291,7 +321,7 @@ function buildActivity() {
 function eventOf(type, label, source, timestamp) {
   const metadata = [source.feature, source.model, source.provider].filter(Boolean).join(" · ");
   const failure = source.status === "failure" ? source.errorMessage || "Failed request" : "";
-  return { type, label, userId: source.userId || source.uid || source.id, time: timeOf(timestamp), detail: [metadata, failure].filter(Boolean).join(" · ") };
+  return { type, label, userId: source.userId || source.uid || (type === "account" ? source.id : ""), time: timeOf(timestamp), detail: [metadata, failure].filter(Boolean).join(" · ") };
 }
 function renderActivity() {
   const filter = $("#activity-filter").value;
@@ -301,7 +331,9 @@ function renderActivity() {
   state.activityPage = Math.min(Math.max(1, state.activityPage), pageCount);
   const start = (state.activityPage - 1) * ACTIVITY_PAGE_SIZE;
   const items = filtered.slice(start, start + ACTIVITY_PAGE_SIZE);
-  $("#activity-summary").innerHTML = `<article><b>${filtered.length}</b><span>events</span></article><article><b>${new Set(filtered.map((x) => x.userId).filter(Boolean)).size}</b><span>active users</span></article><article><b>${new Set(filtered.map((x) => dateKey(x.time))).size}</b><span>active dates</span></article>`;
+  const knownUserIds = new Set(state.datasets.users.map((user) => user.id));
+  const activeUsers = new Set(filtered.map((item) => item.userId).filter((userId) => knownUserIds.has(userId))).size;
+  $("#activity-summary").innerHTML = `<article><b>${filtered.length}</b><span>events</span></article><article><b>${activeUsers}</b><span>active registered users</span></article><article><b>${new Set(filtered.map((x) => dateKey(x.time))).size}</b><span>active dates</span></article>`;
   const icons = { account: "U", wardrobe: "W", outfit: "O", ai: "AI" };
   let previousDate = "";
   $("#activity-feed").innerHTML = items.length ? items.map((item) => {
@@ -325,6 +357,42 @@ function renderHealth(logs) {
   $("#health-today").textContent = logs.filter((x) => activityTime(x) >= today.getTime()).length;
   $("#health-latency").textContent = latencies.length ? `${Math.round(latencies.reduce((a, b) => a + b, 0) / latencies.length)} ms` : "—";
   $("#health-failures").textContent = failures;
+}
+
+function renderAiControls(controls = {}) {
+  const killSwitch = controls.killSwitch === true;
+  $("#global-ai-limit").value = String(Math.max(0, Math.floor(Number(controls.defaultDailyLimit ?? 5))));
+  $("#global-ai-message").value = String(controls.message || "AI features are temporarily unavailable. Please try again later.");
+  const status = $("#ai-control-status");
+  status.textContent = killSwitch ? "AI disabled globally" : "AI enabled";
+  status.className = killSwitch ? "disabled" : "enabled";
+}
+
+async function saveAiControls(killSwitch) {
+  const limit = Math.floor(Number($("#global-ai-limit").value));
+  const message = $("#global-ai-message").value.trim() || "AI features are temporarily unavailable. Please try again later.";
+  const target = $("#ai-control-message");
+  if (!Number.isFinite(limit) || limit < 0 || limit > 10000) {
+    target.textContent = "The global daily limit must be between 0 and 10,000.";
+    target.className = "error";
+    return;
+  }
+  if (killSwitch && !confirm("Disable every server-enforced AI call in the ClothMatics app? Existing saved data is not affected.")) return;
+  const buttons = [$('button#save-enable-ai'), $('button#kill-all-ai')];
+  buttons.forEach((button) => { button.disabled = true; });
+  try {
+    await setDoc(doc(db, "appConfig", "aiControls"), { killSwitch, defaultDailyLimit:limit, message, updatedAt:serverTimestamp(), updatedBy:auth.currentUser.uid }, { merge:true });
+    const existing = state.datasets.appConfig || [];
+    const index = existing.findIndex((entry) => entry.id === "aiControls");
+    const next = { id:"aiControls", killSwitch, defaultDailyLimit:limit, message };
+    if (index >= 0) existing[index] = { ...existing[index], ...next }; else existing.push(next);
+    renderAiControls(next);
+    target.textContent = killSwitch ? "All app AI calls are now disabled by the shared server control." : `AI is enabled with a default limit of ${limit} calls per user per day.`;
+    target.className = "success";
+  } catch (error) {
+    target.textContent = `AI controls could not be updated: ${error.message}`;
+    target.className = "error";
+  } finally { buttons.forEach((button) => { button.disabled = false; }); }
 }
 
 function renderServices(logs, responses = []) {
@@ -371,9 +439,17 @@ function openUserDetail(userId) {
   const fields = [
     ["Gender", user.gender], ["City", user.city], ["Profession", user.profession], ["Height", user.height ? `${user.height} cm` : ""],
     ["Body type", user.bodyType || analysis.bodyType], ["Skin tone", user.skinTone || analysis.skinTone], ["Hair color", analysis.hairColor],
-    ["Plan", subscription.plan || "free"], ["Coupon used", subscription.lastCoupon || "No coupon"], ["Premium until", formatDate(timeOf(subscription.premiumUntil))], ["Joined", formatDate(timeOf(user.createdAt))], ["Last activity", formatDate(user.lastActivity)],
+    ["Plan", subscription.plan || "free"], ["Coupon used", subscription.lastCoupon || "No coupon"], ["Premium until", formatDate(timeOf(subscription.premiumUntil))], ["Login", user.loginBlocked === true ? "Blocked" : "Enabled"], ["AI daily limit", Number.isFinite(Number(user.aiDailyLimit)) ? String(user.aiDailyLimit) : "Global default"], ["Joined", formatDate(timeOf(user.createdAt))], ["Last activity", formatDate(user.lastActivity)],
   ];
   $("#detail-profile").innerHTML = fields.map(([label, value]) => `<p><span>${escapeHtml(label)}</span><b>${escapeHtml(value || "—")}</b></p>`).join("");
+  $("#detail-ai-limit").value = Number.isFinite(Number(user.aiDailyLimit)) ? String(user.aiDailyLimit) : "";
+  const loginButton = $("#toggle-user-login");
+  loginButton.textContent = user.loginBlocked === true ? "Unblock user login" : "Block user login";
+  loginButton.classList.toggle("restore", user.loginBlocked === true);
+  loginButton.disabled = user.uid === auth.currentUser?.uid;
+  $("#save-user-security").disabled = user.uid === auth.currentUser?.uid;
+  $("#detail-security-status").textContent = user.uid === auth.currentUser?.uid ? "The current administrator account cannot be blocked from this screen." : "";
+  $("#detail-security-status").className = "";
   renderUserDetail();
   $("#user-detail").classList.remove("hidden");
   document.body.classList.add("modal-open");
@@ -395,6 +471,42 @@ function renderUserDetail() {
 }
 
 function closeUserDetail() { $("#user-detail").classList.add("hidden"); document.body.classList.remove("modal-open"); state.selectedUserId = null; }
+
+async function saveSelectedUserSecurity(event, forcedLoginBlocked) {
+  event?.preventDefault();
+  const user = state.userRows.find((entry) => entry.uid === state.selectedUserId);
+  if (!user) return;
+  if (user.uid === auth.currentUser?.uid) return;
+  const rawLimit = $("#detail-ai-limit").value.trim();
+  const aiDailyLimit = rawLimit === "" ? null : Math.floor(Number(rawLimit));
+  if (rawLimit !== "" && (!Number.isFinite(aiDailyLimit) || aiDailyLimit < 0 || aiDailyLimit > 10000)) {
+    $("#detail-security-status").textContent = "Daily AI calls must be blank or between 0 and 10,000.";
+    $("#detail-security-status").className = "error";
+    return;
+  }
+  const loginBlocked = typeof forcedLoginBlocked === "boolean" ? forcedLoginBlocked : user.loginBlocked === true;
+  if (loginBlocked !== (user.loginBlocked === true) && !confirm(loginBlocked
+    ? `Block login for ${user.email || user.name}? Firebase sessions will be revoked immediately.`
+    : `Restore login access for ${user.email || user.name}?`)) return;
+  const buttons = [$("#save-user-security"), $("#toggle-user-login")];
+  buttons.forEach((button) => { button.disabled = true; });
+  try {
+    await setUserSecurityControls({ userId:user.uid, loginBlocked, aiDailyLimit });
+    user.loginBlocked = loginBlocked;
+    if (aiDailyLimit === null) delete user.aiDailyLimit; else user.aiDailyLimit = aiDailyLimit;
+    const datasetUser = state.datasets.users.find((entry) => entry.id === user.uid);
+    if (datasetUser) { datasetUser.loginBlocked = loginBlocked; if (aiDailyLimit === null) delete datasetUser.aiDailyLimit; else datasetUser.aiDailyLimit = aiDailyLimit; }
+    renderUsers(state.visibleUsers);
+    openUserDetail(user.uid);
+    $("#detail-security-status").textContent = loginBlocked
+      ? "Login blocked and existing Firebase sessions revoked."
+      : aiDailyLimit === null ? "Login enabled. This user now follows the global AI limit." : `Login enabled. Daily AI limit set to ${aiDailyLimit}.`;
+    $("#detail-security-status").className = "success";
+  } catch (error) {
+    $("#detail-security-status").textContent = `User controls could not be saved: ${error.message}`;
+    $("#detail-security-status").className = "error";
+  } finally { buttons.forEach((button) => { button.disabled = false; }); }
+}
 
 function exportUsersCsv() {
   const columns = ["UID","Name","Email","Gender","City","Profession","Plan","Coupon used","Premium until","Joined","Last activity","Garments","Saved outfits","AI actions"];
@@ -451,9 +563,14 @@ $("#detail-close-button").addEventListener("click", closeUserDetail);
 $("#detail-from").addEventListener("change", renderUserDetail);
 $("#detail-to").addEventListener("change", renderUserDetail);
 $("#detail-clear-dates").addEventListener("click", () => { $("#detail-from").value = ""; $("#detail-to").value = ""; renderUserDetail(); });
+$("#detail-security").addEventListener("submit", (event) => saveSelectedUserSecurity(event));
+$("#toggle-user-login").addEventListener("click", () => { const user=state.userRows.find((entry)=>entry.uid===state.selectedUserId); if(user) saveSelectedUserSecurity(null, user.loginBlocked !== true); });
 document.addEventListener("keydown", (event) => { if (event.key === "Escape") closeUserDetail(); });
 document.querySelectorAll("[data-detail-tab]").forEach((button) => button.addEventListener("click", () => { document.querySelectorAll("[data-detail-tab]").forEach((x) => x.classList.toggle("active", x === button)); document.querySelectorAll(".detail-view").forEach((x) => x.classList.add("hidden")); $(`#detail-${button.dataset.detailTab}`).classList.remove("hidden"); }));
 $("#coupon-form").addEventListener("submit", createCoupon);
+$("#coupon-list").addEventListener("click", handleCouponAction);
+$("#save-enable-ai").addEventListener("click", () => saveAiControls(false));
+$("#kill-all-ai").addEventListener("click", () => saveAiControls(true));
 $("#generate-coupon-code").addEventListener("click", () => { $("#coupon-code").value = generateCouponCode($("#coupon-plan").value); });
 $("#coupon-plan").addEventListener("change", () => {
   const plan = $("#coupon-plan").value;
