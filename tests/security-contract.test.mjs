@@ -9,6 +9,8 @@ test("ordinary web users have no AI endpoint or user-facing AI route",async()=>{
   assert.doesNotMatch(app,/\/api\/(generate-outfit|smart-purchase)/);
   assert.doesNotMatch(app,/Festival Stylist|panel-stylist|isTrustedPremiumClient/);
   assert.doesNotMatch(html,/data-panel="(?:stylist|festival)"|panel-stylist/);
+  assert.match(html,/<symbol id="icon-bag"/);
+  assert.match(html,/data-panel="purchase"[\s\S]*?href="#icon-bag"/);
   await assert.rejects(access(new URL("functions/api/generate-outfit.js",root)));
   await assert.rejects(access(new URL("functions/api/smart-purchase.js",root)));
 });
@@ -28,7 +30,7 @@ test("admin operational controls reuse server-enforced mobile contracts",async()
   assert.match(admin,/data-toggle-coupon/);
   assert.match(admin,/deleteDoc\(doc\(db, "coupons", code\)\)/);
   assert.match(admin,/knownUserIds\.has\(userId\)/);
-  assert.match(html,/href="#push-campaigns">Push notifications/);
+  assert.match(html,/href="#push-campaigns">[\s\S]*?<span>Push notifications<\/span>/);
   assert.match(html,/id="kill-all-ai"/);
   assert.match(html,/id="detail-ai-limit"/);
   assert.match(html,/id="toggle-user-login"/);

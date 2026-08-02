@@ -31,3 +31,112 @@
 .user-security-pill.enabled{color:#166534;background:#ecfdf3}
 .user-security-pill.blocked{color:#b42318;background:#fff1f2}
 @media(max-width:700px){.ai-control-fields,.detail-security{grid-template-columns:1fr}.ai-control-heading{flex-direction:column}.ai-control-actions,.detail-security-actions{flex-direction:column}.coupon-row{grid-template-columns:1fr!important}}
+
+/* Admin workspace layout */
+html,body{max-width:100%;overflow-x:hidden}
+.admin-shell{grid-template-columns:260px minmax(0,1fr);align-items:start}
+.admin-sidebar{width:260px;min-width:0;padding:24px 18px 20px;overflow:hidden}
+.admin-sidebar nav{gap:5px;margin-top:34px;padding-right:4px;scrollbar-width:thin;scrollbar-color:#ffffff24 transparent}
+.admin-sidebar nav a{display:flex;align-items:center;gap:12px;min-height:45px;padding:11px 13px;font-size:12px;line-height:1.2}
+.admin-sidebar nav a svg,.admin-sidebar>button svg{width:19px;height:19px;flex:0 0 19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.admin-sidebar nav a.active svg{color:#cfcaff}
+.admin-sidebar>button{display:flex;align-items:center;gap:11px;margin-top:10px;padding:10px 13px;border-radius:10px;font-size:11px}
+.admin-sidebar>button:hover{color:#fff;background:#ffffff0d}
+.admin-main{width:100%;max-width:1640px;min-width:0;margin:0 auto;padding:30px clamp(20px,3vw,46px) 72px}
+.admin-content,.admin-section,.admin-card,.table-wrap{min-width:0}
+.admin-header{position:relative;align-items:flex-start;padding-bottom:23px;border-bottom:1px solid var(--line)}
+.admin-header h1{font-size:clamp(27px,2.5vw,36px)}
+.header-actions{flex-wrap:wrap;justify-content:flex-end}
+.metric-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.metric-grid article{min-width:0;padding:19px}
+.overview-grid{grid-template-columns:minmax(0,1.35fr) minmax(280px,.65fr);align-items:stretch}
+.overview-grid>.admin-card:nth-child(n+3){grid-column:1/-1}
+.service-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.section-title{align-items:flex-end;flex-wrap:wrap}
+.section-title>div:first-child{min-width:220px}
+.section-title p{max-width:760px;margin:7px 0 0;color:var(--muted);line-height:1.55}
+.user-tools,.activity-filters{max-width:100%;justify-content:flex-end}
+.table-wrap{width:100%;max-width:100%;overflow:auto;overscroll-behavior-inline:contain;scrollbar-width:thin;scrollbar-color:#c9c3dd transparent}
+.table-wrap table{min-width:980px}
+#deletion-requests .table-wrap table{min-width:720px}
+.activity-feed{max-width:100%;overflow:hidden}
+.coupon-layout{grid-template-columns:minmax(330px,420px) minmax(0,1fr)}
+.coupon-list-card{overflow:hidden}
+.coupon-list{max-height:680px;overflow:auto;scrollbar-width:thin}
+.coupon-row{grid-template-columns:minmax(150px,1.2fr) minmax(80px,.55fr) minmax(100px,.7fr) auto!important}
+.push-layout{grid-template-columns:minmax(390px,560px) minmax(0,1fr);align-items:start}
+.push-layout>.admin-card{min-width:0}
+.push-list{max-height:780px;padding-right:3px}
+.push-row{min-width:0;overflow:hidden}
+.push-row header,.push-row .card-actions{flex-wrap:wrap}
+.detail-panel{max-width:880px}
+
+@media(max-width:1240px){
+  .admin-shell{grid-template-columns:220px minmax(0,1fr)}
+  .admin-sidebar{width:220px;padding-inline:14px}
+  .admin-main{padding-inline:24px}
+  .metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .coupon-layout,.push-layout{grid-template-columns:1fr}
+}
+
+@media(max-width:1050px){
+  .admin-shell{grid-template-columns:86px minmax(0,1fr)}
+  .admin-sidebar{width:86px;padding-inline:12px}
+  .admin-brand span,.admin-sidebar nav a span,.admin-identity div,.admin-sidebar>button span{display:none}
+  .admin-brand{justify-content:center}
+  .admin-sidebar nav a{justify-content:center;padding-inline:10px;font-size:0}
+  .admin-sidebar nav a::first-letter{font-size:0}
+  .admin-sidebar nav a svg{width:21px;height:21px;flex-basis:21px}
+  .admin-identity{justify-content:center;padding:8px}
+  .admin-sidebar>button{justify-content:center}
+  .overview-grid,.service-grid{grid-template-columns:1fr}
+  .overview-grid>.admin-card:nth-child(n+3){grid-column:auto}
+}
+
+@media(max-width:820px){
+  .admin-shell{display:block}
+  .admin-sidebar{position:sticky;top:0;z-index:60;width:100%;height:auto;min-height:70px;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid #ffffff16}
+  .admin-brand{justify-content:flex-start}
+  .admin-brand img{width:40px;height:40px}
+  .admin-brand span{display:flex;font-size:15px}
+  .admin-sidebar nav{display:flex;flex-direction:row;gap:5px;margin:0;padding:0 2px 3px;overflow-x:auto;overflow-y:hidden}
+  .admin-sidebar nav a{flex:0 0 auto;min-height:44px;justify-content:flex-start;padding:10px 12px;font-size:11px}
+  .admin-sidebar nav a span{display:inline}
+  .admin-sidebar nav a::first-letter{font-size:inherit}
+  .admin-sidebar nav a svg{width:18px;height:18px;flex-basis:18px}
+  .admin-identity,.admin-sidebar>button{display:none}
+  .admin-main{padding:24px 16px 58px}
+  .admin-header{margin-bottom:22px}
+  .header-actions{width:100%;justify-content:space-between}
+  .activity-filters{justify-content:flex-start}
+}
+
+@media(max-width:620px){
+  .admin-sidebar{grid-template-columns:1fr;padding-bottom:8px}
+  .admin-brand span{display:flex}
+  .admin-sidebar nav{margin-inline:-4px}
+  .admin-header{flex-direction:column;gap:16px}
+  .metric-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .metric-grid article{padding:15px 13px}
+  .metric-grid b{font-size:26px}
+  .section-title{align-items:flex-start;flex-direction:column}
+  .user-tools,.activity-filters{width:100%;justify-content:flex-start}
+  .admin-search{flex:1;min-width:210px}
+  .activity-filters input,.activity-filters select,.activity-filters button{flex:1 1 135px;min-width:0}
+  .activity-summary{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .ai-control-actions,.detail-security-actions{align-items:stretch}
+  .coupon-code-row{grid-template-columns:minmax(0,1fr) auto}
+  .push-notification-preview{align-items:flex-start;flex-wrap:wrap}
+  .push-notification-preview img{width:100%}
+  .push-row .health-meta{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .detail-panel{padding:18px 14px}
+  .detail-profile{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .detail-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+@media(max-width:400px){
+  .activity-summary{grid-template-columns:1fr}
+  .admin-main{padding-inline:12px}
+  .header-actions{align-items:stretch;flex-direction:column}
+  .header-actions button{width:100%}
+}
