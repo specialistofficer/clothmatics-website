@@ -1,18 +1,41 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
 import { browserLocalPersistence, getAuth, onAuthStateChanged, setPersistence, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { collection, doc, getDoc, getDocs, getFirestore, serverTimestamp, setDoc, Timestamp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-functions.js";
 import { firebaseConfig } from "./config.js";
 
 const ADMIN_EMAIL = "chiragsharma376@gmail.com";
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const functions = getFunctions(app, "us-central1");
+const reviewAccountDeletion = httpsCallable(functions, "reviewAccountDeletion");
+const deletePushCampaign = httpsCallable(functions, "deletePushCampaign");
+const UPLOAD_WORKER_URL = "https://clothmatics-upload-worker.chiragsharma376.workers.dev";
 await setPersistence(auth, browserLocalPersistence);
 
 const $ = (selector) => document.querySelector(selector);
 const state = { users: [], activity: [], datasets: {}, userRows: [], visibleUsers: [], selectedUserId: null, userPage: 1, activityPage: 1 };
 const USER_PAGE_SIZE = 20;
 const ACTIVITY_PAGE_SIZE = 30;
+installAdminEnhancements();
+
+function installAdminEnhancements(){
+  $(".admin-sidebar nav")?.insertAdjacentHTML("beforeend",'<a href="#push-campaigns">Push campaigns</a>');
+  $("#overview .overview-grid")?.insertAdjacentHTML("beforeend",'<article class="admin-card"><div class="card-heading"><div><span>ATTRIBUTED SHARING</span><h2>Share performance</h2></div></div><div id="share-metrics" class="health-meta"></div></article>');
+  $("#admin-content")?.insertAdjacentHTML("beforeend",`<section id="push-campaigns" class="admin-section"><div class="section-title"><div><span>MOBILE ENGAGEMENT</span><h2>Push campaigns</h2><p>All users means eligible registered mobile devices; permission, channel settings, valid tokens, and frequency rules still apply.</p></div></div><div class="push-layout"><form id="push-form" class="admin-card push-form"><label>Title<input id="push-title" maxlength="80" required></label><label>Body<textarea id="push-body" maxlength="240" required></textarea></label><label>Public HTTPS image<input id="push-image" type="url" placeholder="https://…"></label><label>Channel<select id="push-channel"><option value="announcements">Announcements</option><option value="daily_outfit">Daily outfit</option><option value="wardrobe_activity">Wardrobe activity</option><option value="style_challenges">Style challenges</option><option value="subscription">Subscription</option></select></label><label>Audience<select id="push-audience"><option value="all">All eligible users</option><option value="free">Free</option><option value="subscribed">Subscribed</option><option value="inactive">Inactive</option><option value="small_wardrobe">Small wardrobe</option><option value="daily_ready">Daily ready</option><option value="specific">Specific user</option></select></label><label>Specific UID<input id="push-specific-uid" maxlength="160"></label><label>Destination<select id="push-destination"><option value="Main">Home</option><option value="FestivalStylist">Festival Stylist</option><option value="OutfitCalendar">Outfit Calendar</option><option value="WeeklyClosetReport">Weekly Closet Report</option><option value="SmartPurchaseCheck">Smart Purchase Check</option><option value="StyleChallengeHub">Closet Quest</option><option value="TripPacking">Trip Packing</option></select></label><label>Festival campaign ID<input id="push-festival" maxlength="120"></label><label>Schedule (your browser time)<input id="push-schedule" type="datetime-local"></label><p id="push-ist">Send now. Scheduled times are stored as an absolute timestamp.</p><label class="check-row"><input id="push-bypass" type="checkbox"> Reach every eligible device (bypasses normal 24-hour suppression; channel opt-out and invalid-token checks still apply)</label><div class="card-actions"><button type="submit" class="primary-admin-button">Queue campaign</button><button id="push-test" type="button">Test to my registered device</button></div><p id="push-message" role="status"></p></form><article class="admin-card"><div class="card-heading"><div><span>DELIVERY</span><h2>Campaign history</h2></div></div><div id="push-list" class="push-list"></div></article></div></section>`);
+  $("#push-form")?.addEventListener("submit",event=>savePushCampaign(event,false));
+  $("#push-test")?.addEventListener("click",event=>savePushCampaign(event,true));
+  $("#push-schedule")?.addEventListener("input",renderIstSchedule);
+  $("#push-list")?.addEventListener("click",handlePushListAction);
+}
+
+function renderShareMetrics(links,attribution){const cards=links.length,clicks=links.reduce((sum,x)=>sum+Number(x.clickCount||x.clicks||0),0),installs=attribution.filter(x=>x.activated===true||x.event==="activated_install").length,rate=cards?Math.round(clicks/cards*100):0;$("#share-metrics").innerHTML=`<p><b>${cards}</b><span>cards shared</span></p><p><b>${clicks}</b><span>clicks</span></p><p><b>${rate}%</b><span>click rate</span></p><p><b>${installs}</b><span>activated installs</span></p>`}
+function renderIstSchedule(){const value=$("#push-schedule").value;if(!value)return $("#push-ist").textContent="Send now. Scheduled times are stored as an absolute timestamp.";const date=new Date(value);$("#push-ist").textContent=`Will run at ${date.toLocaleString("en-IN",{timeZone:"Asia/Kolkata",dateStyle:"medium",timeStyle:"short"})} IST (${date.toISOString()}).`}
+function pushPayload(test=false){const scheduled=$("#push-schedule").value?new Date($("#push-schedule").value):null;const audience=$("#push-audience").value;return{title:$("#push-title").value.trim(),body:$("#push-body").value.trim(),imageUrl:$("#push-image").value.trim(),channel:$("#push-channel").value,audience:test?"specific":audience,audienceFilter:{type:test?"specific":audience,userIds:test?[auth.currentUser.uid]:audience==="specific"?[$("#push-specific-uid").value.trim()].filter(Boolean):[]},destination:$("#push-destination").value,festivalCampaignId:$("#push-festival").value.trim()||null,bypassFrequencyCap:test?true:$("#push-bypass").checked,status:scheduled&&!test?"scheduled":"queued",scheduledFor:scheduled&&!test?Timestamp.fromDate(scheduled):null,payload:{title:$("#push-title").value.trim(),body:$("#push-body").value.trim(),imageUrl:$("#push-image").value.trim()||null,route:$("#push-destination").value,festivalCampaignId:$("#push-festival").value.trim()||null},createdBy:auth.currentUser.uid,createdAt:serverTimestamp(),updatedAt:serverTimestamp()}}
+async function savePushCampaign(event,test){event.preventDefault();const data=pushPayload(test);if(!data.title||!data.body)return $("#push-message").textContent="Title and body are required.";if(data.imageUrl&&!/^https:\/\//i.test(data.imageUrl))return $("#push-message").textContent="Image must use a public HTTPS URL.";if(data.audience==="specific"&&!data.audienceFilter.userIds.length)return $("#push-message").textContent="Enter the target UID.";const button=test?$("#push-test"):$("#push-form [type=submit]");button.disabled=true;try{const ref=doc(collection(db,"pushCampaigns"));await setDoc(ref,data);$("#push-message").textContent=test?"Test campaign queued for your registered mobile device.":"Campaign queued for Firebase Functions processing.";await loadDashboard()}catch(error){$("#push-message").textContent=`Could not queue campaign: ${error.message}`}finally{button.disabled=false}}
+function renderPushCampaigns(campaigns){const sorted=[...campaigns].sort((a,b)=>timeOf(b.createdAt)-timeOf(a.createdAt));$("#push-list").innerHTML=sorted.length?sorted.map(c=>`<article class="push-row"><header><div><b>${escapeHtml(c.title||c.payload?.title||"Untitled campaign")}</b><span>${escapeHtml(c.status||"queued")} · ${escapeHtml(c.channel||"announcements")}</span></div><small>${c.scheduledFor?`Scheduled ${formatDateTime(timeOf(c.scheduledFor))}`:formatDateTime(timeOf(c.createdAt))}</small></header><p>${escapeHtml(c.body||c.payload?.body||"")}</p><div class="health-meta"><p><b>${Number(c.uniqueTargetedUsers||0)}</b><span>users</span></p><p><b>${Number(c.deviceTargets||c.targetedDevices||0)}</b><span>devices</span></p><p><b>${Number(c.sent||0)}</b><span>sent</span></p><p><b>${Number(c.failed||0)}</b><span>failed</span></p><p><b>${Number(c.opened||0)}</b><span>opened</span></p></div>${c.skippedReasons?`<small>Skipped: ${escapeHtml(JSON.stringify(c.skippedReasons))}</small>`:""}${c.fcmFailureReasons?`<small>FCM failures: ${escapeHtml(JSON.stringify(c.fcmFailureReasons))}</small>`:""}${c.processingError?`<small>Error: ${escapeHtml(c.processingError)}</small>`:""}<div class="card-actions"><button data-reuse-push="${escapeHtml(c.id)}">Reuse</button><button data-delete-push="${escapeHtml(c.id)}">Delete safely</button></div></article>`).join(""):'<p class="muted">No mobile push campaigns yet.</p>'}
+async function handlePushListAction(event){const reuse=event.target.closest("[data-reuse-push]"),remove=event.target.closest("[data-delete-push]");if(reuse){const c=state.datasets.pushCampaigns.find(x=>x.id===reuse.dataset.reusePush);if(!c)return;$("#push-title").value=c.title||c.payload?.title||"";$("#push-body").value=c.body||c.payload?.body||"";$("#push-image").value=c.imageUrl||c.payload?.imageUrl||"";$("#push-channel").value=c.channel||"announcements";$("#push-audience").value=c.audience||c.audienceFilter?.type||"all";$("#push-destination").value=c.destination||c.payload?.route||"Main";$("#push-festival").value=c.festivalCampaignId||c.payload?.festivalCampaignId||"";$("#push-schedule").value="";$("#push-bypass").checked=false;renderIstSchedule();$("#push-message").textContent="Campaign copied. The old schedule was cleared; choose a new time or send now.";location.hash="push-campaigns"}if(remove){if(!confirm("Delete this campaign through the protected Firebase callable?"))return;try{await deletePushCampaign({campaignId:remove.dataset.deletePush});await loadDashboard()}catch(error){alert(`Could not delete campaign: ${error.message}`)}}}
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) return deny("Sign in with the administrator account before opening this page.");
@@ -38,8 +61,8 @@ async function loadDashboard() {
   $("#admin-content").classList.add("hidden");
   $("#admin-error").classList.add("hidden");
   try {
-    const names = ["users", "wardrobe", "savedOutfits", "outfitHistory", "outfitWear", "styleChallengeSubmissions", "aiResponses", "coupons"];
-    const snapshots = await Promise.all(names.map((name) => getDocs(collection(db, name))));
+    const names = ["users", "wardrobe", "savedOutfits", "outfitHistory", "outfitWear", "styleChallengeSubmissions", "aiResponses", "coupons", "accountDeletionRequests", "pushCampaigns", "shareLinks", "shareAttribution"];
+    const snapshots = await Promise.all(names.map((name) => getDocs(collection(db, name)).catch((error)=>{console.warn(`Optional admin collection ${name} unavailable`,error.code);return{docs:[]}})));
     state.datasets = Object.fromEntries(names.map((name, i) => [name, snapshots[i].docs.map((doc) => ({ id: doc.id, ...doc.data() }))]));
     const apiSnapshot = await getDocs(collection(db, "analytics", "apiCalls", "logs"));
     state.datasets.apiLogs = apiSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
@@ -71,6 +94,79 @@ function buildDashboard() {
   buildActivity();
   renderServices(d.apiLogs, d.aiResponses);
   renderCoupons(d.coupons);
+  renderDeletionRequests(d.accountDeletionRequests, d.users);
+  renderPushCampaigns(d.pushCampaigns||[]);
+  renderShareMetrics(d.shareLinks||[],d.shareAttribution||[]);
+}
+
+function renderDeletionRequests(requests = [], users = []) {
+  const usersById = new Map(users.map((user) => [user.id, user]));
+  const pending = requests
+    .filter((request) => request.status === "pending")
+    .sort((a, b) => timeOf(b.requestedAt) - timeOf(a.requestedAt));
+  $("#deletion-request-count").textContent = `${pending.length} pending`;
+  $("#deletion-requests-body").innerHTML = pending.map((request) => {
+    const user = usersById.get(request.userId) || {};
+    const name = user.fullName || user.displayName || "Unknown user";
+    return `<tr>
+      <td><div class="user-cell"><span class="user-avatar">${escapeHtml(name.charAt(0).toUpperCase())}</span><div><b>${escapeHtml(name)}</b><small>${escapeHtml(user.email || request.userId)}</small></div></div></td>
+      <td>${escapeHtml(formatDateTime(timeOf(request.requestedAt)))}</td>
+      <td><span class="request-status">Pending</span></td>
+      <td><div class="request-actions"><button type="button" class="reject-deletion" data-reject-deletion="${escapeHtml(request.userId)}">Reject</button><button type="button" class="approve-deletion" data-approve-deletion="${escapeHtml(request.userId)}">Delete account &amp; data</button></div></td>
+    </tr>`;
+  }).join("");
+  $("#deletion-requests-empty").classList.toggle("hidden", pending.length > 0);
+}
+
+function showDeletionMessage(text, isError) {
+  const target = $("#deletion-request-message");
+  target.textContent = text;
+  target.classList.remove("hidden", "error", "success");
+  target.classList.add(isError ? "error" : "success");
+}
+
+async function processDeletionRequest(userId, action, button) {
+  const user = state.datasets.users.find((entry) => entry.id === userId);
+  const label = user?.email || user?.fullName || userId;
+  const prompt = action === "approve"
+    ? `Permanently delete ${label}, all associated Firestore data, and all uploaded images? This cannot be undone.`
+    : `Reject the deletion request for ${label}?`;
+  if (!window.confirm(prompt)) return;
+
+  const rowButtons = button.closest("tr").querySelectorAll("button");
+  rowButtons.forEach((item) => { item.disabled = true; });
+  button.textContent = action === "approve" ? "Deleting…" : "Rejecting…";
+  try {
+    if (action === "approve") {
+      const token = await auth.currentUser.getIdToken(true);
+      const uploadResponse = await fetch(`${UPLOAD_WORKER_URL}/admin/users/${encodeURIComponent(userId)}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!uploadResponse.ok) {
+        let details = "";
+        try { details = (await uploadResponse.json()).error || ""; } catch {}
+        throw new Error(details || `Image deletion failed (${uploadResponse.status}).`);
+      }
+    }
+    await reviewAccountDeletion({
+      userId,
+      action,
+      uploadsDeleted: action === "approve",
+    });
+    showDeletionMessage(
+      action === "approve"
+        ? `The account and all associated data for ${label} were permanently deleted.`
+        : `The deletion request for ${label} was rejected.`,
+      false
+    );
+    await loadDashboard();
+  } catch (error) {
+    console.error("Deletion review", error);
+    showDeletionMessage(`Request could not be processed: ${error.message}`, true);
+    rowButtons.forEach((item) => { item.disabled = false; });
+    button.textContent = action === "approve" ? "Delete account & data" : "Reject";
+  }
 }
 
 function renderCoupons(coupons = []) {
@@ -326,6 +422,12 @@ $("#activity-prev").addEventListener("click", () => { state.activityPage -= 1; r
 $("#activity-next").addEventListener("click", () => { state.activityPage += 1; renderActivity(); });
 $("#clear-activity-dates").addEventListener("click", () => { $("#activity-from").value = ""; $("#activity-to").value = ""; state.activityPage = 1; renderActivity(); });
 $("#users-body").addEventListener("click", (event) => { const button = event.target.closest("[data-user-id]"); if (button) openUserDetail(button.dataset.userId); });
+$("#deletion-requests-body").addEventListener("click", (event) => {
+  const approve = event.target.closest("[data-approve-deletion]");
+  const reject = event.target.closest("[data-reject-deletion]");
+  if (approve) processDeletionRequest(approve.dataset.approveDeletion, "approve", approve);
+  if (reject) processDeletionRequest(reject.dataset.rejectDeletion, "reject", reject);
+});
 $("#export-users").addEventListener("click", exportUsersCsv);
 $("#close-user-detail").addEventListener("click", closeUserDetail);
 $("#detail-close-button").addEventListener("click", closeUserDetail);

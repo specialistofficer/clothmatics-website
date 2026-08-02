@@ -117,6 +117,37 @@ FIREBASE_WEB_API_KEY=...
   server function. Returned IDs are checked against the supplied wardrobe
   before rendering.
 
+## View-first mobile parity
+
+The authenticated companion displays Firestore-backed garment intelligence,
+saved and generated outfits, the monthly planner, wear history, cost-per-wear,
+profile preferences, and private Closet Quest progress. Mobile-managed product
+data remains view-only. The existing server-side outfit generator and
+administrator coupon workflow are the deliberate exceptions.
+
+See `FEATURE_AUDIT.md` for the full classification. These reads use the
+existing owner-scoped rules and client-side sorting, so no new Firestore
+composite index is required.
+
+## August 2026 parity deployment
+
+The authenticated companion includes a Lookbook builder, enhanced planner, Weekly Closet Report, Festival Stylist, Smart Purchase Check, attributed sharing, and administrator mobile-push campaign operations. Garment management and image processing remain mobile-only.
+
+Cloudflare Pages must use this directory as its project root and `.` as the output directory. Bind `OUTFIT_LIMITS` as KV and configure `GEMINI_API_KEY` and `FIREBASE_WEB_API_KEY` as encrypted production secrets; the browser never receives them.
+
+Verify and deploy:
+
+```powershell
+node --test tests/*.test.mjs
+node --check app.js
+node --check admin.js
+node --check functions/api/generate-outfit.js
+node --check functions/api/smart-purchase.js
+npx wrangler pages deploy . --project-name clothmatics-website
+```
+
+No Firestore rule change was required. Current rules already allow owner-scoped `savedOutfits` and `outfitWear` writes, published festival reads, admin-only `pushCampaigns`, and block ordinary direct analytics writes.
+
 ## Files
 
 - `index.html` — marketing site, login dialog, and dashboard structure.

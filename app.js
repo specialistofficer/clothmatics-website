@@ -11,25 +11,59 @@ import {
   signOut,
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import {
+  addDoc,
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
   getFirestore,
   query,
+  runTransaction,
+  serverTimestamp,
+  setDoc,
+  updateDoc,
   where,
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-functions.js";
 import { firebaseConfig } from "./config.js";
+import { calculateWeeklyReport, deterministicPurchaseCheck, lookbookSlotFor, matchesGarmentSearch, shiftCalendarMonth, localDateKey } from "./web-core.mjs";
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const firebaseFunctions = getFunctions(app, "us-central1");
+const createShareLink = httpsCallable(firebaseFunctions, "createShareLink");
+const logShareEvent = httpsCallable(firebaseFunctions, "logShareEvent");
 await setPersistence(auth, browserLocalPersistence);
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
-const state = { user: null, profile: null, wardrobe: [], outfits: [], wear: [], challenges: [], outfitHistory: [], todayOutfit: null, panel: "overview", calendarDate: new Date(), selectedDate: localDateKey(new Date()), outfitFilter: "all" };
-const panelNames = { overview: "Good to see you", wardrobe: "My wardrobe", lookbook: "My Lookbook", outfits: "My outfits", planner: "Outfit planner", insights: "Wardrobe insights", quest: "Closet Quest", profile: "My profile", stylist: "AI Stylist" };
+const state = { user: null, profile: null, wardrobe: [], outfits: [], wear: [], challenges: [], outfitHistory: [], todayOutfit: null, festivals: [], panel: "overview", calendarDate: new Date(), selectedDate: localDateKey(new Date()), outfitFilter: "all", lookSlots:{}, stylistContext:{promptId:"outfit_stylist"}, pendingPlanDate:null, purchaseImageData:"", purchaseRotation:0, generatedOutfit:null };
+const panelNames = { overview: "Good to see you", wardrobe: "My wardrobe", lookbook: "My Lookbook", outfits: "My outfits", planner: "Outfit planner", insights: "Wardrobe insights", quest: "Closet Quest", profile: "My profile", festival:"Festival Stylist", purchase:"Smart Purchase Check", stylist: "AI Stylist" };
+
+installParityUi();
+
+function installParityUi() {
+  const nav = $(".app-sidebar nav");
+  const stylistButton = nav?.querySelector('[data-panel="stylist"]');
+  if (nav && stylistButton && !nav.querySelector('[data-panel="festival"]')) {
+    stylistButton.insertAdjacentHTML("beforebegin", '<button data-panel="festival"><svg class="nav-icon" aria-hidden="true"><use href="#icon-sparkles"></use></svg><span>Festival Stylist</span></button><button data-panel="purchase"><svg class="nav-icon" aria-hidden="true"><use href="#icon-wardrobe"></use></svg><span>Smart Purchase</span></button>');
+  }
+  const appContent = $(".app-content");
+  appContent?.insertAdjacentHTML("beforeend", `
+    <div id="panel-festival" class="panel hidden"><div class="section-intro"><span>SEASONAL STYLING</span><h3>Festival Stylist</h3><p>Published campaigns and seasonal guides, styled only from garments you own.</p></div><div id="festival-grid" class="festival-grid"></div></div>
+    <div id="panel-purchase" class="panel hidden"><div class="section-intro"><span>BEFORE YOU BUY</span><h3>Smart Purchase Check</h3><p>Compare a store item with your wardrobe. Its photo stays transient and is never added to your closet.</p></div><div class="purchase-layout"><form id="purchase-form" class="purchase-form"><label>Item photo<input id="purchase-image" type="file" accept="image/jpeg,image/png,image/webp"></label><div class="purchase-preview"><img id="purchase-preview" alt="Selected store item preview"><span id="purchase-preview-empty">Choose a complete garment photo</span></div><button id="rotate-purchase" type="button">Rotate preview</button><label>Item name<input id="purchase-title" maxlength="100" placeholder="e.g. Navy linen shirt"></label><label>Category<input id="purchase-category" maxlength="50" placeholder="e.g. Shirt"></label><label>Color<input id="purchase-color" maxlength="40"></label><label>Pattern<input id="purchase-pattern" maxlength="40"></label><label>Material<input id="purchase-material" maxlength="50"></label><label>Store price (₹)<input id="purchase-price" type="number" min="0" step="1"></label><button class="button button-primary" type="submit">Check this purchase</button><small>Premium uses the ClothMatics AI stylist. Free accounts receive a deterministic comparison without an AI call.</small></form><div id="purchase-result" class="purchase-result"></div></div></div>`);
+  $("#panel-planner .month-controls")?.insertAdjacentHTML("afterbegin", '<button id="month-today" type="button">Today</button>');
+  $("#panel-planner .section-intro p")?.insertAdjacentHTML("afterend", '<p class="month-summary"><b id="month-plan-count">0</b> planned days in this month</p>');
+  $("#selected-date-label")?.insertAdjacentHTML("afterend", '<div class="plan-actions"><select id="plan-outfit-select" aria-label="Choose a saved outfit"><option value="">Choose a saved outfit</option></select><button id="plan-existing">Plan outfit</button><button id="generate-for-date">Generate for this day</button></div>');
+  if(!$("#open-look-builder")) $("#panel-lookbook .section-intro")?.insertAdjacentHTML("beforeend", '<button id="open-look-builder" class="button button-primary">Create a look</button>');
+  if(!$("#lookbook-search")) $("#panel-lookbook .section-intro")?.insertAdjacentHTML("afterend", '<div class="panel-tools"><div class="search"><span>⌕</span><input id="lookbook-search" placeholder="Search Lookbook pieces"></div></div>');
+  if(!$("#weekly-report")) $("#panel-insights .section-intro")?.insertAdjacentHTML("beforebegin", '<div class="section-intro"><span>THIS WEEK</span><h3>Weekly Closet Report</h3><p>Calculated from your last seven local calendar days.</p></div><div id="weekly-report" class="weekly-report"></div>');
+  $("#stylist-result");
+  $("#generate-button")?.insertAdjacentHTML("beforebegin", '<div id="stylist-context" class="stylist-context hidden"></div>');
+  document.body.insertAdjacentHTML("beforeend", `<dialog id="look-builder-dialog" class="garment-dialog look-builder-dialog"><button id="close-look-builder" class="dialog-close" aria-label="Close look builder">×</button><span class="app-kicker">LOOKBOOK BUILDER</span><h2>Create from your closet</h2><div class="builder-fields"><label>Look name<input id="look-name" maxlength="80" placeholder="My weekend look"></label><label>Occasion<input id="look-occasion" maxlength="50" placeholder="Casual"></label></div><div id="look-slots" class="look-slots"></div><label class="builder-search">Find a garment<input id="look-picker-search" type="search" placeholder="Try tee, sneakers or watch"></label><div id="look-picker" class="look-picker"></div><div class="dialog-actions"><button id="cancel-look-builder">Cancel</button><button id="save-look" class="button button-primary">Save Lookbook outfit</button></div></dialog>`);
+}
 
 $("#year").textContent = new Date().getFullYear();
 
@@ -113,7 +147,7 @@ async function configureAdminAccess(user) {
 
 async function loadDashboard(user) {
   try {
-    const [profileSnap, wardrobeSnap, outfitsSnap, wearSnap, challengeSnap, historySnap, todaySnap] = await Promise.all([
+    const [profileSnap, wardrobeSnap, outfitsSnap, wearSnap, challengeSnap, historySnap, todaySnap, festivalSnap] = await Promise.all([
       getDoc(doc(db, "users", user.uid)),
       getDocs(query(collection(db, "wardrobe"), where("userId", "==", user.uid))),
       getDocs(query(collection(db, "savedOutfits"), where("userId", "==", user.uid))),
@@ -121,14 +155,18 @@ async function loadDashboard(user) {
       getDocs(query(collection(db, "styleChallengeSubmissions"), where("userId", "==", user.uid))),
       getDocs(query(collection(db, "outfitHistory"), where("userId", "==", user.uid))),
       getDoc(doc(db, "users", user.uid, "meta", "todayOutfit")),
+      getDocs(query(collection(db, "festivalCampaigns"), where("published", "==", true))).catch(() => ({ docs:[] })),
     ]);
     state.profile = profileSnap.exists() ? profileSnap.data() : {};
+    if (!user.emailVerified) throw new Error("Verify your email in the mobile app before opening the web wardrobe.");
+    if (state.profile.loginBlocked === true || state.profile.accountBlocked === true) { await signOut(auth); throw new Error("This account is currently restricted."); }
     state.wardrobe = wardrobeSnap.docs.map((entry) => ({ id: entry.id, ...entry.data() })).sort(byCreatedAt);
     state.outfits = outfitsSnap.docs.map((entry) => ({ id: entry.id, ...entry.data() })).sort(byCreatedAt);
     state.wear = wearSnap.docs.map((entry) => ({ id: entry.id, ...entry.data() })).sort((a,b) => String(b.wearDate || "").localeCompare(String(a.wearDate || "")));
     state.challenges = challengeSnap.docs.map((entry) => ({ id: entry.id, ...entry.data() })).sort(byCreatedAt);
     state.outfitHistory = historySnap.docs.map((entry) => ({ id: entry.id, ...entry.data() })).sort(byCreatedAt);
     state.todayOutfit = todaySnap.exists() ? todaySnap.data() : null;
+    state.festivals = mergeFestivalCampaigns(festivalSnap.docs.map((entry)=>({id:entry.id,...entry.data()})));
     renderAccount(user);
     renderAll();
     openPanel("overview");
@@ -166,6 +204,9 @@ function renderAll() {
   renderQuest();
   renderProfile();
   renderHomeInsights();
+  renderWeeklyReport();
+  renderFestivals();
+  renderPlannerOptions();
 }
 
 function renderGarments(target, items) {
@@ -182,8 +223,8 @@ function renderLooks(looks) {
   $("#looks-grid").innerHTML = looks.length ? looks.map((look) => {
     const ids = look.wardrobeItemIds || look.outfit?.wardrobeItemIds || [];
     const items = ids.map((id) => state.wardrobe.find((item) => item.id === id)).filter(Boolean);
-    return `<article class="look-card"><span>${escapeHtml(look.occasion || "Custom look")}</span><h3>${escapeHtml(look.outfit?.title || "My look")}</h3><div class="look-thumbs">${items.slice(0,4).map((item) => `<img src="${safeUrl(item.image)}" alt="" />`).join("")}</div><span>${items.length} wardrobe pieces</span></article>`;
-  }).join("") : '<div class="empty-state"><b>No custom looks yet</b><span>Create looks in the mobile app.</span></div>';
+    return `<article class="look-card"><span>${escapeHtml(look.occasion || "Custom look")}</span><h3>${escapeHtml(look.outfit?.title || "My look")}</h3><div class="look-thumbs">${items.slice(0,4).map((item) => `<img src="${safeUrl(item.image)}" alt="${escapeHtml(item.title||"Garment")}" />`).join("")}</div><span>${items.length} wardrobe pieces</span><div class="card-actions"><button data-view-saved="${escapeHtml(look.id)}">View</button>${look.lookbook&&look.source==="user_created"?`<button data-delete-look="${escapeHtml(look.id)}">Delete</button>`:""}<button data-share-scope="saved" data-share-id="${escapeHtml(look.id)}">Share</button></div></article>`;
+  }).join("") : '<div class="empty-state"><b>No custom looks yet</b><span>Create your first look from wardrobe items.</span></div>';
 }
 
 function renderOutfitLibrary() {
@@ -205,6 +246,8 @@ function renderCalendar() {
   const view = state.calendarDate;
   const year = view.getFullYear(), month = view.getMonth();
   $("#month-label").textContent = view.toLocaleDateString(undefined, { month:"long", year:"numeric" });
+  const monthPrefix=`${year}-${String(month+1).padStart(2,"0")}-`;
+  if($("#month-plan-count")) $("#month-plan-count").textContent=new Set(state.wear.filter((entry)=>entry.status==="planned"&&String(entry.wearDate||"").startsWith(monthPrefix)).map((entry)=>entry.wearDate)).size;
   const cells = [...Array(new Date(year, month, 1).getDay()).fill(null), ...Array.from({length:new Date(year, month + 1, 0).getDate()}, (_,i) => new Date(year,month,i+1))];
   $("#calendar-grid").innerHTML = cells.map((date) => {
     if (!date) return '<span class="calendar-blank"></span>';
@@ -222,6 +265,7 @@ function renderSelectedDate() {
     const items = outfitItems(record);
     return `<article class="plan-card"><span class="status-pill ${record.status === "worn" ? "worn" : ""}">${escapeHtml(record.status || "planned")}</span><h4>${escapeHtml(record.outfit?.title || record.occasion || "Planned look")}</h4><p>${escapeHtml(record.occasion || "General")}${record.notes ? ` · ${escapeHtml(record.notes)}` : ""}</p><div class="plan-outfit-preview">${items.slice(0,4).map((item)=>`<img src="${safeUrl(item.image)}" alt="${escapeHtml(item.title)}">`).join("")}</div><button class="open-complete-outfit" data-outfit-scope="wear" data-outfit-id="${escapeHtml(record.id)}"><svg aria-hidden="true"><use href="#icon-outfit"></use></svg>Open complete outfit</button>${record.reminderAt ? `<small>Mobile reminder: ${escapeHtml(record.reminderTiming === "evening_before" ? "evening before" : "morning of")}</small>` : ""}</article>`;
   }).join("") : emptyBlock("Nothing planned", "Use the mobile app to plan a look for this date.");
+  enhanceSelectedDateCards(records);
 }
 
 function renderInsights() {
@@ -231,6 +275,26 @@ function renderInsights() {
   $("#insight-summary").innerHTML = metricCards([[formatCurrency(tracked),"Tracked value"],[wears,"Garment wears"],[worn.length,"Outfits worn"],[state.wear.filter((x)=>x.status==="planned").length,"Planned looks"]]);
   $("#cpw-list").innerHTML = priced.length ? priced.map((item)=>`<button class="cpw-row" data-item-id="${escapeHtml(item.id)}"><img src="${safeUrl(item.image)}" alt=""><div><b>${escapeHtml(item.title)}</b><span>${formatCurrency(item.purchasePrice)} · ${Number(item.timesWorn||0)} wears</span></div><strong>${item.timesWorn ? formatCurrency(item.purchasePrice/item.timesWorn) : "—"}<small>per wear</small></strong></button>`).join("") : emptyBlock("No purchase prices yet", "Add prices in the mobile app to unlock cost-per-wear insights.");
   $("#wear-history").innerHTML = state.wear.length ? state.wear.slice(0,30).map((entry)=>`<article><span class="${entry.status==="worn"?"worn":""}">${escapeHtml(entry.status || "planned")}</span><div><b>${escapeHtml(entry.outfit?.title || entry.occasion || "Outfit")}</b><small>${formatIsoDate(entry.wearDate)} · ${escapeHtml(entry.occasion || "General")}</small></div></article>`).join("") : emptyBlock("No wear history", "Confirm outfit wears in the mobile app.");
+}
+
+function renderWeeklyReport() {
+  const target=$("#weekly-report"); if(!target)return;
+  const report=calculateWeeklyReport(state.wardrobe,state.wear,state.outfits,new Date());
+  const suggested=report.suggestedOutfit, suggestedItems=outfitItems(suggested||{});
+  target.innerHTML=`<div class="weekly-metrics">${metricCards([[`${report.wornItemCount}/${report.totalItemCount}`,"garments worn"],[report.outfitDays,"outfit days"],[`${report.closetUsagePercent}%`,"wardrobe rotation"],[report.neglectedItems.length,"clean pieces to rediscover"]])}</div><div class="weekly-detail"><article><span>MOST WORN</span><b>${escapeHtml(report.mostRepeatedItem?.title||"Not enough wear data yet")}</b><p>${report.mostRepeatedItem?"Based on confirmed wears during this seven-day period.":"Mark outfits worn to build this insight."}</p></article><article><span>BEST VALUE</span><b>${escapeHtml(report.bestValueItem?.title||"No priced, worn garment yet")}</b><p>${report.bestValueItem?`${formatCurrency(report.bestValueCostPerWear)} per recorded wear.`:"A purchase price plus recorded wears enables cost-per-wear."}</p></article><article><span>USEFUL COLORS</span><b>${escapeHtml(report.usefulColors.map(x=>x.color).join(", ")||"No color pattern yet")}</b><p>Colors are counted only from garments in confirmed outfits.</p></article></div>${suggested?`<article class="weekly-suggestion"><div><span>NEXT-WEEK IDEA</span><h4>${escapeHtml(suggested.outfit?.title||suggested.title||"Rotate a saved look")}</h4><p>Selected from a real saved outfit, prioritizing underused clean garments when possible.</p></div><div class="look-thumbs">${suggestedItems.slice(0,4).map(item=>`<img src="${safeUrl(item.image)}" alt="${escapeHtml(item.title)}">`).join("")}</div></article>`:""}`;
+}
+
+const BUILTIN_FESTIVALS=[
+  {id:"navratri-2026",title:"Navratri",eventDate:"2026-10-11",visibleFrom:"2026-09-27",visibleUntil:"2026-10-21",published:true,modes:["garba","fusion","puja"]},
+  {id:"karva-chauth-2026",title:"Karva Chauth",eventDate:"2026-10-29",visibleFrom:"2026-10-15",visibleUntil:"2026-11-01",published:true,modes:["traditional","understated"]},
+  {id:"diwali-2026",title:"Diwali",eventDate:"2026-11-08",visibleFrom:"2026-10-25",visibleUntil:"2026-11-15",published:true,modes:["puja","party","fusion"]},
+];
+function mergeFestivalCampaigns(remote=[]){const map=new Map(BUILTIN_FESTIVALS.map(x=>[x.id,x]));remote.filter(x=>x.published===true).forEach(x=>map.set(x.id,{...(map.get(x.id)||{}),...x,modes:Array.isArray(x.modes)&&x.modes.length?x.modes:(map.get(x.id)?.modes||[])}));return[...map.values()]}
+function festivalStatus(campaign){const today=localDateKey(new Date());if(today>campaign.visibleUntil)return"ended";if(today>=campaign.visibleFrom)return"live";return"upcoming"}
+function renderFestivals(){
+  const target=$("#festival-grid");if(!target)return;
+  target.innerHTML=state.festivals.map(c=>`<article class="festival-card ${festivalStatus(c)}"><span>${escapeHtml(festivalStatus(c))}</span><h3>${escapeHtml(c.title||c.name||c.id)}</h3><p>${formatIsoDate(c.eventDate)} · visible ${formatIsoDate(c.visibleFrom)}–${formatIsoDate(c.visibleUntil)}</p><div>${(c.modes||[]).map(mode=>`<button data-festival-id="${escapeHtml(c.id)}" data-festival-mode="${escapeHtml(mode)}">${escapeHtml(pretty(mode))}</button>`).join("")}</div></article>`).join("");
+  const home=$("#home-festivals");if(home){const visible=state.festivals.filter(c=>festivalStatus(c)!=="ended").slice(0,2);home.innerHTML=visible.length?`<div><span>FESTIVAL STYLIST</span><h3>Your festival stylist is ready.</h3><p>${visible.map(c=>c.title).join(" and ")} styling opens from campaign data.</p></div><button data-go-panel="festival">Explore campaigns</button>`:""}
 }
 
 function renderQuest() {
@@ -273,18 +337,35 @@ function renderHomeInsights() {
 $("#wardrobe-search").addEventListener("input", filterWardrobe);
 $("#wardrobe-filter").addEventListener("change", filterWardrobe);
 function filterWardrobe() {
-  const terms = searchTokens($("#wardrobe-search").value);
   const filter = $("#wardrobe-filter").value;
   const filtered = state.wardrobe.filter((item) => {
-    const haystack = garmentSearchText(item);
-    const matchesSearch = !terms.length || terms.every((term) => haystack.includes(term) || searchAliases(term).some((alias) => haystack.includes(alias)));
-    return matchesSearch && (filter === "all" || (filter === "favorite" && item.favorite) || (filter === "clean" && item.laundryStatus === "Clean"));
+    return matchesGarmentSearch(item,$("#wardrobe-search").value) && (filter === "all" || (filter === "favorite" && item.favorite) || (filter === "clean" && item.laundryStatus === "Clean"));
   });
   renderGarments($("#wardrobe-grid"), filtered);
   $("#wardrobe-empty").classList.toggle("hidden", filtered.length > 0);
 }
 
+$("#lookbook-search").addEventListener("input",()=>renderGarments($("#lookbook-grid"),state.wardrobe.filter(item=>(item.inLookbook??item.type==="lookbook")&&matchesGarmentSearch(item,$("#lookbook-search").value))));
+$("#open-look-builder").addEventListener("click",openLookBuilder);
+$("#close-look-builder").addEventListener("click",()=>$("#look-builder-dialog").close());
+$("#cancel-look-builder").addEventListener("click",()=>$("#look-builder-dialog").close());
+$("#look-picker-search").addEventListener("input",renderLookPicker);
+$("#save-look").addEventListener("click",saveLook);
+$("#look-picker").addEventListener("click",event=>{const button=event.target.closest("[data-pick-item]");if(button)selectLookItem(button.dataset.pickItem)});
+$("#look-slots").addEventListener("click",event=>{const button=event.target.closest("[data-clear-slot]");if(button){delete state.lookSlots[button.dataset.clearSlot];renderLookBuilder()}});
+$("#plan-existing").addEventListener("click",planExistingOutfit);
+$("#generate-for-date").addEventListener("click",()=>{state.pendingPlanDate=state.selectedDate;state.stylistContext={promptId:"outfit_stylist"};$("#occasion-select").value="casual";$("#preference-input").value=`Create a complete outfit for ${formatIsoDate(state.selectedDate)}.`;openPanel("stylist")});
+$("#purchase-image").addEventListener("change",loadPurchaseImage);
+$("#rotate-purchase").addEventListener("click",()=>{state.purchaseRotation=(state.purchaseRotation+90)%360;$("#purchase-preview").style.transform=`rotate(${state.purchaseRotation}deg)`});
+$("#purchase-form").addEventListener("submit",runPurchaseCheck);
+
 document.addEventListener("click", (event) => {
+  const deleteLook=event.target.closest("[data-delete-look]"); if(deleteLook){deleteSavedLook(deleteLook.dataset.deleteLook);return}
+  const viewSaved=event.target.closest("[data-view-saved]"); if(viewSaved){openSavedOutfit(viewSaved.dataset.viewSaved);return}
+  const removePlan=event.target.closest("[data-remove-plan]"); if(removePlan){removePlanRecord(removePlan.dataset.removePlan);return}
+  const markWorn=event.target.closest("[data-mark-worn]"); if(markWorn){markPlanWorn(markWorn.dataset.markWorn);return}
+  const festival=event.target.closest("[data-festival-id]"); if(festival){startFestivalStylist(festival.dataset.festivalId,festival.dataset.festivalMode);return}
+  const share=event.target.closest("[data-share-scope]");if(share){shareOutfit(share.dataset.shareScope,share.dataset.shareId);return}
   const outfitTarget = event.target.closest("[data-outfit-scope][data-outfit-id]");
   if (outfitTarget) {
     openOutfitDetail(outfitTarget.dataset.outfitScope, outfitTarget.dataset.outfitId);
@@ -303,16 +384,37 @@ $$("[data-outfit-filter]").forEach((button)=>button.addEventListener("click",()=
   $$("[data-outfit-filter]").forEach((x)=>x.classList.toggle("active",x===button));
   renderOutfitLibrary();
 }));
-$("#month-prev").addEventListener("click",()=>{ state.calendarDate=new Date(state.calendarDate.getFullYear(),state.calendarDate.getMonth()-1,1); renderCalendar(); });
-$("#month-next").addEventListener("click",()=>{ state.calendarDate=new Date(state.calendarDate.getFullYear(),state.calendarDate.getMonth()+1,1); renderCalendar(); });
+$("#month-prev").addEventListener("click",()=>shiftPlanner(-1));
+$("#month-next").addEventListener("click",()=>shiftPlanner(1));
+$("#month-today").addEventListener("click",()=>{state.calendarDate=new Date();state.selectedDate=localDateKey(new Date());renderCalendar()});
 $("#close-garment").addEventListener("click",()=>$("#garment-dialog").close());
 $("#close-outfit").addEventListener("click",()=>$("#outfit-dialog").close());
+
+function shiftPlanner(offset){const next=shiftCalendarMonth(state.calendarDate,state.selectedDate,offset);state.calendarDate=next.displayedMonth;state.selectedDate=next.selectedDate;renderCalendar()}
+function renderPlannerOptions(){const select=$("#plan-outfit-select");if(!select)return;select.innerHTML='<option value="">Choose a saved outfit</option>'+state.outfits.map(look=>`<option value="${escapeHtml(look.id)}">${escapeHtml(look.outfit?.title||look.title||look.occasion||"Saved outfit")}</option>`).join("")}
+function enhanceSelectedDateCards(records){
+  $("#selected-date-plans")?.querySelectorAll(".plan-card").forEach((card,index)=>{const record=records[index];if(!record)return;const actions=document.createElement("div");actions.className="card-actions";actions.innerHTML=`${record.status!=="worn"&&record.wearDate<=localDateKey(new Date())?`<button data-mark-worn="${escapeHtml(record.id)}">Mark worn</button>`:""}<button data-remove-plan="${escapeHtml(record.id)}">Remove</button><button data-share-scope="wear" data-share-id="${escapeHtml(record.id)}">Share</button>`;card.append(actions)});
+}
+async function planExistingOutfit(){const id=$("#plan-outfit-select").value,look=state.outfits.find(x=>x.id===id);if(!look)return toast("Choose a saved outfit first.");const ids=outfitIds(look);if(!ids.length)return toast("That saved outfit no longer has wardrobe pieces.");const key=`web_${state.user.uid}_${state.selectedDate}_${id}`;const ref=doc(db,"outfitWear",key);try{await runTransaction(db,async tx=>{if((await tx.get(ref)).exists())return;tx.set(ref,{userId:state.user.uid,wearDate:state.selectedDate,status:"planned",outfitId:id,wardrobeItemIds:ids,occasion:look.occasion||"General",outfit:look.outfit||{title:look.title||"Saved outfit",wardrobeItemIds:ids},source:"web_planner",createdAt:serverTimestamp(),updatedAt:serverTimestamp()})});await reloadWear();toast("Outfit planned once for this date.")}catch(error){toast(`Could not plan outfit: ${error.message}`)}}
+async function removePlanRecord(id){const record=state.wear.find(x=>x.id===id);if(!record||record.userId!==state.user.uid)return;if(!confirm("Remove this outfit plan?"))return;try{await deleteDoc(doc(db,"outfitWear",id));await reloadWear();toast("Plan removed.")}catch(error){toast(`Could not remove plan: ${error.message}`)}}
+async function markPlanWorn(id){const record=state.wear.find(x=>x.id===id);if(!record||record.userId!==state.user.uid||record.wearDate>localDateKey(new Date()))return;try{await updateDoc(doc(db,"outfitWear",id),{status:"worn",wornAt:serverTimestamp(),updatedAt:serverTimestamp()});await reloadWear();toast("Outfit marked worn.")}catch(error){toast(`Could not update plan: ${error.message}`)}}
+async function reloadWear(){const snap=await getDocs(query(collection(db,"outfitWear"),where("userId","==",state.user.uid)));state.wear=snap.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>String(b.wearDate||"").localeCompare(String(a.wearDate||"")));renderCalendar();renderInsights();renderWeeklyReport()}
+
+function openLookBuilder(){state.lookSlots={};$("#look-name").value="";$("#look-occasion").value="";$("#look-picker-search").value="";renderLookBuilder();$("#look-builder-dialog").showModal()}
+function renderLookBuilder(){const labels={top:"Top",bottom:"Bottom",layer:"Layer",hero:"One-piece",footwear:"Footwear",accessory:"Accessory"};$("#look-slots").innerHTML=Object.entries(labels).map(([slot,label])=>{const item=state.wardrobe.find(x=>x.id===state.lookSlots[slot]);return`<article class="look-slot"><span>${label}</span>${item?`<img src="${safeUrl(item.image)}" alt="${escapeHtml(item.title)}"><b>${escapeHtml(item.title)}</b><button data-clear-slot="${slot}" aria-label="Remove ${label}">×</button>`:'<p>Choose an item</p>'}</article>`}).join("");renderLookPicker()}
+function renderLookPicker(){const queryText=$("#look-picker-search").value;const items=state.wardrobe.filter(item=>matchesGarmentSearch(item,queryText));$("#look-picker").innerHTML=items.length?items.map(item=>`<button data-pick-item="${escapeHtml(item.id)}"><img src="${safeUrl(item.image)}" alt="${escapeHtml(item.title)}"><span><b>${escapeHtml(item.title||"Garment")}</b><small>${escapeHtml(pretty(lookbookSlotFor(item)))}</small></span></button>`).join(""):emptyBlock("No matches","Try a category, color, brand, or garment name.")}
+function selectLookItem(id){const item=state.wardrobe.find(x=>x.id===id);if(!item)return;const slot=lookbookSlotFor(item);if(slot==="hero"){delete state.lookSlots.top;delete state.lookSlots.bottom;delete state.lookSlots.layer}else if(["top","bottom","layer"].includes(slot)){delete state.lookSlots.hero}state.lookSlots[slot]=id;renderLookBuilder()}
+async function saveLook(){const ids=Object.values(state.lookSlots);if(ids.length<2)return toast("Choose at least two pieces.");const button=$("#save-look");button.disabled=true;try{const title=$("#look-name").value.trim()||"My Lookbook outfit",occasion=$("#look-occasion").value.trim()||"Any occasion";const ref=await addDoc(collection(db,"savedOutfits"),{userId:state.user.uid,lookbook:true,source:"user_created",occasion,wardrobeItemIds:ids,outfit:{score:100,title,subtitle:"Styled by you in Lookbook.",wardrobeItemIds:ids,reasoning:["Styled by you in Lookbook."],shoppingSuggestions:[]},createdAt:serverTimestamp(),updatedAt:serverTimestamp()});state.outfits.unshift({id:ref.id,userId:state.user.uid,lookbook:true,source:"user_created",occasion,wardrobeItemIds:ids,outfit:{score:100,title,subtitle:"Styled by you in Lookbook.",wardrobeItemIds:ids}});$("#look-builder-dialog").close();renderLooks(state.outfits);renderOutfitLibrary();renderPlannerOptions();toast("Lookbook outfit saved.")}catch(error){toast(`Could not save look: ${error.message}`)}finally{button.disabled=false}}
+async function deleteSavedLook(id){const look=state.outfits.find(x=>x.id===id);if(!look||look.userId!==state.user.uid||!look.lookbook||look.source!=="user_created")return;if(!confirm("Delete this saved Lookbook outfit? Your wardrobe garments will not be changed."))return;try{await deleteDoc(doc(db,"savedOutfits",id));state.outfits=state.outfits.filter(x=>x.id!==id);renderLooks(state.outfits);renderOutfitLibrary();renderPlannerOptions();toast("Saved look deleted. Wardrobe items were untouched.")}catch(error){toast(`Could not delete look: ${error.message}`)}}
+function openSavedOutfit(id){const source=state.outfits.find(x=>x.id===id);if(!source)return;showOutfitDialog(source,"SAVED OUTFIT")}
 
 function openGarmentDetail(id) {
   const item=state.wardrobe.find((x)=>x.id===id);
   if (!item) return;
   const fields=[["Category",item.category],["Subcategory",item.subCategory],["Brand",item.brand],["Primary color",item.primaryColor],["Secondary colors",listText(item.secondaryColors)],["Pattern",item.pattern],["Fit",item.fit],["Material",item.material||item.fabric],["Sleeves",item.sleeveType],["Neckline",item.neckline],["Season",listText(item.season)],["Occasions",listText(item.userOccasions||item.occasion)],["Formality",item.formality],["Laundry",item.laundryStatus],["Times worn",item.timesWorn??0],["Last worn",item.lastWorn?formatIsoDate(item.lastWorn):"Never"],["Purchase year",item.purchaseYear],["Purchase price",item.purchasePrice?formatCurrency(item.purchasePrice):""],["Rating",item.rating?`${item.rating}/5`:""],["AI visibility",item.hiddenFromAI?"Hidden":"Available"],["Background prepared",item.bgRemoved===true?"Yes":item.bgRemoved===false?"No":""],["Tags",listText(item.tags)]];
   $("#garment-detail").innerHTML=`<div class="garment-hero"><img src="${safeUrl(item.image)}" alt="${escapeHtml(item.title||"Garment")}"><div><span class="app-kicker">GARMENT INTELLIGENCE</span><h2>${escapeHtml(item.title||"Untitled garment")}</h2><p>${escapeHtml(item.aiDescription||item.remarks||"Saved in your ClothMatics wardrobe.")}</p><div class="garment-flags">${item.favorite?"<span>Favorite</span>":""}${item.inLookbook||item.type==="lookbook"?"<span>Lookbook</span>":""}${item.userConfirmed?"<span>Confirmed</span>":""}</div></div></div><div class="garment-fields">${fields.filter(([,v])=>v!==""&&v!=null).map(([label,value])=>`<p><span>${escapeHtml(label)}</span><b>${escapeHtml(value)}</b></p>`).join("")}</div><div class="mobile-action-note"><b>Want to change these details?</b><span>Open this garment in the ClothMatics mobile app.</span></div>`;
+  $("#garment-detail").insertAdjacentHTML("beforeend",`<div class="card-actions"><button class="button button-primary" id="style-this-item">Style this garment</button><button data-share-scope="garment" data-share-id="${escapeHtml(item.id)}">Share garment</button></div>`);
+  $("#style-this-item").addEventListener("click",()=>{state.stylistContext={promptId:"style_this",anchorItemId:item.id};$("#preference-input").value=`Build a complete outfit around ${item.title||"this garment"}.`;$("#garment-dialog").close();openPanel("stylist")});
   $("#garment-dialog").showModal();
 }
 
@@ -340,6 +442,49 @@ function openOutfitDetail(scope, id) {
   $("#outfit-detail").innerHTML = `<div class="complete-outfit-head"><span class="app-kicker">${scope === "quest" ? "CLOSET QUEST LOOK" : "PLANNED COMPLETE LOOK"}</span><h2>${escapeHtml(title)}</h2><p>${escapeHtml(context)}</p></div>${items.length ? `<div class="complete-outfit-grid">${items.map((item) => `<article><img src="${safeUrl(item.image)}" alt="${escapeHtml(item.title || "Outfit garment")}"><div><b>${escapeHtml(item.title || "Garment")}</b><span>${escapeHtml([item.primaryColor,item.category].filter(Boolean).join(" · "))}</span></div></article>`).join("")}</div>` : emptyBlock("Outfit images unavailable", "The garment references for this older outfit are no longer in the wardrobe.")}<div class="mobile-action-note"><b>View-only complete outfit</b><span>Use the ClothMatics mobile app to edit this look or change its plan.</span></div>`;
   $("#outfit-dialog").showModal();
 }
+
+function showOutfitDialog(source,label="COMPLETE OUTFIT"){
+  const items=outfitItems(source),title=source.outfit?.title||source.title||source.occasion||"Complete outfit";
+  $("#outfit-detail").innerHTML=`<div class="complete-outfit-head"><span class="app-kicker">${escapeHtml(label)}</span><h2>${escapeHtml(title)}</h2><p>${escapeHtml(source.outfit?.subtitle||source.occasion||"")}</p></div>${items.length?`<div class="complete-outfit-grid">${items.map(item=>`<article><img src="${safeUrl(item.image)}" alt="${escapeHtml(item.title||"Outfit garment")}"><div><b>${escapeHtml(item.title||"Garment")}</b><span>${escapeHtml([item.primaryColor,item.category].filter(Boolean).join(" · "))}</span></div></article>`).join("")}</div>`:emptyBlock("Outfit images unavailable","These garment references are no longer in the wardrobe.")}`;
+  $("#outfit-dialog").showModal();
+}
+
+function startFestivalStylist(id,mode){const campaign=state.festivals.find(x=>x.id===id);if(!campaign)return;state.stylistContext={promptId:"festival_stylist",festivalCampaignId:id};$("#occasion-select").value="festival";if(!$("#occasion-select").value){$("#occasion-select").insertAdjacentHTML("beforeend",'<option value="festival">Festival</option>');$("#occasion-select").value="festival"}$("#preference-input").value=`${campaign.title} ${pretty(mode)} look. Mood: ${pretty(mode)}. Use only my owned wardrobe.`;const context=$("#stylist-context");context.classList.remove("hidden");context.innerHTML=`<b>${escapeHtml(campaign.title)} · ${escapeHtml(pretty(mode))}</b><span>Campaign ${escapeHtml(id)}</span>`;openPanel("stylist")}
+
+async function loadPurchaseImage(event){const file=event.target.files?.[0];if(!file){state.purchaseImageData="";return}if(file.size>4*1024*1024)return toast("Choose an image under 4 MB.");state.purchaseImageData=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result));reader.onerror=reject;reader.readAsDataURL(file)});$("#purchase-preview").src=state.purchaseImageData;$("#purchase-preview").style.transform="rotate(0deg)";$("#purchase-preview-empty").classList.add("hidden");state.purchaseRotation=0}
+async function runPurchaseCheck(event){event.preventDefault();const form=event.currentTarget,button=form.querySelector('[type="submit"]');const candidate={title:$("#purchase-title").value.trim(),category:$("#purchase-category").value.trim(),primaryColor:$("#purchase-color").value.trim(),pattern:$("#purchase-pattern").value.trim(),material:$("#purchase-material").value.trim()},price=Number($("#purchase-price").value)||0;if(!candidate.title&&!candidate.category&&!state.purchaseImageData)return toast("Choose a photo or describe the item.");button.disabled=true;$("#purchase-result").innerHTML='<div class="result-placeholder"><span class="spinner"></span><b>Checking your wardrobe…</b></div>';try{let result;if(isTrustedPremiumClient()){const token=await state.user.getIdToken();const response=await fetch("/api/smart-purchase",{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${token}`},body:JSON.stringify({candidate,price,imageData:state.purchaseImageData})});const data=await response.json();if(!response.ok)throw new Error(data.error||"Smart Purchase failed.");result=data.result}else{result=deterministicPurchaseCheck(candidate,state.wardrobe,price)}renderPurchaseResult(result)}catch(error){$("#purchase-result").innerHTML=`<div class="error-box"><b>Could not check this purchase</b><p>${escapeHtml(error.message)}</p></div>`}finally{button.disabled=false}}
+function isTrustedPremiumClient(){const sub=state.profile?.subscription||{};const until=timeValue(sub.premiumUntil);return sub.plan==="premium"&&until>Date.now()}
+function renderPurchaseResult(result){const similar=(result.similarityMatches||[]).map(match=>state.wardrobe.find(x=>x.id===(match.wardrobeItemId||match.item?.id))).filter(Boolean);const looks=(result.outfitExamples||[]).map(x=>({...x,itemIds:x.itemIds||[]}));$("#purchase-result").innerHTML=`<div class="purchase-verdict"><span>CLOTHMATICS ${result.provider?"AI ":""}STYLIST</span><h3>${escapeHtml(pretty(result.verdict||"consider"))}</h3><p>${escapeHtml(result.summary||(result.reasons||[])[0]||"")}</p></div><div class="purchase-counts">${metricCards([[similar.length,"genuine similar items"],[looks.length,"grounded combinations"],[result.compatiblePieceCount||new Set(looks.flatMap(x=>x.itemIds)).size,"compatible owned pieces"]])}</div>${similar.length?`<h4>Similar pieces you own</h4><div class="look-thumbs">${similar.map(item=>`<img src="${safeUrl(item.image)}" alt="${escapeHtml(item.title)}">`).join("")}</div>`:""}<h4>Ways to wear it</h4><div class="purchase-looks">${looks.slice(0,4).map((look,index)=>`<article><b>Outfit ${index+1}</b><div class="look-thumbs">${look.itemIds.map(id=>state.wardrobe.find(x=>x.id===id)).filter(Boolean).map(item=>`<img src="${safeUrl(item.image)}" alt="${escapeHtml(item.title)}">`).join("")}</div><p>${escapeHtml(look.explanation||"")}</p></article>`).join("")||emptyBlock("No grounded combination yet","Add varied wardrobe categories in the mobile app.")}</div>`}
+
+async function shareOutfit(scope,id){
+  let source=scope==="saved"?state.outfits.find(x=>x.id===id):state.wear.find(x=>x.id===id);
+  if(scope==="generated")source=state.generatedOutfit;
+  if(scope==="garment"){const item=state.wardrobe.find(x=>x.id===id);source=item?{title:item.title,wardrobeItemIds:[item.id]}:null}
+  if(!source)return;
+  const ids=outfitIds(source),items=ids.map(itemId=>state.wardrobe.find(x=>x.id===itemId)).filter(Boolean);
+  try{
+    const response=await createShareLink({source:source.festivalCampaignId?"festival_stylist":scope,outfitId:id||null,campaignId:source.festivalCampaignId||null,wardrobeItemIds:ids});
+    const payload=response.data||response,link=payload.url||payload.shareUrl||(payload.code?`${location.origin}/r?c=${encodeURIComponent(payload.code)}`:"");
+    if(!link)throw new Error("Share link was not returned.");
+    await logShareEvent({code:payload.code,event:"share",source:scope}).catch(()=>{});
+    const title=source.outfit?.title||source.title||"My ClothMatics outfit",blob=await createShareCardBlob(title,items,link);
+    const file=blob?new File([blob],"clothmatics-outfit.png",{type:"image/png"}):null;
+    if(navigator.share&&(!file||!navigator.canShare||navigator.canShare({files:[file]}))) await navigator.share(file?{title,text:"Styled with ClothMatics",url:link,files:[file]}:{title,text:"Styled with ClothMatics",url:link});
+    else {if(blob){const url=URL.createObjectURL(blob),anchor=document.createElement("a");anchor.href=url;anchor.download="clothmatics-outfit.png";anchor.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}await navigator.clipboard.writeText(link);toast(blob?"Share card downloaded and link copied.":"Share link copied.")}
+  }catch(error){if(error.name!=="AbortError")toast(`Could not share: ${error.message}`)}
+}
+async function createShareCardBlob(title,items,link){
+  const canvas=document.createElement("canvas");canvas.width=1080;canvas.height=1350;const ctx=canvas.getContext("2d");
+  const gradient=ctx.createLinearGradient(0,0,1080,1350);gradient.addColorStop(0,"#17122f");gradient.addColorStop(.55,"#49309c");gradient.addColorStop(1,"#f047a0");ctx.fillStyle=gradient;ctx.fillRect(0,0,1080,1350);
+  ctx.fillStyle="#fff";ctx.font="800 54px Manrope, sans-serif";ctx.fillText("ClothMatics",70,105);ctx.font="800 64px Manrope, sans-serif";wrapCanvasText(ctx,title,70,215,930,76);ctx.fillStyle="#ffffffd9";ctx.font="28px sans-serif";ctx.fillText("Styled from pieces already in my wardrobe",70,380);
+  const slots=[[70,455],[370,455],[670,455],[220,790],[520,790]];
+  for(let index=0;index<Math.min(items.length,5);index++){const [x,y]=slots[index];ctx.fillStyle="#ffffffef";roundRect(ctx,x,y,290,290,28);ctx.fill();try{const image=await loadShareImage(safeUrl(items[index].image));ctx.drawImage(image,x+20,y+20,250,250)}catch{ctx.fillStyle="#6c63ff22";ctx.fillRect(x+20,y+20,250,250)}ctx.fillStyle="#fff";ctx.font="700 22px sans-serif";ctx.fillText(String(items[index].title||"Garment").slice(0,24),x,y+325)}
+  ctx.fillStyle="#fff";ctx.font="700 28px sans-serif";ctx.fillText("Open this look",70,1230);ctx.font="23px sans-serif";ctx.fillText(link.slice(0,72),70,1275);
+  try{return await new Promise(resolve=>canvas.toBlob(resolve,"image/png",.94))}catch{return null}
+}
+function loadShareImage(url){return new Promise((resolve,reject)=>{if(!url)return reject(new Error("No image"));const image=new Image();image.crossOrigin="anonymous";image.onload=()=>resolve(image);image.onerror=reject;image.src=url})}
+function wrapCanvasText(ctx,text,x,y,maxWidth,lineHeight){const words=String(text).split(/\s+/);let line="",row=0;for(const word of words){const test=`${line}${word} `;if(ctx.measureText(test).width>maxWidth&&line){ctx.fillText(line,x,y+row*lineHeight);line=`${word} `;row++}else line=test}ctx.fillText(line,x,y+row*lineHeight)}
+function roundRect(ctx,x,y,width,height,radius){ctx.beginPath();ctx.roundRect(x,y,width,height,radius)}
 
 function normalizeSearch(value = "") {
   return String(value).toLowerCase().replace(/&/g, " and ").replace(/[^a-z0-9]+/g, "");
@@ -396,7 +541,7 @@ $("#generate-button").addEventListener("click", async () => {
     const response = await fetch("/api/generate-outfit", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ occasion: $("#occasion-select").value, preference: $("#preference-input").value.trim(), profile: publicProfile(state.profile), wardrobe: state.wardrobe.map(publicGarment) }),
+      body: JSON.stringify({ occasion: $("#occasion-select").value, preference: $("#preference-input").value.trim(), promptId:state.stylistContext.promptId||"outfit_stylist", anchorItemId:state.stylistContext.anchorItemId||null, festivalCampaignId:state.stylistContext.festivalCampaignId||null }),
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "Outfit generation failed.");
@@ -410,9 +555,15 @@ $("#generate-button").addEventListener("click", async () => {
 });
 
 function renderGeneratedOutfit(outfit) {
+  state.generatedOutfit = outfit;
   const items = (outfit.wardrobeItemIds || []).map((id) => state.wardrobe.find((item) => item.id === id)).filter(Boolean);
   $("#outfit-result").innerHTML = `<div class="generated-head"><div><span class="app-kicker">YOUR COMPLETE LOOK</span><h3>${escapeHtml(outfit.title)}</h3><p>${escapeHtml(outfit.subtitle || "")}</p></div><div class="generated-score">★ ${Number(outfit.score || 0)}/100</div></div><div class="generated-items">${items.map((item) => `<div><img src="${safeUrl(item.image)}" alt="${escapeHtml(item.title)}" /><b>${escapeHtml(item.title)}</b></div>`).join("")}</div><h4>Why it works</h4><ul class="reason-list">${(outfit.reasoning || []).map((reason) => `<li>${escapeHtml(reason)}</li>`).join("")}</ul>`;
+  $("#outfit-result").insertAdjacentHTML("beforeend", `<div class="card-actions">${state.pendingPlanDate?`<button id="accept-generated-plan" class="button button-primary">Accept and plan for ${escapeHtml(formatIsoDate(state.pendingPlanDate))}</button>`:""}<button data-share-scope="generated" data-share-id="generated">Share outfit</button></div><small>Prompt ${escapeHtml(outfit.promptId||"outfit_stylist")} v${Number(outfit.promptVersion||0)} · ${escapeHtml(outfit.model||"")}</small>`);
+  $("#accept-generated-plan")?.addEventListener("click",acceptGeneratedPlan);
 }
+
+async function acceptGeneratedPlan(){const outfit=state.generatedOutfit,date=state.pendingPlanDate;if(!outfit||!date)return;const signature=hashText([...outfit.wardrobeItemIds].sort().join("|")),id=`webgen_${state.user.uid}_${date}_${signature}`,ref=doc(db,"outfitWear",id),button=$("#accept-generated-plan");button.disabled=true;try{await runTransaction(db,async tx=>{if((await tx.get(ref)).exists())return;tx.set(ref,{userId:state.user.uid,wearDate:date,status:"planned",wardrobeItemIds:outfit.wardrobeItemIds,outfit:{title:outfit.title,subtitle:outfit.subtitle,score:outfit.score,wardrobeItemIds:outfit.wardrobeItemIds},occasion:$("#occasion-select").value,source:"web_generated",festivalCampaignId:outfit.festivalCampaignId||null,promptId:outfit.promptId,promptVersion:outfit.promptVersion,promptHash:outfit.promptHash,createdAt:serverTimestamp(),updatedAt:serverTimestamp()})});state.pendingPlanDate=null;await reloadWear();toast("Generated outfit planned exactly once.");openPanel("planner")}catch(error){button.disabled=false;toast(`Could not save plan: ${error.message}`)}}
+function hashText(value){let hash=2166136261;for(let i=0;i<value.length;i++){hash^=value.charCodeAt(i);hash=Math.imul(hash,16777619)}return(hash>>>0).toString(36)}
 
 function publicGarment(item) { return { id:item.id,title:item.title,category:item.category,subCategory:item.subCategory,categoryRole:item.categoryRole,layerRole:item.layerRole,requiresBaseLayer:item.requiresBaseLayer,standaloneOutfit:item.standaloneOutfit,userOccasions:item.userOccasions,activitySuitability:item.activitySuitability,userRestrictions:item.userRestrictions,setType:item.setType,includedComponents:item.includedComponents,requiredComponents:item.requiredComponents,primaryColor:item.primaryColor,secondaryColors:item.secondaryColors,pattern:item.pattern,fit:item.fit,material:item.material,season:item.season,occasion:item.occasion,formality:item.formality,tags:item.tags,favorite:item.favorite,laundryStatus:item.laundryStatus,hiddenFromAI:item.hiddenFromAI }; }
 function publicProfile(profile={}) { return { gender:profile.gender,dateOfBirth:profile.dateOfBirth,profession:profile.profession,city:profile.city,bodyType:profile.bodyTypeSelfReported||profile.aiAnalysis?.bodyType,skinTone:profile.aiAnalysis?.skinTone,hairColor:profile.aiAnalysis?.hairColor,preferences:profile.preferences||null }; }
@@ -420,7 +571,6 @@ function byCreatedAt(a,b) { return timeValue(b.createdAt) - timeValue(a.createdA
 function timeValue(value) { if (!value) return 0; if (typeof value.toMillis==="function") return value.toMillis(); if (typeof value.seconds==="number") return value.seconds*1000; if (typeof value==="number") return value; return new Date(value).getTime()||0; }
 function formatDateValue(value) { const time=timeValue(value); return time?new Intl.DateTimeFormat(undefined,{dateStyle:"medium"}).format(time):"Date unavailable"; }
 function formatIsoDate(value) { if(!value)return "Date unavailable"; const date=new Date(`${String(value).slice(0,10)}T12:00:00`); return Number.isNaN(date.getTime())?String(value):date.toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"}); }
-function localDateKey(date) { const year=date.getFullYear(),month=String(date.getMonth()+1).padStart(2,"0"),day=String(date.getDate()).padStart(2,"0"); return `${year}-${month}-${day}`; }
 function formatCurrency(value) { return new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:0}).format(Number(value)||0); }
 function metricCards(entries) { return entries.map(([value,label])=>`<article><b>${escapeHtml(value)}</b><span>${escapeHtml(label)}</span></article>`).join(""); }
 function emptyBlock(title,text) { return `<div class="companion-empty"><b>${escapeHtml(title)}</b><span>${escapeHtml(text)}</span></div>`; }
