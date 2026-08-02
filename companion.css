@@ -11,3 +11,19 @@
 @media(max-width:700px){.app-sidebar nav a{display:none}.quest-history-card{grid-template-columns:1fr!important}.quest-look-preview{grid-template-columns:repeat(4,1fr)}.quest-history-card>strong{text-align:left}.complete-outfit-grid{grid-template-columns:repeat(2,1fr)}}
 .home-insights{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
 .badge-grid article>span{transform:none}.badge-grid article>span svg{width:27px;height:27px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* View-first dashboard interactions and local Smart Purchase layout */
+.home-insight-card{position:relative;width:100%;padding:18px;border:1px solid var(--line);border-radius:20px;background:#fff;color:var(--ink);font:inherit;text-align:left;cursor:pointer;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.home-insight-card:hover{transform:translateY(-2px);border-color:#cfc8ff;box-shadow:0 13px 32px rgba(45,27,105,.09)}
+.home-insight-card:focus-visible{outline:3px solid #ff4fa355;outline-offset:3px}
+.home-insight-card .insight-arrow{position:absolute;right:14px;top:14px;color:var(--purple);font-weight:800}
+.purchase-layout{grid-template-columns:minmax(320px,420px) minmax(0,1fr);align-items:start;overflow:hidden}
+.purchase-form,.purchase-result{min-width:0;overflow:hidden}
+.purchase-form{align-self:start;height:auto;align-content:start}
+.purchase-form-head{display:grid;gap:6px}.purchase-form-head span{color:var(--purple);font-size:9px;font-weight:800;letter-spacing:1.2px}.purchase-form-head h4{margin:0;font:800 21px Manrope}.purchase-form-head small{color:var(--muted);line-height:1.45}
+.purchase-file span{color:var(--muted);font-weight:500}.purchase-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.purchase-fields label:first-child{grid-column:1/-1}
+.purchase-preview{height:300px;min-height:0}.purchase-preview img{height:100%;max-height:300px;object-fit:contain}
+.purchase-result{min-height:560px}.purchase-result>.result-placeholder{min-height:510px;text-align:center}.purchase-result>.result-placeholder p{max-width:330px}
+.purchase-verdict p{overflow-wrap:anywhere;line-height:1.55}.purchase-looks{grid-template-columns:repeat(2,minmax(0,1fr))}.purchase-looks article{min-width:0;overflow:hidden}.purchase-looks .look-thumbs,.purchase-similar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}.purchase-looks .look-thumbs img,.purchase-similar img{display:block;width:100%;height:110px;object-fit:contain;border-radius:12px;background:var(--paper)}
+@media(max-width:900px){.purchase-layout{grid-template-columns:1fr}.purchase-result{min-height:320px}.purchase-result>.result-placeholder{min-height:270px}}
+@media(max-width:560px){.purchase-fields,.purchase-looks{grid-template-columns:1fr}.purchase-fields label:first-child{grid-column:auto}.purchase-preview{height:240px}.purchase-looks .look-thumbs{grid-template-columns:repeat(3,minmax(0,1fr))}.home-insight-card{grid-template-columns:48px minmax(0,1fr)}}

@@ -42,8 +42,8 @@ test("weekly report counts only the local seven-day window",()=>{
 test("prompt registry matches active mobile identity and namespaces",()=>{
   assert.deepEqual(PROMPT_REGISTRY.outfit_stylist,{version:4,releaseTag:"wardrobe-grounded-2026-08"});
   assert.deepEqual(PROMPT_REGISTRY.smart_purchase,{version:2,releaseTag:"verified-combinations-2026-08"});
+  assert.deepEqual(PROMPT_REGISTRY.push_notification,{version:1,releaseTag:"admin-campaign-drafts-2026-08"});
   const stamp=promptStamp("festival_stylist","private prompt fixture");
   assert.equal(stamp.promptVersion,1);assert.ok(stamp.promptHash);assert.ok(stamp.requestPromptHash);
   assert.ok(promptCacheKey("festival_stylist","user").startsWith(`${stamp.promptHash}:`));
 });
-

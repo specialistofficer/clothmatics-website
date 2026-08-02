@@ -18,9 +18,9 @@
     <link rel="stylesheet" href="./contact.css" />
   </head>
   <body>
-    <header class="legal-header"><a class="legal-brand" href="./"><img src="./assets/clothmatics-logo.png" alt="" />ClothMatics</a><nav><a href="./">Home</a><a href="./faq.html">FAQ</a><a href="./privacy.html">Privacy</a><a class="button" href="./">Open wardrobe</a></nav></header>
+    <header class="legal-header"><a class="legal-brand" href="./"><img src="./assets/clothmatics-logo.png" alt="" />ClothMatics</a><nav><a href="./">Home</a><a href="./faq.html">FAQ</a><a href="./privacy.html">Privacy</a><a href="#delete-account">Delete account</a><a class="button" href="./">Open wardrobe</a></nav></header>
     <main class="support-main">
-      <section class="support-intro"><span class="legal-kicker">HELP AND CONTACT</span><h1>Tell us what went wrong.<br />We’ll help you move forward.</h1><p>Prepare an email with the details below and send it using your preferred email app. Please never include your password, OTP, API keys, or payment information.</p>
+      <section class="support-intro"><span class="legal-kicker">HELP AND CONTACT</span><h1>Tell us what went wrong.<br />We’ll help you move forward.</h1><p>Prepare a support email below, or securely submit an account-deletion request. Never include your password, OTP, API keys, or payment information.</p>
         <div class="support-promises"><span>✓ Direct email support</span><span>✓ No Cloudflare setup required</span><span>✓ Review before sending</span></div>
       </section>
       <section class="support-layout">
@@ -45,8 +45,15 @@
             <label class="consent-row"><input id="support-consent" type="checkbox" required /><span>I understand that clicking below will open my email app with these details so I can review and send the message.</span></label>
             <div id="support-error" class="support-error hidden" role="alert"></div>
             <button id="support-submit" class="support-submit" type="submit">Prepare support email <span>→</span></button>
-            <p class="direct-email">Prefer to write it yourself? <a href="mailto:clothmatics@gmail.com">Email ClothMatics support</a>.</p>
           </form>
+        </div>
+      </section>
+      <section id="delete-account" class="deletion-request-card" aria-labelledby="deletion-heading">
+        <div class="deletion-copy"><span class="legal-kicker">ACCOUNT DELETION</span><h2 id="deletion-heading">Request permanent account deletion</h2><p>Sign in with the same ClothMatics account you want deleted. After you submit, the request appears in the protected admin review queue.</p><ul><li>Deletes your sign-in account and profile</li><li>Deletes wardrobe items, images, outfits, plans, history, and related app data</li><li>This action is permanent after administrator approval</li></ul></div>
+        <div class="deletion-auth-card">
+          <div id="deletion-signed-out"><h3>Verify your account</h3><form id="deletion-signin-form"><label>Email<input id="deletion-email" type="email" autocomplete="email" required></label><label>Password<input id="deletion-password" type="password" autocomplete="current-password" required></label><button type="submit" class="support-submit">Sign in securely</button></form><div class="deletion-divider">or</div><button id="deletion-google" type="button" class="deletion-google">Continue with Google</button></div>
+          <div id="deletion-signed-in" class="hidden"><span class="verified-label">VERIFIED ACCOUNT</span><h3 id="deletion-account-email"></h3><p>Only this signed-in account will be included in the request.</p><label class="consent-row"><input id="deletion-confirm" type="checkbox"><span>I understand that approval permanently deletes this account and its ClothMatics data.</span></label><button id="request-deletion" type="button" class="danger-action">Submit deletion request</button><button id="deletion-signout" type="button" class="text-action">Use another account</button></div>
+          <p id="deletion-status" role="status" aria-live="polite"></p>
         </div>
       </section>
     </main>

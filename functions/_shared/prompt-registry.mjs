@@ -1,4 +1,5 @@
 export const PROMPT_REGISTRY = Object.freeze({
+  push_notification:{version:1,releaseTag:"admin-campaign-drafts-2026-08"},
   outfit_stylist:{version:4,releaseTag:"wardrobe-grounded-2026-08"},
   style_this:{version:4,releaseTag:"anchor-rules-2026-08"},
   smart_purchase:{version:2,releaseTag:"verified-combinations-2026-08"},

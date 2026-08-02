@@ -1,18 +1,31 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 
 const root=new URL("../",import.meta.url);
-test("AI endpoints re-read trusted state and do not trust browser wardrobe or plan",async()=>{
-  const outfit=await readFile(new URL("functions/api/generate-outfit.js",root),"utf8");
-  const purchase=await readFile(new URL("functions/api/smart-purchase.js",root),"utf8");
-  assert.match(outfit,/getOwnedWardrobe/);assert.doesNotMatch(outfit,/sanitizeWardrobe\(body\.wardrobe\)/);
-  assert.match(purchase,/getUserProfile/);assert.match(purchase,/isPremiumProfile/);
+test("ordinary web users have no AI endpoint or user-facing AI route",async()=>{
+  const app=await readFile(new URL("app.js",root),"utf8");
+  const html=await readFile(new URL("index.html",root),"utf8");
+  assert.doesNotMatch(app,/\/api\/(generate-outfit|smart-purchase)/);
+  assert.doesNotMatch(app,/Festival Stylist|panel-stylist|isTrustedPremiumClient/);
+  assert.doesNotMatch(html,/data-panel="(?:stylist|festival)"|panel-stylist/);
+  await assert.rejects(access(new URL("functions/api/generate-outfit.js",root)));
+  await assert.rejects(access(new URL("functions/api/smart-purchase.js",root)));
 });
-test("admin campaign UI is claim-gated and deletion uses callable",async()=>{
+test("admin AI drafting is claim-gated and delivery remains explicit",async()=>{
   const admin=await readFile(new URL("admin.js",root),"utf8");
+  const endpoint=await readFile(new URL("functions/api/admin/push-draft.js",root),"utf8");
   assert.match(admin,/token\.claims\.admin !== true/);assert.match(admin,/httpsCallable\(functions, "deletePushCampaign"\)/);
+  assert.match(admin,/maxlength="55"/);assert.match(admin,/maxlength="140"/);assert.match(admin,/estimatePushCampaignReach/);
+  assert.match(endpoint,/hasAdminClaim\(identity\)/);assert.match(endpoint,/GATEWAY_URL/);assert.doesNotMatch(endpoint,/pushCampaigns|setDoc|addDoc/);
   assert.doesNotMatch(admin,/deleteDoc\(doc\(db,"pushCampaigns"/);
+});
+test("public deletion form calls the authenticated deletion callable",async()=>{
+  const html=await readFile(new URL("contact.html",root),"utf8");
+  const contact=await readFile(new URL("contact.js",root),"utf8");
+  assert.match(html,/id="delete-account"/);assert.match(html,/id="deletion-signin-form"/);
+  assert.match(contact,/httpsCallable\([^\n]+"requestAccountDeletion"\)/);
+  assert.doesNotMatch(html,/mailto:clothmatics@gmail\.com/);
 });
 test("ordinary website does not directly write share analytics",async()=>{
   const app=await readFile(new URL("app.js",root),"utf8");

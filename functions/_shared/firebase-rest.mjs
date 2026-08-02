@@ -1,5 +1,6 @@
 const PROJECT_ID="stylemateai-d5843";
 export function bearer(header="") { return header.startsWith("Bearer ")?header.slice(7).trim():""; }
+export function hasAdminClaim(identity={}) { try { return JSON.parse(identity.customAttributes||"{}").admin===true; } catch { return false; } }
 export async function verifyFirebaseToken(token,apiKey) { if(!apiKey)throw new Error("FIREBASE_WEB_API_KEY is not configured."); const response=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${encodeURIComponent(apiKey)}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({idToken:token})}); if(!response.ok)return null; return (await response.json()).users?.[0]||null; }
 function decode(value){if(!value)return null;if("stringValue"in value)return value.stringValue;if("integerValue"in value)return Number(value.integerValue);if("doubleValue"in value)return Number(value.doubleValue);if("booleanValue"in value)return value.booleanValue;if("timestampValue"in value)return value.timestampValue;if("nullValue"in value)return null;if("arrayValue"in value)return (value.arrayValue.values||[]).map(decode);if("mapValue"in value)return decodeFields(value.mapValue.fields||{});return null}
 function decodeFields(fields={}){return Object.fromEntries(Object.entries(fields).map(([key,value])=>[key,decode(value)]))}
