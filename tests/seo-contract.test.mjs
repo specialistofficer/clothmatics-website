@@ -53,4 +53,7 @@ test("social preview is 1200 by 630 pixels", async () => {
 test("Google Search Console verification file is exact", async () => {
   const verification = await readFile(new URL("googled46210596bbf9069.html", root), "utf8");
   assert.equal(verification.trim(), "google-site-verification: googled46210596bbf9069.html");
+
+  const route = await readFile(new URL("functions/googled46210596bbf9069.html.js", root), "utf8");
+  assert.match(route, /google-site-verification: googled46210596bbf9069\.html/);
 });
