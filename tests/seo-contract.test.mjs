@@ -49,3 +49,8 @@ test("social preview is 1200 by 630 pixels", async () => {
   assert.equal(image.readUInt32BE(16), 1200);
   assert.equal(image.readUInt32BE(20), 630);
 });
+
+test("Google Search Console verification file is exact", async () => {
+  const verification = await readFile(new URL("googled46210596bbf9069.html", root), "utf8");
+  assert.equal(verification.trim(), "google-site-verification: googled46210596bbf9069.html");
+});
