@@ -50,7 +50,19 @@
 .closet-preview figcaption span{color:var(--muted);font-size:12px}
 .app-sidebar nav a{display:block;color:#aaa7bd;text-align:left;padding:13px;border-radius:12px;font:600 13px "DM Sans";text-decoration:none}.app-sidebar nav a:hover{color:#fff;background:#ffffff13}
 
+/* Search- and answer-friendly product introduction */
+.answer-hub{padding-block:96px;background:linear-gradient(180deg,#fff,#f8f7ff)}
+.answer-intro{display:grid;grid-template-columns:.72fr 1.28fr;gap:28px 70px;align-items:start}
+.answer-intro .eyebrow{grid-column:1/-1;justify-content:flex-start}
+.answer-intro h2{margin:0;font:800 clamp(34px,4.5vw,56px)/1.08 Manrope,sans-serif;letter-spacing:-.04em}
+.answer-intro>p{margin:4px 0 0;color:var(--muted);font-size:17px;line-height:1.75}
+.answer-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:44px}
+.answer-grid article{padding:25px;border:1px solid #e0dcf3;border-radius:21px;background:#fff;box-shadow:0 14px 38px rgba(45,27,105,.06)}
+.answer-grid h3{margin:0 0 11px;font:800 18px/1.35 Manrope,sans-serif}
+.answer-grid p{margin:0;color:var(--muted);line-height:1.65}
+
 @media(max-width:950px){
+  .answer-intro{grid-template-columns:1fr;gap:18px}.answer-intro .eyebrow{grid-column:auto}.answer-grid{grid-template-columns:1fr}
   .showcase-heading{grid-template-columns:1fr;gap:18px}
   .showcase-flow{grid-template-columns:repeat(2,minmax(0,1fr));max-width:720px}
   .feature-section{grid-template-columns:1fr}
@@ -59,7 +71,7 @@
 
 @media(max-width:620px){
   .brand-logo{width:40px;height:40px}
-  .story.section,.privacy.section,.product-showcase,.feature-section{padding-block:70px}
+  .story.section,.privacy.section,.product-showcase,.feature-section,.answer-hub{padding-block:70px}
   .story .steps{grid-template-columns:1fr;margin-top:34px}
   .story .step-card,.story .step-card.featured{min-height:auto;padding:25px}
   .story .step-icon,.story .featured .step-icon{margin:28px 0 20px}

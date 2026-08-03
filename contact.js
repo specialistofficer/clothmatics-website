@@ -28,7 +28,6 @@ $("#support-form").addEventListener("submit", (event) => {
       `Category: ${category}`,
       `Platform: ${$("#support-platform").value || "Not specified"}`,
       `App version: ${$("#support-version").value.trim() || "Not specified"}`,
-      `Account UID: ${$("#support-uid").value.trim() || "Not provided"}`,
       "",
       "Issue details:",
       message.value.trim(),

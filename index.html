@@ -12,10 +12,14 @@
     <meta property="og:title" content="ClothMatics — AI wardrobe and personal outfit planner" />
     <meta property="og:description" content="Organize your digital closet, plan outfits, track wears, and get AI styling ideas based on clothes you already own." />
     <meta property="og:url" content="https://clothmatics.pages.dev/" />
-    <meta property="og:image" content="https://clothmatics.pages.dev/assets/screenshots/1.png" />
+    <meta property="og:image" content="https://clothmatics.pages.dev/assets/clothmatics-social.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="ClothMatics — your wardrobe, intelligently styled" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="ClothMatics — AI wardrobe and outfit planner" />
     <meta name="twitter:description" content="Turn the clothes you own into organized, personal outfit possibilities." />
+    <meta name="twitter:image" content="https://clothmatics.pages.dev/assets/clothmatics-social.png" />
     <link rel="icon" type="image/png" href="./assets/clothmatics-logo.png" />
     <title>ClothMatics — Your wardrobe, intelligently styled</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -25,7 +29,7 @@
     <link rel="stylesheet" href="./companion.css" />
     <link rel="stylesheet" href="./brand.css" />
     <script type="application/ld+json">
-      {"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://clothmatics.pages.dev/#organization","name":"ClothMatics","url":"https://clothmatics.pages.dev/","logo":"https://clothmatics.pages.dev/assets/clothmatics-logo.png"},{"@type":"WebSite","@id":"https://clothmatics.pages.dev/#website","url":"https://clothmatics.pages.dev/","name":"ClothMatics","publisher":{"@id":"https://clothmatics.pages.dev/#organization"}},{"@type":"SoftwareApplication","name":"ClothMatics","url":"https://clothmatics.pages.dev/","applicationCategory":"LifestyleApplication","operatingSystem":"Android, Web","description":"AI wardrobe organizer and personal outfit planner for clothes you already own.","featureList":["Digital wardrobe","Personal outfit recommendations","Outfit planner","Wear history","Cost-per-wear insights","Closet Quest"]}]}
+      {"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://clothmatics.pages.dev/#organization","name":"ClothMatics","url":"https://clothmatics.pages.dev/","logo":{"@type":"ImageObject","url":"https://clothmatics.pages.dev/assets/clothmatics-logo.png"}},{"@type":"WebSite","@id":"https://clothmatics.pages.dev/#website","url":"https://clothmatics.pages.dev/","name":"ClothMatics","description":"A digital wardrobe and personal outfit planning companion.","publisher":{"@id":"https://clothmatics.pages.dev/#organization"}},{"@type":"SoftwareApplication","@id":"https://clothmatics.pages.dev/#app","name":"ClothMatics","url":"https://clothmatics.pages.dev/","image":"https://clothmatics.pages.dev/assets/clothmatics-social.png","applicationCategory":"LifestyleApplication","applicationSubCategory":"Digital wardrobe and outfit planner","operatingSystem":"Android, Web","isAccessibleForFree":true,"description":"ClothMatics organizes the clothes you own, helps you plan complete outfits, tracks wears, and gives personal wardrobe insights.","featureList":["Digital wardrobe","Personal outfit recommendations","Outfit planner","Wear history","Cost-per-wear insights","Closet Quest","Smart Purchase comparison"],"publisher":{"@id":"https://clothmatics.pages.dev/#organization"}}]}
     </script>
   </head>
   <body>
@@ -35,7 +39,7 @@
         <img class="brand-logo" src="./assets/clothmatics-logo.png" alt="" /><span>Cloth<span class="gradient-text">Matics</span></span>
       </a>
       <nav class="desktop-nav" aria-label="Main navigation">
-        <a href="#how">How it works</a><a href="#app-preview">App preview</a><a href="#features">Features</a><a href="./faq.html">FAQ</a><a href="./privacy.html">Privacy</a>
+        <a href="#about">About</a><a href="#how">How it works</a><a href="#app-preview">App preview</a><a href="#features">Features</a><a href="./faq">FAQ</a>
       </nav>
       <div class="header-actions">
         <button class="button button-ghost" data-open-auth>Sign in</button>
@@ -76,6 +80,15 @@
 
       <section class="proof-strip"><span>PERSONAL WARDROBE</span><i></i><span>WEATHER-AWARE</span><i></i><span>AI OUTFITS</span><i></i><span>STYLE INSIGHTS</span></section>
 
+      <section class="section answer-hub" id="about">
+        <div class="answer-intro reveal"><div class="eyebrow"><span></span> What is ClothMatics?</div><h2>A digital wardrobe that helps you make more of the clothes you own.</h2><p>ClothMatics is a personal wardrobe and outfit-planning app. It organizes your garments, brings saved looks and plans together, tracks how often pieces are worn, and helps you choose complete outfits for real occasions.</p></div>
+        <div class="answer-grid">
+          <article class="reveal"><h3>What can I do in the mobile app?</h3><p>Add and organize garments, receive styling suggestions, update wardrobe details, and use camera-based clothing features.</p></article>
+          <article class="reveal"><h3>What can I see on the website?</h3><p>Sign in to review your wardrobe, saved outfits, planner, wear insights, profile preferences, and private Closet Quest progress.</p></article>
+          <article class="reveal"><h3>How does Smart Purchase help?</h3><p>Compare a possible purchase with clothes you already own and discover combinations before deciding whether it belongs in your closet.</p></article>
+        </div>
+      </section>
+
       <section class="section story" id="how">
         <div class="section-heading reveal"><div class="eyebrow"><span></span> Simple by design</div><h2>From closet to complete look<br />in three thoughtful steps.</h2></div>
         <div class="steps">
@@ -111,12 +124,12 @@
       </section>
 
       <section class="section feature-section" id="features">
-        <div class="feature-copy reveal"><div class="eyebrow light"><span></span> One wardrobe, everywhere</div><h2>Your closet is now available on the web.</h2><p>Sign in with the same ClothMatics account to browse garments, view Lookbook combinations, revisit saved outfits, and generate a new outfit online.</p><ul><li><b>Manage with the mobile app:</b> use the app to add, edit, or remove garments.</li><li><b>Shared data:</b> favorites, Lookbook items, and images remain in sync.</li><li><b>Secure AI:</b> outfit generation runs through a protected server function.</li></ul><button class="button button-light" data-open-auth>Sign in to my closet <span aria-hidden="true">→</span></button></div>
+        <div class="feature-copy reveal"><div class="eyebrow light"><span></span> One wardrobe, everywhere</div><h2>Your closet is now available on the web.</h2><p>Sign in with the same ClothMatics account to browse garments, view Lookbook combinations, revisit saved outfits, and check your wardrobe insights.</p><ul><li><b>Manage with the mobile app:</b> use the app to add, edit, or remove garments.</li><li><b>Stay in sync:</b> your wardrobe, favorite pieces, saved looks, and plans remain together.</li><li><b>Your account, your closet:</b> sign in to see the wardrobe connected to your account.</li></ul><button class="button button-light" data-open-auth>Sign in to my closet <span aria-hidden="true">→</span></button></div>
         <figure class="closet-preview reveal"><div class="preview-glow"></div><img src="./assets/screenshots/4.png" alt="ClothMatics smart digital closet organized by garment category" loading="lazy" /><figcaption><b>Your wardrobe, beautifully organized</b><span>Browse it on mobile and the web</span></figcaption></figure>
       </section>
 
       <section class="section privacy" id="privacy">
-        <div class="privacy-card reveal"><div><div class="eyebrow"><span></span> Designed with boundaries</div><h2>Your clothes are personal.<br />We treat them that way.</h2></div><div class="privacy-points"><p><b>Manage in the mobile app</b><span>Use the app whenever you want to add, edit, or remove wardrobe items.</span></p><p><b>Account protected</b><span>Firebase rules restrict every wardrobe query to the signed-in owner.</span></p><p><b>Keys stay server-side</b><span>Your AI provider key is never shipped to a visitor’s browser.</span></p></div></div>
+        <div class="privacy-card reveal"><div><div class="eyebrow"><span></span> Designed with boundaries</div><h2>Your clothes are personal.<br />We treat them that way.</h2></div><div class="privacy-points"><p><b>Manage in the mobile app</b><span>Use the app whenever you want to add, edit, or remove wardrobe items.</span></p><p><b>Private account access</b><span>Your personal wardrobe is available only after you sign in.</span></p><p><b>You stay in control</b><span>Review your information, request help, or ask for account deletion at any time.</span></p></div></div>
       </section>
 
       <section class="section final-cta" id="download"><div class="eyebrow light"><span></span> Dress with intention</div><h2>More outfits.<br />Fewer “nothing to wear” days.</h2><p>Build your wardrobe in the ClothMatics mobile app, then style it from anywhere.</p><div><button class="button button-light" data-open-auth>Open web wardrobe</button><a class="button button-outline-light" href="#app-preview">Explore app features</a></div></section>
@@ -152,13 +165,13 @@
         <div id="panel-lookbook" class="panel hidden"><div class="section-intro panel-heading-row"><div><span>CURATED BY YOU</span><h3>Your saved combinations</h3><p>Build looks from garments already in your wardrobe.</p></div><button id="open-look-builder" class="button button-primary">Create a look</button></div><div class="panel-tools"><div class="search"><span>⌕</span><input id="lookbook-search" placeholder="Search Lookbook pieces" /></div></div><div class="looks-grid" id="looks-grid"></div><div class="section-intro item-intro"><span>LOOKBOOK PIECES</span><h3>Garments you marked for inspiration</h3></div><div class="closet-grid" id="lookbook-grid"></div></div>
         <div id="panel-outfits" class="panel hidden"><div class="section-intro"><span>YOUR OUTFIT LIBRARY</span><h3>Saved and generated looks</h3><p>Outfits created in the mobile app, organized by source.</p></div><div class="outfit-filter-row"><button class="active" data-outfit-filter="all">All</button><button data-outfit-filter="lookbook">Created looks</button><button data-outfit-filter="ai">AI recommendations</button><button data-outfit-filter="challenge">Closet Quest</button></div><div class="outfit-library" id="outfit-library"></div></div>
         <div id="panel-planner" class="panel hidden"><div class="section-intro panel-heading-row"><div><span>FULL-MONTH VIEW</span><h3>Your outfit planner</h3><p>Plans and wear records are managed in the mobile app.</p></div><div class="month-controls"><button id="month-prev" aria-label="Previous month">←</button><b id="month-label"></b><button id="month-next" aria-label="Next month">→</button></div></div><div class="planner-layout"><div class="calendar-card"><div class="calendar-week"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div><div class="calendar-grid" id="calendar-grid"></div></div><div class="day-plans"><span class="app-kicker">SELECTED DATE</span><h3 id="selected-date-label"></h3><div id="selected-date-plans"></div></div></div></div>
-        <div id="panel-insights" class="panel hidden"><div class="section-intro"><span>THIS WEEK</span><h3>Weekly Closet Report</h3><p>Deterministic insights calculated from your last seven local calendar days.</p></div><div id="weekly-report" class="weekly-report"></div><div class="section-intro item-intro"><span>WARDROBE VALUE</span><h3>Wear history and cost per wear</h3></div><div class="insight-summary" id="insight-summary"></div><div class="insights-layout"><div><div class="section-intro"><span>BEST VALUE</span><h3>Cost-per-wear</h3></div><div id="cpw-list" class="cpw-list"></div></div><div><div class="section-intro"><span>RECENT</span><h3>Wear history</h3></div><div id="wear-history" class="wear-history"></div></div></div></div>
+        <div id="panel-insights" class="panel hidden"><div class="section-intro"><span>THIS WEEK</span><h3>Weekly Closet Report</h3><p>A clear summary of your wardrobe activity from the last seven days.</p></div><div id="weekly-report" class="weekly-report"></div><div class="section-intro item-intro"><span>WARDROBE VALUE</span><h3>Wear history and cost per wear</h3></div><div class="insight-summary" id="insight-summary"></div><div class="insights-layout"><div><div class="section-intro"><span>BEST VALUE</span><h3>Cost-per-wear</h3></div><div id="cpw-list" class="cpw-list"></div></div><div><div class="section-intro"><span>RECENT</span><h3>Wear history</h3></div><div id="wear-history" class="wear-history"></div></div></div></div>
         <div id="panel-quest" class="panel hidden"><div class="section-intro"><span>PRIVATE PROGRESS</span><h3>Closet Quest</h3><p>Your scores and badges are visible only to you.</p></div><div id="quest-summary" class="quest-summary"></div><div class="section-intro"><span>BADGES</span><h3>Your achievements</h3></div><div id="badge-grid" class="badge-grid"></div><div class="section-intro item-intro"><span>HISTORY</span><h3>Completed quests</h3></div><div id="quest-history" class="quest-history"></div></div>
         <div id="panel-profile" class="panel hidden"><div class="section-intro"><span>YOUR STYLE IDENTITY</span><h3>Profile and preferences</h3><p>Update these details in the ClothMatics mobile app.</p></div><div class="profile-layout"><div class="profile-card-web" id="profile-card"></div><div><div class="section-intro"><span>STYLE PROFILE</span><h3>Your preferences</h3></div><div id="preference-grid" class="preference-grid"></div><div id="learned-style" class="learned-style hidden"></div></div></div></div>
       </section>
     </main>
 
-    <footer><a class="brand" href="#top"><img class="brand-logo" src="./assets/clothmatics-logo.png" alt="" /><span>ClothMatics</span></a><p>© <span id="year"></span> ClothMatics. Your wardrobe, intelligently styled.</p><div><a href="./photo-guide">Photo guide</a><a href="./privacy.html">Privacy</a><a href="./faq.html">FAQ</a><a href="./contact">Help</a><a href="#features">Features</a></div></footer>
+    <footer><a class="brand" href="#top"><img class="brand-logo" src="./assets/clothmatics-logo.png" alt="" /><span>ClothMatics</span></a><p>© <span id="year"></span> ClothMatics. Your wardrobe, intelligently styled.</p><div><a href="./photo-guide">Photo guide</a><a href="./privacy">Privacy</a><a href="./terms">Terms</a><a href="./faq">FAQ</a><a href="./contact">Help</a></div></footer>
 
     <dialog id="auth-dialog"><button class="dialog-close" id="close-auth" aria-label="Close">×</button><img class="auth-logo" src="./assets/clothmatics-logo.png" alt="ClothMatics" /><span class="app-kicker">WELCOME BACK</span><h2>Open your ClothMatics</h2><p>Use the same account as the mobile app.</p><form id="auth-form"><label>Email<input id="auth-email" type="email" autocomplete="email" required /></label><label>Password<input id="auth-password" type="password" autocomplete="current-password" required /></label><button class="button button-primary" id="email-signin" type="submit">Sign in</button></form><div class="auth-divider"><span>or</span></div><button class="google-button" id="google-signin">G&nbsp;&nbsp; Continue with Google</button><p class="auth-message" id="auth-message"></p></dialog>
     <div class="toast" id="toast"></div>
