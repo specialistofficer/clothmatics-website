@@ -6,6 +6,19 @@ import {
   filterByBudget,
   handleShoppingSearch
 } from "../functions/api/shopping/search.js";
+import {
+  getFallbackStylingPlan,
+  filterProductsStrict,
+  handleCompleteLook
+} from "../functions/api/shopping/complete-look.js";
+import {
+  getAnchorCategories,
+  getComplementaryColor,
+  getProfileGender,
+  buildSmartShoppingQuery,
+  getActiveBudgetRange,
+  calculateMatchDetails
+} from "../complete-look-helpers.js";
 
 test("normalizeProduct correctly maps SerpApi shopping_results format", () => {
   const raw = {
@@ -71,7 +84,6 @@ test("handleShoppingSearch falls back to sample data when no API key is provided
   assert.equal(result.isSample, true);
   assert(result.notice.includes("SerpApi API key not configured"));
   assert(result.products.length > 0);
-  // All returned products must be between 500 and 1500
   for (const product of result.products) {
     assert(product.extractedPrice >= 500 && product.extractedPrice <= 1500);
   }
@@ -83,45 +95,35 @@ test("handleShoppingSearch returns 400 when query is blank", async () => {
   assert.equal(result.status, 400);
 });
 
-import {
-  getAnchorCategories,
-  getComplementaryColor,
-  getProfileGender,
-  buildSmartShoppingQuery,
-  getActiveBudgetRange,
-  calculateMatchDetails
-} from "../complete-look-helpers.js";
-
-test("getAnchorCategories returns complementary categories based on garment type", () => {
+test("getAnchorCategories returns complementary categories based on garment type (no same category)", () => {
   const bottomItem = { category: "Bottoms", subCategory: "Trousers", title: "Beige Wide Leg Trousers" };
   const categories = getAnchorCategories(bottomItem);
   const ids = categories.map(c => c.id);
-  assert.deepEqual(ids, ["tops", "shoes", "layering", "accessories", "similar"]);
+  // Bottoms must strictly recommend tops, shoes, layering, accessories - NEVER bottoms!
+  assert.deepEqual(ids, ["tops", "shoes", "layering", "accessories"]);
+  assert(!ids.includes("bottoms"));
 
   const topItem = { category: "Tops", subCategory: "Shirt", title: "White Oxford Shirt" };
   const topCategories = getAnchorCategories(topItem);
   assert.equal(topCategories[0].id, "bottoms");
+  const topIds = topCategories.map(c => c.id);
+  assert(!topIds.includes("tops"));
 });
 
 test("buildSmartShoppingQuery constructs intelligent shopping queries", () => {
   const item = {
-    title: "Women Beige Wide Leg Trousers",
+    title: "Men Grey Slim Fit Trousers",
     category: "Bottoms",
     subCategory: "Trousers",
-    primaryColor: "Beige",
-    fit: "Wide Leg"
+    primaryColor: "Grey",
+    fit: "Slim Fit"
   };
-  const profile = { gender: "Female" };
+  const profile = { gender: "Male" };
 
-  // Testing pairing with tops: should pair beige bottom with white top
   const topQuery = buildSmartShoppingQuery(item, "tops", profile);
-  assert(topQuery.includes("women"));
-  assert(topQuery.includes("white"));
-  assert(topQuery.includes("shirt") || topQuery.includes("top"));
-
-  // Testing "similar" tab: should reconstruct the exact sample query
-  const similarQuery = buildSmartShoppingQuery(item, "similar", profile);
-  assert.equal(similarQuery.toLowerCase(), "women beige wide leg trousers");
+  assert(topQuery.includes("men"));
+  assert(topQuery.includes("white")); // Complementary color for grey is white
+  assert(topQuery.includes("shirt") || topQuery.includes("polo"));
 });
 
 test("getActiveBudgetRange computes correct min and max bounds", () => {
@@ -142,3 +144,70 @@ test("calculateMatchDetails determines ranking and badge information", () => {
   assert.equal(greatValue.matchPercent, 96);
 });
 
+test("getFallbackStylingPlan generates gender-appropriate and complementary plans", () => {
+  const maleBottom = {
+    title: "Grey Slim Fit Trousers",
+    category: "Bottoms",
+    subCategory: "Trousers",
+    primaryColor: "Grey"
+  };
+  const maleProfile = { gender: "male" };
+
+  const plan = getFallbackStylingPlan({ item: maleBottom, profile: maleProfile, targetCategory: "tops" });
+  assert.equal(plan.targetCategory, "tops");
+  assert(plan.searchTerm.startsWith("men"));
+  assert(plan.searchTerm.includes("white"));
+  assert(plan.stylingReason.length > 10);
+  assert(plan.alternativeCategories.length > 0);
+  // Ensure alternative categories do NOT contain bottoms
+  assert(!plan.alternativeCategories.some(c => c.targetCategory === "bottoms"));
+});
+
+test("filterProductsStrict enforces strict gender and complementary category exclusion", () => {
+  const testProducts = [
+    { id: "1", title: "Dennis Lingo Men's Slim Fit Casual Shirt", extractedPrice: 699 },
+    { id: "2", title: "KOTTY Women's Beige High Waist Wide Leg Straight Trouser", extractedPrice: 470 },
+    { id: "3", title: "Girls Printed Regular Cotton Top", extractedPrice: 399 },
+    { id: "4", title: "Men's Solid Formal Chino Pants", extractedPrice: 899 },
+    { id: "5", title: "Men's White Minimalist Leather Sneakers", extractedPrice: 1499 }
+  ];
+
+  // User is Male, Anchor item is a pair of Trousers (Bottoms)
+  const filteredForMale = filterProductsStrict({
+    products: testProducts,
+    gender: "men",
+    anchorCategory: "Bottoms Trousers",
+    targetCategory: "tops"
+  });
+
+  const ids = filteredForMale.map(p => p.id);
+  // Must include the men's shirt
+  assert(ids.includes("1"));
+  // Must EXCLUDE women's trousers (wrong gender and same category!)
+  assert(!ids.includes("2"));
+  // Must EXCLUDE girls top (wrong gender!)
+  assert(!ids.includes("3"));
+  // Must EXCLUDE men's pants (anchor is already trousers!)
+  assert(!ids.includes("4"));
+});
+
+test("handleCompleteLook returns valid outfit plan and filtered products", async () => {
+  const result = await handleCompleteLook({
+    item: {
+      title: "Grey Slim Fit Trousers",
+      category: "Bottoms",
+      subCategory: "Trousers",
+      primaryColor: "Grey"
+    },
+    profile: { gender: "male" },
+    budget: { min: 500, max: 2000 },
+    targetCategory: "tops",
+    env: {}
+  });
+
+  assert.equal(result.ok, true);
+  assert(result.intent != null);
+  assert(result.intent.searchTerm.includes("men"));
+  assert.equal(typeof result.total, "number");
+  assert.equal(Array.isArray(result.products), true);
+});

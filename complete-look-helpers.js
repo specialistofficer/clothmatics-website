@@ -14,80 +14,80 @@ export const COMPLETE_LOOK_BUDGETS = [
 export function getAnchorCategories(item = {}) {
   const text = `${item.category || ""} ${item.subCategory || ""} ${item.title || ""}`.toLowerCase();
 
+  // Bottoms (pants, trousers, jeans, chinos) -> NEVER recommend pants!
   if (/bottom|pant|trouser|jean|skirt|short|chino|legging|palazzo|culotte/.test(text)) {
     return [
-      { id: "tops", label: "Tops & Shirts", icon: "👕", searchTerms: "shirt top blouse" },
-      { id: "shoes", label: "Footwear", icon: "👟", searchTerms: "casual loafers sneakers footwear" },
-      { id: "layering", label: "Jackets & Layers", icon: "🧥", searchTerms: "jacket blazer overshirt" },
-      { id: "accessories", label: "Bags & Accessories", icon: "👜", searchTerms: "handbag leather belt" },
-      { id: "similar", label: "Similar Garments", icon: "✨", searchTerms: "" }
+      { id: "tops", label: "Tops & Shirts", icon: "👕", searchTerms: "shirt polo t-shirt top" },
+      { id: "shoes", label: "Footwear", icon: "👟", searchTerms: "casual sneakers loafers shoes" },
+      { id: "layering", label: "Jackets & Layers", icon: "🧥", searchTerms: "casual jacket overshirt blazer" },
+      { id: "accessories", label: "Accessories", icon: "👜", searchTerms: "leather belt watch" }
     ];
   }
 
+  // Tops (shirts, tees, kurtas) -> NEVER recommend tops!
   if (/top|shirt|tee|t-shirt|blouse|kurta|camisole|sweater|hoodie|polo/.test(text)) {
     return [
-      { id: "bottoms", label: "Pants & Bottoms", icon: "👖", searchTerms: "trousers pants jeans" },
+      { id: "bottoms", label: "Pants & Trousers", icon: "👖", searchTerms: "trousers chinos pants jeans" },
       { id: "shoes", label: "Footwear", icon: "👟", searchTerms: "sneakers loafers shoes" },
-      { id: "layering", label: "Jackets & Layers", icon: "🧥", searchTerms: "jacket blazer cardigan" },
-      { id: "accessories", label: "Bags & Accessories", icon: "👜", searchTerms: "bag watch belt" },
-      { id: "similar", label: "Similar Garments", icon: "✨", searchTerms: "" }
+      { id: "layering", label: "Jackets & Layers", icon: "🧥", searchTerms: "casual jacket blazer cardigan" },
+      { id: "accessories", label: "Accessories", icon: "⌚", searchTerms: "watch leather belt" }
     ];
   }
 
+  // Dresses & Gowns -> NEVER recommend dresses!
   if (/dress|gown|jumpsuit|romper/.test(text)) {
     return [
-      { id: "shoes", label: "Footwear", icon: "👠", searchTerms: "heels sandals flats" },
+      { id: "shoes", label: "Footwear", icon: "👠", searchTerms: "heels sandals occasion flats" },
       { id: "layering", label: "Jackets & Shrugs", icon: "🧥", searchTerms: "cropped jacket blazer shrug" },
-      { id: "bags", label: "Handbags & Clutches", icon: "👛", searchTerms: "handbag clutch sling bag" },
-      { id: "accessories", label: "Jewelry & Accents", icon: "✨", searchTerms: "earrings necklace bracelet" },
-      { id: "similar", label: "Similar Dresses", icon: "👗", searchTerms: "" }
+      { id: "bags", label: "Handbags & Clutches", icon: "👛", searchTerms: "clutch handbag sling bag" },
+      { id: "accessories", label: "Jewelry & Accents", icon: "✨", searchTerms: "earrings bracelet necklace" }
     ];
   }
 
+  // Shoes -> NEVER recommend shoes!
   if (/shoe|sneaker|boot|sandal|heel|loafer|flat/.test(text)) {
     return [
-      { id: "bottoms", label: "Pants & Trousers", icon: "👖", searchTerms: "trousers chinos jeans" },
-      { id: "tops", label: "Tops & Shirts", icon: "👕", searchTerms: "shirt t-shirt polo" },
-      { id: "layering", label: "Jackets & Layers", icon: "🧥", searchTerms: "jacket overshirt blazer" },
-      { id: "accessories", label: "Accessories", icon: "⌚", searchTerms: "watch belt bag" },
-      { id: "similar", label: "Similar Footwear", icon: "👟", searchTerms: "" }
+      { id: "bottoms", label: "Pants & Trousers", icon: "👖", searchTerms: "straight fit trousers chinos jeans" },
+      { id: "tops", label: "Tops & Shirts", icon: "👕", searchTerms: "cotton shirt polo t-shirt" },
+      { id: "layering", label: "Jackets & Layers", icon: "🧥", searchTerms: "overshirt jacket blazer" },
+      { id: "accessories", label: "Accessories", icon: "⌚", searchTerms: "watch belt" }
     ];
   }
 
+  // Outerwear / Jackets -> NEVER recommend jackets!
   if (/jacket|coat|blazer|outer|cardigan|shrug|vest/.test(text)) {
     return [
-      { id: "tops", label: "Inner Tops", icon: "👕", searchTerms: "crew neck t-shirt shirt blouse" },
-      { id: "bottoms", label: "Trousers & Jeans", icon: "👖", searchTerms: "tailored trousers jeans pants" },
-      { id: "shoes", label: "Footwear", icon: "👞", searchTerms: "shoes loafers boots" },
-      { id: "accessories", label: "Accessories", icon: "🧣", searchTerms: "scarf bag belt" },
-      { id: "similar", label: "Similar Outerwear", icon: "🧥", searchTerms: "" }
+      { id: "tops", label: "Inner Tops", icon: "👕", searchTerms: "crew neck t-shirt shirt polo" },
+      { id: "bottoms", label: "Trousers & Jeans", icon: "👖", searchTerms: "tailored trousers pants jeans" },
+      { id: "shoes", label: "Footwear", icon: "👞", searchTerms: "shoes loafers sneakers" },
+      { id: "accessories", label: "Accessories", icon: "🧣", searchTerms: "scarf leather belt watch" }
     ];
   }
 
   return [
-    { id: "tops", label: "Tops & Shirts", icon: "👕", searchTerms: "shirt top" },
+    { id: "tops", label: "Tops & Shirts", icon: "👕", searchTerms: "casual shirt polo" },
     { id: "bottoms", label: "Pants & Bottoms", icon: "👖", searchTerms: "trousers pants" },
-    { id: "shoes", label: "Footwear", icon: "👟", searchTerms: "footwear shoes" },
-    { id: "accessories", label: "Accessories", icon: "👜", searchTerms: "bag accessory" },
-    { id: "similar", label: "Similar Garments", icon: "✨", searchTerms: "" }
+    { id: "shoes", label: "Footwear", icon: "👟", searchTerms: "casual sneakers loafers" },
+    { id: "accessories", label: "Accessories", icon: "👜", searchTerms: "watch belt" }
   ];
 }
 
 export function getProfileGender(profile = {}, item = {}) {
   const profileGender = String(profile.gender || profile.shoppingProfile?.gender || "").toLowerCase();
-  if (profileGender.includes("fem") || profileGender.includes("wom")) return "women";
-  if (profileGender.includes("male") || profileGender.includes("men")) return "men";
+  if (profileGender.includes("fem") || profileGender.includes("wom") || profileGender === "female") return "women";
+  if (profileGender.includes("male") || profileGender.includes("men") || profileGender === "male") return "men";
 
   const titleText = `${item.title || ""} ${item.category || ""} ${item.subCategory || ""}`.toLowerCase();
-  if (titleText.includes("women") || titleText.includes("ladies") || titleText.includes("girl")) return "women";
-  if (titleText.includes("men") || titleText.includes("gent") || titleText.includes("boy")) return "men";
+  if (/\b(women|women's|female|girl|girls|ladies)\b/i.test(titleText)) return "women";
+  if (/\b(men|men's|male|boy|boys|gentleman)\b/i.test(titleText)) return "men";
 
-  return "";
+  return "men";
 }
 
 export function getComplementaryColor(color = "") {
   const c = String(color).toLowerCase().trim();
   if (!c) return "";
+  if (c.includes("grey") || c.includes("gray")) return "white";
   if (c.includes("beige") || c.includes("khaki") || c.includes("cream")) return "white";
   if (c.includes("black")) return "white";
   if (c.includes("white")) return "navy";
@@ -96,24 +96,13 @@ export function getComplementaryColor(color = "") {
   if (c.includes("red") || c.includes("burgundy")) return "black";
   if (c.includes("brown") || c.includes("tan")) return "cream";
   if (c.includes("pink")) return "white";
-  if (c.includes("grey") || c.includes("gray")) return "black";
-  return "";
+  return "white";
 }
 
 export function buildSmartShoppingQuery(item = {}, tabId = "", profile = {}) {
   const gender = getProfileGender(profile, item);
   const categories = getAnchorCategories(item);
   const matchedTab = categories.find((c) => c.id === tabId) || categories[0];
-
-  if (matchedTab.id === "similar") {
-    const parts = [
-      gender,
-      item.primaryColor,
-      item.fit,
-      item.subCategory || item.category || item.title
-    ];
-    return parts.filter(Boolean).join(" ").trim();
-  }
 
   const compColor = getComplementaryColor(item.primaryColor);
   const parts = [gender, compColor, matchedTab.searchTerms];

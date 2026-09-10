@@ -536,10 +536,98 @@
   gap: 16px;
 }
 .complete-look-loading p {
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--muted);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
   margin: 0;
+}
+.complete-look-loading-sub {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+/* Gender Badge in Hero */
+.complete-look-gender-tag {
+  background: #f0edff;
+  color: var(--purple);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.3px;
+}
+
+/* Ready to Style State */
+.complete-look-ready {
+  text-align: center;
+  padding: 44px 24px;
+  background: linear-gradient(135deg, #ffffff, #faf9fe);
+  border: 1.5px dashed #d8d0f5;
+  border-radius: 22px;
+  margin-bottom: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.complete-look-ready-icon {
+  font-size: 36px;
+  margin-bottom: 12px;
+  animation: pulse-ready 2.5s infinite ease-in-out;
+}
+@keyframes pulse-ready {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+.complete-look-ready h3 {
+  font: 800 19px "Manrope", sans-serif;
+  color: var(--ink);
+  margin: 0 0 8px;
+}
+.complete-look-ready p {
+  font-size: 13px;
+  color: var(--muted);
+  max-width: 440px;
+  margin: 0 auto 20px;
+  line-height: 1.5;
+}
+.complete-look-start-btn {
+  font-size: 14px;
+  font-weight: 800;
+  padding: 13px 28px;
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(108, 99, 255, 0.35);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+.complete-look-start-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(108, 99, 255, 0.45);
+}
+
+/* AI Stylist Recommendation Banner */
+.complete-look-stylist-banner {
+  background: linear-gradient(135deg, #f7f5ff, #fff5fb);
+  border: 1px solid #e0d8ff;
+  border-radius: 16px;
+  padding: 14px 18px;
+  margin-bottom: 18px;
+}
+.complete-look-stylist-badge {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--purple);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  display: inline-block;
+  margin-bottom: 4px;
+}
+.complete-look-stylist-reason {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.45;
 }
 
 /* Disclosure Footer */

@@ -1,6 +1,6 @@
 /**
  * ClothMatics — Shop to Complete the Look Frontend Controller
- * Connects wardrobe garments to Google Shopping (via SerpApi backend)
+ * Connects wardrobe garments to Gemini AI Stylist & Shopping Engine
  */
 
 import {
@@ -37,6 +37,7 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
   let currentQuery = "";
   let isSearching = false;
   let searchResults = [];
+  let stylingIntent = null;
   let isSampleResult = false;
   let sampleNotice = "";
   let hasSearched = false;
@@ -58,7 +59,12 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
 
   function getProfile() {
     const state = getState ? getState() : {};
-    return state.profile || {};
+    const profile = { ...(state.profile || {}) };
+    if (!profile.gender) {
+      const domGender = document.getElementById("profile-gender")?.value;
+      if (domGender) profile.gender = domGender;
+    }
+    return profile;
   }
 
   function getWardrobe() {
@@ -66,7 +72,7 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
     return state.wardrobe || [];
   }
 
-  async function open(itemId) {
+  function open(itemId) {
     const wardrobe = getWardrobe();
     activeItem = wardrobe.find((item) => item.id === itemId);
 
@@ -88,8 +94,10 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
     customMax = "";
     allowAboveBudget = false;
     hasSearched = false;
+    isSearching = false;
     searchError = "";
     searchResults = [];
+    stylingIntent = null;
 
     // Check if user has saved budget in profile
     const profile = getProfile();
@@ -117,13 +125,11 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
     if (dialog && !dialog.open) {
       dialog.showModal();
     }
-
-    // Immediately trigger the search to give instant outfit suggestions
-    await executeSearch();
+    // Note: We DO NOT auto-search on open so user can review/set their choices first!
   }
 
   async function executeSearch() {
-    if (!activeItem || !currentQuery.trim()) return;
+    if (!activeItem) return;
 
     isSearching = true;
     searchError = "";
@@ -138,20 +144,31 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
       return;
     }
 
-    const params = new URLSearchParams();
-    params.set("q", currentQuery.trim());
-    if (min !== null) params.set("minPrice", String(min));
-    if (max !== null) params.set("maxPrice", String(max));
-    if (allowAboveBudget) params.set("allowAboveBudget", "true");
-    params.set("gl", "in");
-    params.set("hl", "en");
+    const profile = getProfile();
+    const defaultQuery = buildSmartShoppingQuery(activeItem, activeTab, profile);
+    const customQuery = currentQuery && currentQuery.trim() !== defaultQuery ? currentQuery.trim() : "";
 
     try {
-      const response = await fetch(`/api/shopping/search?${params.toString()}`);
+      const response = await fetch("/api/shopping/complete-look", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          item: activeItem,
+          profile,
+          budget: { min, max },
+          allowAboveBudget,
+          targetCategory: activeTab,
+          customQuery,
+          gl: "in",
+          hl: "en"
+        })
+      });
+
       const data = await response.json();
 
       if (data.ok) {
         searchResults = data.products || [];
+        stylingIntent = data.intent || null;
         isSampleResult = Boolean(data.isSample);
         sampleNotice = data.notice || "";
         hasSearched = true;
@@ -159,11 +176,13 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
       } else {
         searchError = data.error || "Unable to find matching products. Please try again.";
         searchResults = [];
+        stylingIntent = null;
         hasSearched = true;
       }
     } catch (err) {
-      searchError = "Failed to connect to shopping search. Check your internet connection.";
+      searchError = "Failed to connect to styling search. Check your internet connection.";
       searchResults = [];
+      stylingIntent = null;
       hasSearched = true;
     } finally {
       isSearching = false;
@@ -176,6 +195,9 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
 
     const profile = getProfile();
     const categories = getAnchorCategories(activeItem);
+    const gender = getProfileGender(profile, activeItem);
+    const genderLabel = gender === "women" ? "Women's Collection" : "Men's Collection";
+
     const hasProfileSizes = Boolean(
       profile.shoppingProfile?.sizes &&
       Object.values(profile.shoppingProfile.sizes).some((s) => s && Object.values(s).some(Boolean))
@@ -198,6 +220,7 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
           <h2>Style with your ${escapeHtml(activeItem.title || "Garment")}</h2>
           <div class="complete-look-hero-meta">
             <span>${escapeHtml(anchorMeta || "Wardrobe Piece")}</span>
+            <span class="complete-look-gender-tag">${escapeHtml(genderLabel)}</span>
             ${hasProfileSizes ? "<span>Sizes active</span>" : "<span>Universal sizing</span>"}
           </div>
         </div>
@@ -247,7 +270,7 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
         <div class="complete-look-search-row">
           <div class="complete-look-search-input-wrap">
             <span class="complete-look-search-icon">⌕</span>
-            <input class="complete-look-search-input" id="complete-look-search-input" value="${escapeHtml(currentQuery)}" placeholder="Search Google Shopping matches...">
+            <input class="complete-look-search-input" id="complete-look-search-input" value="${escapeHtml(currentQuery)}" placeholder="Search outfit matches (e.g. white linen shirt)...">
           </div>
           <button class="button button-primary complete-look-search-submit" id="complete-look-search-btn" type="button">
             ${isSearching ? "Searching…" : "Search"}
@@ -289,7 +312,8 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
       resultsBodyHtml = `
         <div class="complete-look-loading">
           <div class="spinner"></div>
-          <p>Finding the strongest matching pieces on Google Shopping…</p>
+          <p>Styling trending outfit matches with AI…</p>
+          <span class="complete-look-loading-sub">Curating complementary silhouettes and colors for your look</span>
         </div>
       `;
     } else if (searchError) {
@@ -303,7 +327,20 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
           </div>
         </div>
       `;
-    } else if (hasSearched && searchResults.length === 0) {
+    } else if (!hasSearched) {
+      // User has opened modal, set choices, but not clicked search yet
+      const activeCatObj = categories.find((c) => c.id === activeTab) || categories[0];
+      resultsBodyHtml = `
+        <div class="complete-look-ready">
+          <div class="complete-look-ready-icon">✨</div>
+          <h3>Ready to Complete Your Outfit</h3>
+          <p>We'll match trending <b>${escapeHtml(activeCatObj?.label || "pieces")}</b> that pair naturally with your ${escapeHtml(activeItem.title || "garment")}.</p>
+          <button type="button" class="button button-primary complete-look-start-btn" id="complete-look-start-search-btn">
+            ✨ Find Complete Outfit Matches
+          </button>
+        </div>
+      `;
+    } else if (searchResults.length === 0) {
       resultsBodyHtml = `
         <div class="complete-look-empty">
           <div class="complete-look-empty-icon">🔍</div>
@@ -314,14 +351,22 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
           </div>
         </div>
       `;
-    } else if (searchResults.length > 0) {
+    } else {
+      const stylistBanner = stylingIntent?.stylingReason ? `
+        <div class="complete-look-stylist-banner">
+          <span class="complete-look-stylist-badge">✨ AI Stylist Recommendation</span>
+          <p class="complete-look-stylist-reason">${escapeHtml(stylingIntent.stylingReason)}</p>
+        </div>
+      ` : "";
+
       resultsBodyHtml = `
+        ${stylistBanner}
         <div class="complete-look-results-meta">
           <h3 class="complete-look-results-title">Curated Matches</h3>
           <span class="complete-look-results-count">${searchResults.length} pieces found</span>
         </div>
         <div class="complete-look-grid">
-          ${searchResults.map((product, idx) => renderProductCard(product, idx, activeItem)).join("")}
+          ${searchResults.map((product, idx) => renderProductCard(product, idx, activeItem, stylingIntent)).join("")}
         </div>
       `;
     }
@@ -329,7 +374,7 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
     // 6. Disclosure
     const disclosureHtml = `
       <div class="complete-look-disclosure">
-        ClothMatics Shopping Assistant: Products are retrieved via Google Shopping. Some links may be retailer or affiliate links. ClothMatics may earn a commission from qualifying purchases at no additional cost to you.
+        ClothMatics AI Styling Assistant: Products are curated to complement your wardrobe piece. Some links may be retailer links.
       </div>
     `;
 
@@ -345,7 +390,7 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
     attachEvents();
   }
 
-  function renderProductCard(product, index, anchorItem) {
+  function renderProductCard(product, index, anchorItem, intent) {
     const { isBestMatch, matchPercent } = calculateMatchDetails(product, index);
 
     const ratingHtml = product.rating ? `
@@ -368,7 +413,7 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
     ` : "";
 
     const anchorName = [anchorItem.primaryColor, anchorItem.subCategory || anchorItem.category || "piece"].filter(Boolean).join(" ");
-    const stylingReason = `Curated to pair with your ${anchorName} for a balanced, modern look.`;
+    const stylingReason = intent?.stylingReason || `Curated to pair with your ${anchorName} for a balanced, modern look.`;
 
     const buyLink = safeUrl(product.productLink) || "#";
     const retailerName = product.source || "Retailer";
@@ -407,7 +452,11 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
         activeTab = tabId;
         const profile = getProfile();
         currentQuery = buildSmartShoppingQuery(activeItem, activeTab, profile);
-        executeSearch();
+        if (hasSearched) {
+          executeSearch();
+        } else {
+          render();
+        }
       });
     });
 
@@ -421,8 +470,10 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
           render();
           const input = document.getElementById("complete-look-custom-min");
           if (input) input.focus();
-        } else {
+        } else if (hasSearched) {
           executeSearch();
+        } else {
+          render();
         }
       });
     });
@@ -452,7 +503,9 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
     if (aboveCheck) {
       aboveCheck.addEventListener("change", (e) => {
         allowAboveBudget = e.target.checked;
-        executeSearch();
+        if (hasSearched) {
+          executeSearch();
+        }
       });
     }
 
@@ -460,6 +513,9 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
     const searchInput = document.getElementById("complete-look-search-input");
     const searchBtn = document.getElementById("complete-look-search-btn");
     if (searchInput) {
+      searchInput.addEventListener("input", (e) => {
+        currentQuery = e.target.value;
+      });
       searchInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
           currentQuery = searchInput.value.trim();
@@ -472,6 +528,14 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
         if (searchInput) {
           currentQuery = searchInput.value.trim();
         }
+        executeSearch();
+      });
+    }
+
+    // Primary action button in the initial ready state
+    const startSearchBtn = document.getElementById("complete-look-start-search-btn");
+    if (startSearchBtn) {
+      startSearchBtn.addEventListener("click", () => {
         executeSearch();
       });
     }
