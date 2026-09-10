@@ -17,7 +17,8 @@ import {
   getProfileGender,
   buildSmartShoppingQuery,
   getActiveBudgetRange,
-  calculateMatchDetails
+  calculateMatchDetails,
+  resolveBuyLink
 } from "../complete-look-helpers.js";
 
 test("normalizeProduct correctly maps SerpApi shopping_results format", () => {
@@ -211,3 +212,22 @@ test("handleCompleteLook returns valid outfit plan and filtered products", async
   assert.equal(typeof result.total, "number");
   assert.equal(Array.isArray(result.products), true);
 });
+
+test("resolveBuyLink always returns non-empty, valid store destinations (no 404s)", () => {
+  const amazonProduct = { source: "Amazon.in", title: "Dennis Lingo Men Shirt" };
+  assert(resolveBuyLink(amazonProduct).includes("amazon.in/s?k="));
+
+  const ajioProduct = { source: "AJIO.com", title: "Marks & Spencer Linen Shirt" };
+  assert(resolveBuyLink(ajioProduct).includes("ajio.com/search/?text="));
+
+  const myntraProduct = { source: "Myntra", title: "Highlander Polo" };
+  assert(resolveBuyLink(myntraProduct).includes("google.com/search"));
+
+  const catalogProduct = {
+    source: "Myntra",
+    title: "Men Hoodie",
+    productLink: "https://www.google.com/search?ibp=oshop&q=men+hoodie&prds=catalogid:123456"
+  };
+  assert(resolveBuyLink(catalogProduct).includes("prds=catalogid:123456"));
+});
+

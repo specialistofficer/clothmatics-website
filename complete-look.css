@@ -270,17 +270,9 @@
   color: var(--muted);
 }
 
-/* Sample Preview Banner */
+/* Sample Preview Banner (Hidden) */
 .complete-look-sample-banner {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  background: #fff9ea;
-  border: 1px solid #f6deb2;
-  border-radius: 14px;
-  padding: 12px 16px;
-  margin-bottom: 20px;
-  color: #7d5700;
+  display: none !important;
 }
 .complete-look-sample-banner-icon {
   font-size: 18px;

@@ -129,3 +129,53 @@ export function calculateMatchDetails(product = {}, index = 0) {
     matchPercent
   };
 }
+
+export function resolveBuyLink(product = {}) {
+  const rawLink = String(product.productLink || product.link || "").trim();
+  const source = String(product.source || "").toLowerCase();
+  const title = String(product.title || "").trim();
+
+  // If rawLink is a live Google Shopping link with valid catalogid, it is a real Google Shopping offer
+  if (rawLink.startsWith("https://www.google.com/search") && rawLink.includes("prds=catalogid:")) {
+    return encodeURI(rawLink);
+  }
+
+  // If source is Amazon: send directly to Amazon search so it never 404s
+  if (source.includes("amazon")) {
+    return `https://www.amazon.in/s?k=${encodeURIComponent(title)}`;
+  }
+
+  // If source is AJIO: send directly to AJIO search so it never 404s
+  if (source.includes("ajio")) {
+    return `https://www.ajio.com/search/?text=${encodeURIComponent(title)}`;
+  }
+
+  // If source is Tata CLiQ:
+  if (source.includes("tata") || source.includes("cliq")) {
+    return `https://www.tatacliq.com/search/?searchCategory=all&text=${encodeURIComponent(title)}`;
+  }
+
+  // If source is Puma:
+  if (source.includes("puma")) {
+    return `https://in.puma.com/in/en/search?q=${encodeURIComponent(title)}`;
+  }
+
+  // If source is Bata:
+  if (source.includes("bata")) {
+    return `https://www.bata.in/search?q=${encodeURIComponent(title)}`;
+  }
+
+  // If source is Zara:
+  if (source.includes("zara")) {
+    return `https://www.zara.com/in/en/search?searchTerm=${encodeURIComponent(title)}`;
+  }
+
+  // If source is Myntra:
+  if (source.includes("myntra")) {
+    return `https://www.google.com/search?tbm=shop&q=buy+${encodeURIComponent(title)}+myntra`;
+  }
+
+  // Universal Google Shopping fallback:
+  return `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(title)}`;
+}
+

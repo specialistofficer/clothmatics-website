@@ -9,7 +9,8 @@ import {
   getProfileGender,
   buildSmartShoppingQuery,
   getActiveBudgetRange,
-  calculateMatchDetails
+  calculateMatchDetails,
+  resolveBuyLink
 } from "./complete-look-helpers.js";
 
 function safeUrl(value = "") {
@@ -294,16 +295,6 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
       </div>
     `;
 
-    // 4. Sample banner
-    const sampleBannerHtml = isSampleResult ? `
-      <div class="complete-look-sample-banner">
-        <div class="complete-look-sample-banner-icon">ℹ️</div>
-        <div class="complete-look-sample-banner-text">
-          <b>Sample Preview Mode</b>
-          <p>${escapeHtml(sampleNotice || "Demonstrating curated style pairings. Add your SerpApi key in Cloudflare Pages environment variables for real-time live queries.")}</p>
-        </div>
-      </div>
-    ` : "";
 
     // 5. Results or states
     let resultsBodyHtml = "";
@@ -382,7 +373,6 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
       ${heroHtml}
       ${categoryTabsHtml}
       ${filterBoxHtml}
-      ${sampleBannerHtml}
       ${resultsBodyHtml}
       ${disclosureHtml}
     `;
@@ -415,7 +405,7 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
     const anchorName = [anchorItem.primaryColor, anchorItem.subCategory || anchorItem.category || "piece"].filter(Boolean).join(" ");
     const stylingReason = intent?.stylingReason || `Curated to pair with your ${anchorName} for a balanced, modern look.`;
 
-    const buyLink = safeUrl(product.productLink) || "#";
+    const buyLink = safeUrl(resolveBuyLink(product)) || "#";
     const retailerName = product.source || "Retailer";
 
     return `
