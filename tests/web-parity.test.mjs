@@ -1,7 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import { pathToFileURL } from "node:url";
+import { resolve } from "node:path";
 import { lookbookSlotFor, matchesGarmentSearch, shiftCalendarMonth, localDateKey, deterministicPurchaseCheck, onlyKnownIds, calculateWeeklyReport } from "../web-core.mjs";
 import { PROMPT_REGISTRY, promptCacheKey, promptStamp } from "../functions/_shared/prompt-registry.mjs";
+
+const root=new URL("../",import.meta.url);
+const mobileRoot=process.env.CLOTHMATICS_MOBILE_ROOT ? pathToFileURL(resolve(process.env.CLOTHMATICS_MOBILE_ROOT)+"/") : new URL("../StyleMateAI/",root);
 
 test("concrete garment words override stale roles",()=>{
   assert.equal(lookbookSlotFor({title:"Dress Shirt",bodyZone:"full_body",standaloneOutfit:true}),"top");
@@ -46,4 +52,23 @@ test("prompt registry matches active mobile identity and namespaces",()=>{
   const stamp=promptStamp("festival_stylist","private prompt fixture");
   assert.equal(stamp.promptVersion,1);assert.ok(stamp.promptHash);assert.ok(stamp.requestPromptHash);
   assert.ok(promptCacheKey("festival_stylist","user").startsWith(`${stamp.promptHash}:`));
+});
+
+test("every dashboard icon reference resolves to an SVG symbol",async()=>{
+  const [html,app]=await Promise.all([readFile(new URL("index.html",root),"utf8"),readFile(new URL("app.js",root),"utf8")]);
+  const symbols=new Set([...html.matchAll(/<symbol\s+id=["']([^"']+)["']/g)].map((match)=>match[1]));
+  const references=[...`${html}\n${app}`.matchAll(/<use\s+href=["']#([^"']+)["']/g)].map((match)=>match[1]);
+  assert.ok(references.length>0);
+  assert.deepEqual([...new Set(references.filter((id)=>!id.includes("${")&&!symbols.has(id)))],[]);
+  assert.ok(symbols.has("icon-bell"));
+});
+
+test("web profile controls use mobile choices and canonical shopping profile",async()=>{
+  const [app,core]=await Promise.all([readFile(new URL("app.js",root),"utf8"),readFile(new URL("cloudflare-core-worker/src/index.js",mobileRoot),"utf8")]);
+  assert.match(app,/id="profile-gender"><option/);
+  assert.match(app,/id="profile-body-type"/);
+  assert.match(app,/PROFILE_SIZE_OPTIONS/);
+  assert.match(app,/shoppingProfile:\{gender:/);
+  assert.match(core,/source\.shoppingProfile\?\.sizes \|\| source\.shoppingSizes/);
+  assert.match(core,/shoppingProfileVersion/);
 });

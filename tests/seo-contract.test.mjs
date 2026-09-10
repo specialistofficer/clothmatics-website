@@ -5,6 +5,7 @@ import { readFile } from "node:fs/promises";
 const root = new URL("../", import.meta.url);
 const publicPages = [
   ["index.html", "https://clothmatics.pages.dev/"],
+  ["about.html", "https://clothmatics.pages.dev/about"],
   ["photo-guide.html", "https://clothmatics.pages.dev/photo-guide"],
   ["faq.html", "https://clothmatics.pages.dev/faq"],
   ["privacy.html", "https://clothmatics.pages.dev/privacy"],
@@ -26,7 +27,19 @@ test("every public page has complete index and sharing metadata", async () => {
 
 test("public copy avoids implementation and configuration language", async () => {
   const combined = (await Promise.all(publicPages.map(([file]) => readFile(new URL(file, root), "utf8")))).join("\n");
-  assert.doesNotMatch(combined, /Cloudflare|Firestore|Firebase|API key|server function|custom claim|account UID|prompt hash/i);
+  assert.doesNotMatch(combined, /Cloudflare|Firestore|Firebase|Gemini|Oracle|API key|server function|custom claim|account UID|prompt hash/i);
+});
+
+test("mobile install prompt is present without replacing the web experience", async () => {
+  const [html, script] = await Promise.all([
+    readFile(new URL("index.html", root), "utf8"),
+    readFile(new URL("install-prompt.js", root), "utf8"),
+  ]);
+  assert.match(html, /id="mobile-install-prompt"/);
+  assert.match(html, /Install app/);
+  assert.match(html, /Continue on web/);
+  assert.match(script, /Android/);
+  assert.match(script, /sessionStorage/);
 });
 
 test("FAQ schema covers every visible FAQ question", async () => {

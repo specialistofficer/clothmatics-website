@@ -1,12 +1,68 @@
 /*
+  Content-Signal: search=yes, ai-input=yes, ai-train=no
+  Link: </llms.txt>; rel="describedby"; type="text/plain", </sitemap.xml>; rel="sitemap"; type="application/xml"
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
   Cross-Origin-Opener-Policy: same-origin-allow-popups
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://accounts.google.com; script-src-elem 'self' https://www.gstatic.com https://apis.google.com https://accounts.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://www.gstatic.com https://apis.google.com https://accounts.google.com https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com https://*.cloudfunctions.net; frame-src https://*.firebaseapp.com https://accounts.google.com https://*.google.com; object-src 'none'; base-uri 'self'; form-action 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://www.gstatic.com https://apis.google.com https://accounts.google.com; script-src-elem 'self' https://www.gstatic.com https://apis.google.com https://accounts.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://www.gstatic.com https://apis.google.com https://accounts.google.com https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com https://*.cloudfunctions.net https://api.open-meteo.com https://geocoding-api.open-meteo.com https://clothmatics-core-api.chiragsharma376.workers.dev https://clothmatics-ai-gateway.chiragsharma376.workers.dev https://clothmatics-upload-worker.chiragsharma376.workers.dev; worker-src 'self'; frame-src https://*.firebaseapp.com https://accounts.google.com https://*.google.com; object-src 'none'; base-uri 'self'; form-action 'self'
 
 /config.js
+  Cache-Control: no-store
+
+/
+  Cache-Control: no-store
+
+/index.html
+  Cache-Control: no-store
+
+/app.js
+  Cache-Control: no-store
+
+/theme-refresh.css
+  Cache-Control: no-store
+
+/ghost-mannequin.mjs
+  Cache-Control: no-store
+
+/ghost-contract.mjs
+  Cache-Control: no-store
+
+/ghost-studio.mjs
+  Cache-Control: no-store
+
+/garment-appearance.mjs
+  Cache-Control: no-store
+
+/garment-review.mjs
+  Cache-Control: no-store
+
+/garment-progress.mjs
+  Cache-Control: no-store
+
+/garment-upload.mjs
+  Cache-Control: no-store
+
+/garment-studio.css
+  Cache-Control: no-store
+
+/ghost-ui.mjs
+  Cache-Control: no-store
+
+/garment-upload.mjs
+  Cache-Control: no-store
+
+/web-api.mjs
+  Cache-Control: no-store
+
+/web-core.mjs
+  Cache-Control: no-store
+
+/wardrobe-assistant.js
+  Cache-Control: no-store
+
+/wardrobe-assistant-core.mjs
   Cache-Control: no-store
 
 /admin.html
@@ -18,3 +74,31 @@
 
 /api/*
   Cache-Control: no-store
+
+/mcp
+  Cache-Control: no-store
+
+/.well-known/mcp/server-card.json
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=3600
+
+/mcp/server-card.json
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=3600
+
+/mcp/server-card
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=3600
+
+/llms.txt
+  Cache-Control: public, max-age=3600
+  Content-Type: text/plain; charset=utf-8
+
+/assets/extraction/*
+  Cache-Control: public, max-age=3600
+
+/browser-extraction.mjs
+  Cache-Control: no-cache
+
+/production-extraction.mjs
+  Cache-Control: no-cache

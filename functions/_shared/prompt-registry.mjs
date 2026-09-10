@@ -6,7 +6,7 @@ export const PROMPT_REGISTRY = Object.freeze({
   style_check:{version:4,releaseTag:"structured-photo-review-2026-08"},
   selfie_analysis:{version:2,releaseTag:"profile-signals-2026-08"},
   garment_analysis:{version:4,releaseTag:"taxonomy-2026-08"},
-  trip_packing:{version:2,releaseTag:"owned-items-only-2026-08"},
+  trip_packing:{version:7,releaseTag:"balanced-multi-day-rotation-2026-08"},
   festival_stylist:{version:1,releaseTag:"festival-launch-2026-08"},
   weekly_report:{version:2,releaseTag:"meaningful-insights-2026-08"},
   unknown:{version:1,releaseTag:"unclassified"},

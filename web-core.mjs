@@ -115,3 +115,79 @@ export function deterministicPurchaseCheck(candidate,wardrobe=[],price) {
 }
 
 export function onlyKnownIds(combinations,wardrobe) { const valid=new Set(wardrobe.map((item)=>item.id)); return combinations.every((entry)=>(entry.itemIds||[]).every((id)=>valid.has(id))); }
+
+export const PROMPT_REGISTRY = {
+  outfit_stylist: { version: 6, releaseTag: "privacy-aware-usage-2026-08" },
+  style_this: { version: 6, releaseTag: "privacy-aware-usage-2026-08" },
+  smart_purchase: { version: 2, releaseTag: "verified-combinations-2026-08" },
+  trip_packing: { version: 7, releaseTag: "balanced-multi-day-rotation-2026-08" },
+  festival_stylist: { version: 3, releaseTag: "privacy-aware-usage-2026-08" },
+  push_notification: { version: 1, releaseTag: "admin-campaign-drafts-2026-08" },
+};
+
+export function stableHash(value="") {
+  let hash=2166136261;
+  for(const character of String(value)){hash^=character.charCodeAt(0);hash=Math.imul(hash,16777619);}
+  return (hash>>>0).toString(36);
+}
+
+export function promptStamp(promptId, requestPrompt="") {
+  const definition=PROMPT_REGISTRY[promptId]||{version:1,releaseTag:"unclassified"};
+  return { promptId, promptVersion:definition.version, promptHash:stableHash(`${promptId}:${definition.version}:${definition.releaseTag}`), requestPromptHash:requestPrompt?stableHash(requestPrompt):"" };
+}
+
+export function wardrobeFingerprint(wardrobe=[]) {
+  return stableHash(wardrobe.map((item)=>[item.id,item.updatedAt?.seconds||item.updatedAt||"",item.hiddenFromAI,item.privateItem,item.laundryStatus].join(":")).sort().join("|"));
+}
+
+export function eligibleWardrobe(wardrobe=[]) {
+  return wardrobe.filter((item)=>item?.id && item.hiddenFromAI!==true && item.privateItem!==true && item.stylingUsage!=="private_innerwear" && String(item.laundryStatus||"").toLowerCase()!=="laundry");
+}
+
+export function validateGroundedOutfit(raw={},wardrobe=[]) {
+  const eligible=eligibleWardrobe(wardrobe),byId=new Map(eligible.map((item)=>[String(item.id),item]));
+  const ids=Array.isArray(raw.wardrobeItemIds)?raw.wardrobeItemIds.map(String):[];
+  if(ids.length<2||ids.length>6)throw new Error("The result is not a complete wardrobe outfit.");
+  if(new Set(ids).size!==ids.length)throw new Error("The result repeated the same garment.");
+  if(ids.some((id)=>!byId.has(id)))throw new Error("The result referenced an unavailable garment.");
+  const slots=ids.map((id)=>lookbookSlotFor(byId.get(id)));
+  const wearable=slots.includes("hero")?slots.some((slot)=>["footwear","layer","accessory"].includes(slot)):slots.includes("top")&&slots.includes("bottom");
+  if(!wearable)throw new Error("The result did not contain the main pieces needed for a wearable outfit.");
+  return {
+    score:Math.max(0,Math.min(100,Math.round(Number(raw.score)||80))),
+    title:String(raw.title||"Your ClothMatics look").trim().slice(0,80),
+    subtitle:String(raw.subtitle||"Styled from clothes you already own.").trim().slice(0,240),
+    wardrobeItemIds:ids,
+    reasoning:(Array.isArray(raw.reasoning)?raw.reasoning:[]).map((value)=>String(value).replace(/\s*\([A-Za-z0-9_-]{10,}\)/g,"").trim()).filter(Boolean).slice(0,5),
+    shoppingSuggestions:[],
+  };
+}
+
+export function prioritizeOutfitItems(items=[]) {
+  const weight={hero:0,top:1,layer:2,bottom:3,footwear:4,accessory:5};
+  return [...items].sort((a,b)=>(weight[lookbookSlotFor(a)]??9)-(weight[lookbookSlotFor(b)]??9));
+}
+
+const SAFE_GARMENT_FIELDS = new Set(["title","category","subCategory","primaryColor","secondaryColors","colorDetail","pattern","material","fabric","fabricTexture","fit","season","occasion","userOccasions","brand","purchasePrice","purchaseYear","remarks","notes","tags","userConfirmed","favorite","inLookbook","hiddenFromAI","laundryStatus"]);
+export function safeGarmentPatch(input={}) {
+  const output={};
+  for(const [key,value] of Object.entries(input)){
+    if(!SAFE_GARMENT_FIELDS.has(key))continue;
+    if(["favorite","inLookbook","hiddenFromAI","userConfirmed"].includes(key))output[key]=value===true;
+    else if(["purchasePrice","purchaseYear"].includes(key))output[key]=Math.max(0,Number(value)||0);
+    else if(["secondaryColors","season","userOccasions","tags"].includes(key))output[key]=(Array.isArray(value)?value:String(value||"").split(",")).map((item)=>String(item).trim().slice(0,60)).filter(Boolean).slice(0,20);
+    else output[key]=String(value??"").trim().slice(0,key==="notes"||key==="remarks"?500:key==='colorDetail'||key==='fabricTexture'?300:120);
+  }
+  return output;
+}
+
+export function validHttpsImages(items=[],minimum=3) {
+  const urls=items.map((item)=>String(item?.image||item?.imageUrl||"").trim()).filter((url)=>/^https:\/\//i.test(url));
+  if(urls.length<minimum)throw new Error(`At least ${minimum} existing HTTPS garment images are required.`);
+  return urls;
+}
+
+export function embeddedNotificationOutfit(notification={}) {
+  const outfit=notification?.outfit||notification?.params?.outfit||notification?.payload?.params?.outfit||notification?.target?.params?.outfit;
+  return outfit&&Array.isArray(outfit.wardrobeItemIds)?outfit:null;
+}

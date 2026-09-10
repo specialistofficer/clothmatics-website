@@ -1,0 +1,634 @@
+TAP version 13
+# Subtest: content negotiation prefers explicitly requested Markdown
+ok 1 - content negotiation prefers explicitly requested Markdown
+  ---
+  duration_ms: 9.6803
+  type: 'test'
+  ...
+# Subtest: home page has a useful Markdown representation with negotiation headers
+ok 2 - home page has a useful Markdown representation with negotiation headers
+  ---
+  duration_ms: 51.216
+  type: 'test'
+  ...
+# Subtest: crawler policy and llms.txt expose consistent AI discovery metadata
+ok 3 - crawler policy and llms.txt expose consistent AI discovery metadata
+  ---
+  duration_ms: 16.7741
+  type: 'test'
+  ...
+# Subtest: specific categories survive broad roles and unfamiliar types do not silently become shirts
+ok 4 - specific categories survive broad roles and unfamiliar types do not silently become shirts
+  ---
+  duration_ms: 7.695
+  type: 'test'
+  ...
+# Subtest: straight hem and actual fabric survive; stale pink title and generic material cannot override pixels
+ok 5 - straight hem and actual fabric survive; stale pink title and generic material cannot override pixels
+  ---
+  duration_ms: 1.1746
+  type: 'test'
+  ...
+# Subtest: no default hem, pocket, material, fit or sleeves are fabricated
+ok 6 - no default hem, pocket, material, fit or sleeves are fabricated
+  ---
+  duration_ms: 0.307
+  type: 'test'
+  ...
+# Subtest: legacy and mismatched-source evidence requires a fresh photo analysis
+ok 7 - legacy and mismatched-source evidence requires a fresh photo analysis
+  ---
+  duration_ms: 1.3145
+  type: 'test'
+  ...
+# Subtest: color point validation rejects bad coordinates and never trusts model-provided hex
+ok 8 - color point validation rejects bad coordinates and never trusts model-provided hex
+  ---
+  duration_ms: 0.5489
+  type: 'test'
+  ...
+# Subtest: median RGB comes from fabric pixels and ignores transparency plus isolated highlights
+ok 9 - median RGB comes from fabric pixels and ignores transparency plus isolated highlights
+  ---
+  duration_ms: 0.6305
+  type: 'test'
+  ...
+# Subtest: quality acceptance requires every comparison to pass without uncertainty
+ok 10 - quality acceptance requires every comparison to pass without uncertainty
+  ---
+  duration_ms: 2.6464
+  type: 'test'
+  ...
+# Subtest: delete patch touches only the expected owned 3D record
+ok 11 - delete patch touches only the expected owned 3D record
+  ---
+  duration_ms: 2.6119
+  type: 'test'
+  ...
+# Subtest: v2 proxy compiles bounded evidence and keeps a seed across busy retries without identity leakage
+ok 12 - v2 proxy compiles bounded evidence and keeps a seed across busy retries without identity leakage
+  ---
+  duration_ms: 75.461
+  type: 'test'
+  ...
+# Subtest: v2 refuses the old Kaggle prompt stripper and invalid manifests
+ok 13 - v2 refuses the old Kaggle prompt stripper and invalid manifests
+  ---
+  duration_ms: 22.0192
+  type: 'test'
+  ...
+# Subtest: garment prompt is a bounded single-item Style Check contract
+ok 14 - garment prompt is a bounded single-item Style Check contract
+  ---
+  duration_ms: 1.5246
+  type: 'test'
+  ...
+# Subtest: garment analysis strips unsafe text and chooses the dominant usable item
+ok 15 - garment analysis strips unsafe text and chooses the dominant usable item
+  ---
+  duration_ms: 2.4237
+  type: 'test'
+  ...
+# Subtest: metadata and file validation reject incomplete or oversized input
+ok 16 - metadata and file validation reject incomplete or oversized input
+  ---
+  duration_ms: 1.0424
+  type: 'test'
+  ...
+# Subtest: Style Check uses the mobile result contract and normalizes its complete output
+ok 17 - Style Check uses the mobile result contract and normalizes its complete output
+  ---
+  duration_ms: 4.1474
+  type: 'test'
+  ...
+# Subtest: Style Check applies the same accessory and colour cleanup as mobile
+ok 18 - Style Check applies the same accessory and colour cleanup as mobile
+  ---
+  duration_ms: 0.7554
+  type: 'test'
+  ...
+# Subtest: Auto Extract uses the mobile visibility gate
+ok 19 - Auto Extract uses the mobile visibility gate
+  ---
+  duration_ms: 0.626
+  type: 'test'
+  ...
+# Subtest: web garment persistence keeps the mobile extraction and storage boundaries
+ok 20 - web garment persistence keeps the mobile extraction and storage boundaries
+  ---
+  duration_ms: 1.1504
+  type: 'test'
+  ...
+# Subtest: review metadata includes the mobile privacy and styling fields
+ok 21 - review metadata includes the mobile privacy and styling fields
+  ---
+  duration_ms: 0.824
+  type: 'test'
+  ...
+# Subtest: photo intake generates before wardrobe creation and isolates credentials
+ok 22 - photo intake generates before wardrobe creation and isolates credentials
+  ---
+  duration_ms: 71.0085
+  type: 'test'
+  ...
+# Subtest: saving adds only the 3D rendition and rejects stale, deleted or already-saved garments
+ok 23 - saving adds only the 3D rendition and rejects stale, deleted or already-saved garments
+  ---
+  duration_ms: 2.7376
+  type: 'test'
+  ...
+# Subtest: regeneration overwrites a previously saved 3D image with allowOverwrite
+ok 24 - regeneration overwrites a previously saved 3D image with allowOverwrite
+  ---
+  duration_ms: 0.966
+  type: 'test'
+  ...
+# Subtest: technical analysis accepts supported garments and rejects invented categories or missing detail
+ok 25 - technical analysis accepts supported garments and rejects invented categories or missing detail
+  ---
+  duration_ms: 3.7109
+  type: 'test'
+  ...
+# Subtest: analysis captures physical evidence; generation uses compact category-specific instructions
+ok 26 - analysis captures physical evidence; generation uses compact category-specific instructions
+  ---
+  duration_ms: 2.3255
+  type: 'test'
+  ...
+# Subtest: existing wardrobe metadata builds the strict prompt without another Gemini analysis
+ok 27 - existing wardrobe metadata builds the strict prompt without another Gemini analysis
+  ---
+  duration_ms: 1.567
+  type: 'test'
+  ...
+# Subtest: universal clothing with technical3DDetails builds deep physical conditioning prompt
+ok 28 - universal clothing with technical3DDetails builds deep physical conditioning prompt
+  ---
+  duration_ms: 0.7907
+  type: 'test'
+  ...
+# Subtest: wardrobe view selection preserves the normal image and exposes a saved 3D rendition
+ok 29 - wardrobe view selection preserves the normal image and exposes a saved 3D rendition
+  ---
+  duration_ms: 0.3716
+  type: 'test'
+  ...
+# Subtest: wardrobe category mapping covers every supported generator category
+ok 30 - wardrobe category mapping covers every supported generator category
+  ---
+  duration_ms: 0.9671
+  type: 'test'
+  ...
+# Subtest: source hosts and generator endpoints reject insecure, arbitrary and credential-bearing URLs
+ok 31 - source hosts and generator endpoints reject insecure, arbitrary and credential-bearing URLs
+  ---
+  duration_ms: 1.0414
+  type: 'test'
+  ...
+# Subtest: authentication and ownership checks prevent unauthorised GPU calls
+ok 32 - authentication and ownership checks prevent unauthorised GPU calls
+  ---
+  duration_ms: 3.6938
+  type: 'test'
+  ...
+# Subtest: unsupported categories fail before reading private garment or starting GPU work
+ok 33 - unsupported categories fail before reading private garment or starting GPU work
+  ---
+  duration_ms: 1.4726
+  type: 'test'
+  ...
+# Subtest: generation sends correct multipart fields without forwarding identity token
+ok 34 - generation sends correct multipart fields without forwarding identity token
+  ---
+  duration_ms: 3.4381
+  type: 'test'
+  ...
+# Subtest: busy GPU returns actionable 429 and invalid PNG is rejected
+ok 35 - busy GPU returns actionable 429 and invalid PNG is rejected
+  ---
+  duration_ms: 5.1795
+  type: 'test'
+  ...
+# Subtest: busy GPU responses wait and recover within the bounded retry window
+ok 36 - busy GPU responses wait and recover within the bounded retry window
+  ---
+  duration_ms: 10.7823
+  type: 'test'
+  ...
+# Subtest: Cloudflare origin failures identify an offline GPU backend
+ok 37 - Cloudflare origin failures identify an offline GPU backend
+  ---
+  duration_ms: 23.7955
+  type: 'test'
+  ...
+# Subtest: one Cloudflare cold-start timeout is retried with a fresh multipart body
+ok 38 - one Cloudflare cold-start timeout is retried with a fresh multipart body
+  ---
+  duration_ms: 4.814
+  type: 'test'
+  ...
+# Subtest: cold timeout followed by a busy lock waits before the warm generation retry
+ok 39 - cold timeout followed by a busy lock waits before the warm generation retry
+  ---
+  duration_ms: 4.0699
+  type: 'test'
+  ...
+# Subtest: generator redirects are inspected and rejected instead of followed
+ok 40 - generator redirects are inspected and rejected instead of followed
+  ---
+  duration_ms: 2.2703
+  type: 'test'
+  ...
+# Subtest: source and saved downloads read only the owned document image and never call GPU
+ok 41 - source and saved downloads read only the owned document image and never call GPU
+  ---
+  duration_ms: 3.4736
+  type: 'test'
+  ...
+# Subtest: folded utility shirt prompt front-loads dual flap pockets, anti-crop hem, and slub weave
+ok 42 - folded utility shirt prompt front-loads dual flap pockets, anti-crop hem, and slub weave
+  ---
+  duration_ms: 0.395
+  type: 'test'
+  ...
+# Subtest: universal manifest preserves contrasting white buttons on navy shirt without hardcoded color suppression
+ok 43 - universal manifest preserves contrasting white buttons on navy shirt without hardcoded color suppression
+  ---
+  duration_ms: 0.2475
+  type: 'test'
+  ...
+# Subtest: parseGhostAnalysis compiles structured physical manifest directly into precision prompt
+ok 44 - parseGhostAnalysis compiles structured physical manifest directly into precision prompt
+  ---
+  duration_ms: 0.3019
+  type: 'test'
+  ...
+# Subtest: privacy policy distinguishes wardrobe content from AI-improvement source media
+ok 45 - privacy policy distinguishes wardrobe content from AI-improvement source media
+  ---
+  duration_ms: 20.07
+  type: 'test'
+  ...
+# Subtest: privacy policy covers permissions, service providers, rights, and account deletion
+ok 46 - privacy policy covers permissions, service providers, rights, and account deletion
+  ---
+  duration_ms: 4.27
+  type: 'test'
+  ...
+# Subtest: terms preserve ownership and use a limited content licence
+ok 47 - terms preserve ownership and use a limited content licence
+  ---
+  duration_ms: 14.7056
+  type: 'test'
+  ...
+# Subtest: terms contain proportionate commercial and legal protections
+ok 48 - terms contain proportionate commercial and legal protections
+  ---
+  duration_ms: 2.5
+  type: 'test'
+  ...
+# Subtest: legal pages publish the current effective date and machine-readable date
+ok 49 - legal pages publish the current effective date and machine-readable date
+  ---
+  duration_ms: 2.7405
+  type: 'test'
+  ...
+# Subtest: MCP Server Card points to a real read-only Streamable HTTP endpoint
+ok 50 - MCP Server Card points to a real read-only Streamable HTTP endpoint
+  ---
+  duration_ms: 57.7238
+  type: 'test'
+  ...
+# Subtest: MCP initialization declares only public read-only capabilities
+ok 51 - MCP initialization declares only public read-only capabilities
+  ---
+  duration_ms: 2.6241
+  type: 'test'
+  ...
+# Subtest: MCP lists and calls its public discovery tools
+ok 52 - MCP lists and calls its public discovery tools
+  ---
+  duration_ms: 0.7565
+  type: 'test'
+  ...
+# Subtest: MCP public resources reject unknown private or invented URIs
+ok 53 - MCP public resources reject unknown private or invented URIs
+  ---
+  duration_ms: 0.9038
+  type: 'test'
+  ...
+# Subtest: MCP notifications are accepted without a JSON-RPC response body
+ok 54 - MCP notifications are accepted without a JSON-RPC response body
+  ---
+  duration_ms: 0.2369
+  type: 'test'
+  ...
+# Subtest: only unexpired verified premium permits cloud routing
+ok 55 - only unexpired verified premium permits cloud routing
+  ---
+  duration_ms: 2.0249
+  type: 'test'
+  ...
+# Subtest: premium cloud failure invokes local extraction and preserves source
+ok 56 - premium cloud failure invokes local extraction and preserves source
+  ---
+  duration_ms: 0.5225
+  type: 'test'
+  ...
+# Subtest: batch circuit keeps successful cloud images and fills failures with one full-context local pass
+ok 57 - batch circuit keeps successful cloud images and fills failures with one full-context local pass
+  ---
+  duration_ms: 1.181
+  type: 'test'
+  ...
+# Subtest: hidden and invalid regions never trigger either inference engine
+ok 58 - hidden and invalid regions never trigger either inference engine
+  ---
+  duration_ms: 0.2727
+  type: 'test'
+  ...
+# Subtest: quality rejection stays per region, while local failure leaves other cloud successes reviewable
+ok 59 - quality rejection stays per region, while local failure leaves other cloud successes reviewable
+  ---
+  duration_ms: 1.484
+  type: 'test'
+  ...
+# Subtest: cancelled requests never fall back or save original
+ok 60 - cancelled requests never fall back or save original
+  ---
+  duration_ms: 6.394
+  type: 'test'
+  ...
+# Subtest: single recovery runs generous crop then light-fabric retry locally
+ok 61 - single recovery runs generous crop then light-fabric retry locally
+  ---
+  duration_ms: 1.5498
+  type: 'test'
+  ...
+# Subtest: ordinary web AI uses the authenticated shared-quota gateway
+ok 62 - ordinary web AI uses the authenticated shared-quota gateway
+  ---
+  duration_ms: 9.1925
+  type: 'test'
+  ...
+# Subtest: Pages policy and AI Worker permit authenticated cross-origin calls
+ok 63 - Pages policy and AI Worker permit authenticated cross-origin calls
+  ---
+  duration_ms: 6.4871
+  type: 'test'
+  ...
+# Subtest: website service defaults mirror the production mobile app
+ok 64 - website service defaults mirror the production mobile app
+  ---
+  duration_ms: 2.6787
+  type: 'test'
+  ...
+# Subtest: blank user AI overrides return to the global limit
+ok 65 - blank user AI overrides return to the global limit
+  ---
+  duration_ms: 1.5167
+  type: 'test'
+  ...
+# Subtest: web garment intake uses authenticated shared AI, Oracle and owner-scoped storage
+ok 66 - web garment intake uses authenticated shared AI, Oracle and owner-scoped storage
+  ---
+  duration_ms: 18.827
+  type: 'test'
+  ...
+# Subtest: admin AI and notification mutations use claim-gated workers
+ok 67 - admin AI and notification mutations use claim-gated workers
+  ---
+  duration_ms: 2.6592
+  type: 'test'
+  ...
+# Subtest: personal outfit campaigns preserve context, collage, exact outfit and progress
+ok 68 - personal outfit campaigns preserve context, collage, exact outfit and progress
+  ---
+  duration_ms: 7.0817
+  type: 'test'
+  ...
+# Subtest: admin operational controls call protected Core routes
+ok 69 - admin operational controls call protected Core routes
+  ---
+  duration_ms: 4.6969
+  type: 'test'
+  ...
+# Subtest: public deletion form stays authenticated and share analytics use Core
+ok 70 - public deletion form stays authenticated and share analytics use Core
+  ---
+  duration_ms: 3.3132
+  type: 'test'
+  ...
+# Subtest: every public page has complete index and sharing metadata
+ok 71 - every public page has complete index and sharing metadata
+  ---
+  duration_ms: 31.2573
+  type: 'test'
+  ...
+# Subtest: public copy avoids implementation and configuration language
+ok 72 - public copy avoids implementation and configuration language
+  ---
+  duration_ms: 9.3855
+  type: 'test'
+  ...
+# Subtest: mobile install prompt is present without replacing the web experience
+ok 73 - mobile install prompt is present without replacing the web experience
+  ---
+  duration_ms: 4.3431
+  type: 'test'
+  ...
+# Subtest: FAQ schema covers every visible FAQ question
+ok 74 - FAQ schema covers every visible FAQ question
+  ---
+  duration_ms: 2.6943
+  type: 'test'
+  ...
+# Subtest: sitemap contains every canonical public route
+ok 75 - sitemap contains every canonical public route
+  ---
+  duration_ms: 6.0332
+  type: 'test'
+  ...
+# Subtest: social preview is 1200 by 630 pixels
+ok 76 - social preview is 1200 by 630 pixels
+  ---
+  duration_ms: 3.4955
+  type: 'test'
+  ...
+# Subtest: Google Search Console verification file is exact
+ok 77 - Google Search Console verification file is exact
+  ---
+  duration_ms: 2.5688
+  type: 'test'
+  ...
+# Subtest: trip parser preserves Hinglish inclusive Jaipur dates
+ok 78 - trip parser preserves Hinglish inclusive Jaipur dates
+  ---
+  duration_ms: 40.0687
+  type: 'test'
+  ...
+# Subtest: trip parser resolves a bare end day into the following month
+ok 79 - trip parser resolves a bare end day into the following month
+  ---
+  duration_ms: 10.3279
+  type: 'test'
+  ...
+# Subtest: trip parser handles durations, weeks, ranges and non-trip questions
+ok 80 - trip parser handles durations, weeks, ranges and non-trip questions
+  ---
+  duration_ms: 6.2193
+  type: 'test'
+  ...
+# Subtest: exact requested duration repairs a shorter AI response
+ok 81 - exact requested duration repairs a shorter AI response
+  ---
+  duration_ms: 12.8374
+  type: 'test'
+  ...
+# Subtest: hard-grounded destinations keep Goa and Jaipur in India
+ok 82 - hard-grounded destinations keep Goa and Jaipur in India
+  ---
+  duration_ms: 3.9738
+  type: 'test'
+  ...
+# Subtest: weather failure is non-blocking and later dates never invent forecasts
+ok 83 - weather failure is non-blocking and later dates never invent forecasts
+  ---
+  duration_ms: 20.4277
+  type: 'test'
+  ...
+# Subtest: empty and fully filtered wardrobes return local responses
+ok 84 - empty and fully filtered wardrobes return local responses
+  ---
+  duration_ms: 3.3701
+  type: 'test'
+  ...
+# Subtest: unknown model IDs become missing and owned quantities stay one
+ok 85 - unknown model IDs become missing and owned quantities stay one
+  ---
+  duration_ms: 2.3784
+  type: 'test'
+  ...
+# Subtest: slot classifier supports separates, one-piece and traditional structures
+ok 86 - slot classifier supports separates, one-piece and traditional structures
+  ---
+  duration_ms: 0.4079
+  type: 'test'
+  ...
+# Subtest: every trip day has footwear/accessory or explicit missing categories
+ok 87 - every trip day has footwear/accessory or explicit missing categories
+  ---
+  duration_ms: 2.2759
+  type: 'test'
+  ...
+# Subtest: formal-shirt cargo and ceremonial sports-shoe combinations are repaired
+ok 88 - formal-shirt cargo and ceremonial sports-shoe combinations are repaired
+  ---
+  duration_ms: 3.7646
+  type: 'test'
+  ...
+# Subtest: warm dry trips do not retain routine jackets or raincoat suggestions
+ok 89 - warm dry trips do not retain routine jackets or raincoat suggestions
+  ---
+  duration_ms: 1.3897
+  type: 'test'
+  ...
+# Subtest: Indian festival days prefer available ethnic pieces
+ok 90 - Indian festival days prefer available ethnic pieces
+  ---
+  duration_ms: 2.8886
+  type: 'test'
+  ...
+# Subtest: least-used rotation avoids unnecessary adjacent duplicate combinations
+ok 91 - least-used rotation avoids unnecessary adjacent duplicate combinations
+  ---
+  duration_ms: 3.0747
+  type: 'test'
+  ...
+# Subtest: limited wardrobes keep every requested day and explain rewear
+ok 92 - limited wardrobes keep every requested day and explain rewear
+  ---
+  duration_ms: 2.2418
+  type: 'test'
+  ...
+# Subtest: rerun keeps dates and avoids excluded combinations when alternatives exist
+ok 93 - rerun keeps dates and avoids excluded combinations when alternatives exist
+  ---
+  duration_ms: 3.6758
+  type: 'test'
+  ...
+# Subtest: cache fingerprint is UID-ready and changes with wardrobe/profile mutations
+ok 94 - cache fingerprint is UID-ready and changes with wardrobe/profile mutations
+  ---
+  duration_ms: 1.1946
+  type: 'test'
+  ...
+# Subtest: JSON parser isolates one object and performs only trailing-comma repair
+ok 95 - JSON parser isolates one object and performs only trailing-comma repair
+  ---
+  duration_ms: 1.3012
+  type: 'test'
+  ...
+# Subtest: web integration uses shared gateway, cache, accessible states and no client consume
+ok 96 - web integration uses shared gateway, cache, accessible states and no client consume
+  ---
+  duration_ms: 16.1849
+  type: 'test'
+  ...
+# Subtest: concrete garment words override stale roles
+ok 97 - concrete garment words override stale roles
+  ---
+  duration_ms: 5.0173
+  type: 'test'
+  ...
+# Subtest: shared search understands common synonyms
+ok 98 - shared search understands common synonyms
+  ---
+  duration_ms: 0.661
+  type: 'test'
+  ...
+# Subtest: planner shifts across years and clamps local dates
+ok 99 - planner shifts across years and clamps local dates
+  ---
+  duration_ms: 1.3767
+  type: 'test'
+  ...
+# Subtest: free Smart Purchase stays deterministic and uses known IDs
+ok 100 - free Smart Purchase stays deterministic and uses known IDs
+  ---
+  duration_ms: 1.3445
+  type: 'test'
+  ...
+# Subtest: weekly report counts only the local seven-day window
+ok 101 - weekly report counts only the local seven-day window
+  ---
+  duration_ms: 0.7472
+  type: 'test'
+  ...
+# Subtest: prompt registry matches active mobile identity and namespaces
+ok 102 - prompt registry matches active mobile identity and namespaces
+  ---
+  duration_ms: 1.6943
+  type: 'test'
+  ...
+# Subtest: every dashboard icon reference resolves to an SVG symbol
+ok 103 - every dashboard icon reference resolves to an SVG symbol
+  ---
+  duration_ms: 11.4766
+  type: 'test'
+  ...
+# Subtest: web profile controls use mobile choices and canonical shopping profile
+ok 104 - web profile controls use mobile choices and canonical shopping profile
+  ---
+  duration_ms: 2.9863
+  type: 'test'
+  ...
+1..104
+# tests 104
+# suites 0
+# pass 104
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 610.3853

@@ -8,3 +8,10 @@ export const firebaseConfig = {
   messagingSenderId: "24255311335",
   appId: "1:24255311335:web:8adcee3890c86771496142",
 };
+
+// Public service locations. Authentication and authorization are enforced by
+// Firebase ID tokens and the Workers; no provider credentials live here.
+export const CORE_API_URL = "https://clothmatics-core-api.chiragsharma376.workers.dev";
+export const AI_GATEWAY_URL = "https://clothmatics-ai-gateway.chiragsharma376.workers.dev";
+export const UPLOAD_WORKER_URL = "https://clothmatics-upload-worker.chiragsharma376.workers.dev";
+export const GHOST_MANNEQUIN_API_URL = "https://clothmatics-ghost.chiragsharma376.workers.dev/generate";

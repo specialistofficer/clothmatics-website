@@ -1,0 +1,12 @@
+# Dependencies & Runtimes
+node_modules/
+.wrangler/
+.dev.vars
+
+# Python Cache
+__pycache__/
+*.pyc
+
+# OS Files
+.DS_Store
+Thumbs.db

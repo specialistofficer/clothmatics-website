@@ -1,31 +1,42 @@
 # ClothMatics website
 
-This folder is a complete Cloudflare Pages website and authenticated web
-dashboard. It intentionally provides **read-only wardrobe access**. Garment
-upload, extraction, editing, and deletion remain mobile-app-only.
+This folder contains the public website and authenticated companion dashboard.
+The signed-in website includes a Camera screen with Add to Closet and Style
+Check modes. It can capture or select a clear garment photo, identify it through
+the authenticated AI gateway, remove its background through the Oracle Cloud
+extraction service, and save the cutout to the same wardrobe used by mobile.
+Style Check analyzes a complete outfit using the mobile response contract, and
+Auto Extract can prepare multiple eligible garments from up to five photos.
+Tap refinement and replacement of an existing wardrobe image remain mobile-only.
+Website AI uses the same account-level allowance as mobile.
 
 ## What is included
 
 - Responsive marketing website using the ClothMatics design system.
 - Persistent Firebase email/password and Google authentication.
+- Dedicated Camera screen with blur warning, single-garment and multi-garment intake, Oracle Cloud extraction, original-photo fallback, R2 storage, and review-before-save.
+- Complete-outfit Style Check with score, confidence, occasion, colors, detected clothing, recommendations, tips, accessories, and shopping suggestions.
 - The signed-in user's wardrobe, favorites, Lookbook items, and custom looks.
-- Search and filtering without any wardrobe writes.
-- Online outfit generation through a Cloudflare Pages Function.
-- Firebase-token verification before every AI request.
-- Optional per-user daily generation limits using Cloudflare KV.
+- Search and filtering with protected owner-only metadata updates.
+- Grounded Wardrobe Assistant trip planning with UID-scoped cache and the shared account AI allowance.
+- Typed Smart Purchase comparison; clothing photos are handled by the Camera screen.
+- Administrator-only notification drafting and personal-outfit campaigns.
 - Editable marketing/demo content in `data/content.json`.
-- A claim-protected, read-only administrator dashboard at `/admin.html`.
+- A claim-protected administrator dashboard at `/admin.html`.
 - Dedicated privacy policy and searchable FAQ pages.
 
 ## Data shared with the mobile app
 
 | Feature | Firebase location | Website access |
 |---|---|---|
-| User profile | `users/{uid}` | Read |
-| Wardrobe | `wardrobe` filtered by `userId` | Read only |
-| Saved/custom looks | `savedOutfits` filtered by `userId` | Read only |
-| Garment upload/extraction | Mobile pipeline | Not present |
-| Outfit generation | `/api/generate-outfit` | Authenticated request |
+| User profile | `users/{uid}` | Read and protected supported-field update |
+| Wardrobe | `wardrobe` filtered by `userId` | Read, protected metadata update/delete |
+| Saved/custom looks | `savedOutfits` filtered by `userId` | Read and protected save |
+| Single-garment upload/extraction | AI gateway + Oracle extraction + R2 | Authenticated review-before-save flow |
+| Complete-outfit Style Check | `outfitHistory` + AI gateway | Authenticated Camera flow using the shared result contract |
+| Smart Purchase | Browser-local calculation | No AI request or upload |
+| User AI and quota | Core/AI Workers | Verified Firebase account; image analysis consumes the same shared mobile/web allowance |
+| Admin notification tools | Core/AI Workers | Firebase `admin: true` claim required |
 
 The Firebase web configuration is not a secret. Firestore Security Rules and
 Firebase Auth enforce access. Gemini credentials must never be placed in
@@ -74,19 +85,22 @@ Do not use repository root plus `website` as only the output directory: Pages
 Functions are discovered from the configured project root, not from an
 arbitrary static output subfolder.
 
-Add these encrypted environment variables under **Settings → Variables and
-Secrets**:
+The website includes the same public Firebase project configuration and public
+service endpoints as the production mobile app. No extra value is required for
+the standard deployment. The following optional environment overrides can be
+set under **Settings → Variables and Secrets** when infrastructure is rotated:
 
 | Variable | Purpose |
 |---|---|
-| `GEMINI_API_KEY` | Server-only Gemini credential |
-| `FIREBASE_WEB_API_KEY` | Used by the function to validate Firebase ID tokens |
+| `FIREBASE_WEB_API_KEY` | Optional override for the public Firebase web API key |
+| `ORACLE_EXTRACTION_API_URL` | Optional HTTPS override for the authenticated Oracle extraction service |
+| `UPLOAD_WORKER_URL` | Optional override for the authenticated R2 upload worker |
 
-Create a Cloudflare KV namespace and bind it to the Pages project with the
-variable name `OUTFIT_LIMITS`. This binding records `web-ai-used:<Firebase UID>`
-without an expiry, so each account receives one successful website outfit
-recommendation. If the binding is missing, the endpoint fails closed and does
-not call Gemini.
+The Pages project does not hold a Gemini key. Browser AI requests use the
+existing authenticated AI gateway, where availability, shared quota, provider
+credentials, prompts, and output limits are enforced. The Pages Functions
+proxy only the user-selected image to Oracle and the finished cutout to the
+existing upload worker; both upstream services verify the Firebase account.
 
 ## Local preview
 
@@ -96,12 +110,14 @@ Static marketing and Firebase dashboard preview:
 npx wrangler pages dev website
 ```
 
-The Pages Function also runs under this command. Add local secrets in a
-`website/.dev.vars` file (do not commit it):
+The Pages Function also runs under this command. Overrides may be placed in a
+local `.dev.vars` file (do not commit it), but they are not required while the
+mobile production endpoints remain unchanged:
 
 ```text
-GEMINI_API_KEY=...
 FIREBASE_WEB_API_KEY=...
+ORACLE_EXTRACTION_API_URL=https://your-extraction-host
+UPLOAD_WORKER_URL=https://your-upload-worker
 ```
 
 ## Deployment behavior
@@ -111,8 +127,29 @@ FIREBASE_WEB_API_KEY=...
   browser.
 - The dashboard queries only documents whose `userId` equals the authenticated
   UID.
-- There are no calls to `addDoc`, `setDoc`, `updateDoc`, `deleteDoc`, Storage,
-  camera, image picker, or extraction services in the website.
+- A signed-in user can capture or pick JPEG, PNG, or WebP images up to 6 MB
+  from the dedicated Camera screen. Single Garment accepts one image and Auto
+  Extract accepts up to five.
+- The browser warns before processing a likely blurry photo, normalizes every
+  accepted source to the same 1024px-wide JPEG used by mobile analysis, and
+  requests authenticated Oracle extraction.
+- Single Garment uses a direct full-frame pass first. A quality rejection can
+  retry a padded Gemini box and then light-fabric preservation. Infrastructure
+  failure never creates a broken wardrobe record: the unchanged source remains
+  available for explicit review and save.
+- Auto Extract uses the mobile visibility gate, stops further cloud calls after
+  a batch-level Oracle infrastructure failure, reuses each prepared preview at
+  save time, uploads one non-fatal source reference per photo, and continues
+  saving other reviewed garments if one item fails.
+- The reviewed artifact is resized/compressed with the mobile upload profile
+  before it is uploaded to the user-owned R2 wardrobe namespace. Firestore is
+  written only after upload succeeds, and a failed Firestore save triggers R2
+  cleanup of that wardrobe artifact.
+- Style Check sends the normalized complete-outfit image through the same
+  authenticated, account-level AI allowance as mobile and renders the matching
+  score, confidence, occasion, colors, detected clothing, and advice fields.
+- Browser intake does not offer tap refinement or replacement of an existing
+  wardrobe image; those paths remain mobile-only.
 - Outfit generation sends only garment metadata—not garment image bytes—to the
   server function. Returned IDs are checked against the supplied wardrobe
   before rendering.
@@ -131,9 +168,9 @@ composite index is required.
 
 ## August 2026 parity deployment
 
-The authenticated companion includes a Lookbook builder, enhanced planner, Weekly Closet Report, Festival Stylist, Smart Purchase Check, attributed sharing, and administrator mobile-push campaign operations. Garment management and image processing remain mobile-only.
+The authenticated companion includes a Lookbook builder, enhanced planner, Weekly Closet Report, local Smart Purchase Check, attributed sharing, Wardrobe Assistant trip planning, and administrator mobile-push campaign operations. The older Festival Stylist and generic website outfit generator have been removed; Wardrobe Assistant is the supported user-facing AI workflow.
 
-Cloudflare Pages must use this directory as its project root and `.` as the output directory. Bind `OUTFIT_LIMITS` as KV and configure `GEMINI_API_KEY` and `FIREBASE_WEB_API_KEY` as encrypted production secrets; the browser never receives them.
+Cloudflare Pages must use this directory as its project root and `.` as the output directory. The standard mobile-aligned public configuration is built in; provider credentials remain only in the existing AI gateway and are never included in this website.
 
 Verify and deploy:
 
@@ -141,9 +178,8 @@ Verify and deploy:
 node --test tests/*.test.mjs
 node --check app.js
 node --check admin.js
-node --check functions/api/generate-outfit.js
-node --check functions/api/smart-purchase.js
-npx wrangler pages deploy . --project-name clothmatics-website
+node --check functions/api/admin/push-draft.js
+npx wrangler pages deploy . --project-name clothmatics
 ```
 
 No Firestore rule change was required. Current rules already allow owner-scoped `savedOutfits` and `outfitWear` writes, published festival reads, admin-only `pushCampaigns`, and block ordinary direct analytics writes.
@@ -152,8 +188,11 @@ No Firestore rule change was required. Current rules already allow owner-scoped 
 
 - `index.html` — marketing site, login dialog, and dashboard structure.
 - `styles.css` — complete responsive design system.
-- `app.js` — Firebase session, read-only data queries, rendering, and AI UI.
-- `functions/api/generate-outfit.js` — authenticated server-side Gemini route.
+- `app.js` — Firebase session, owner-scoped data queries, garment intake UI, rendering, and local Smart Purchase UI.
+- `garment-upload.mjs` — browser image normalization, shared-quota vision call, Oracle extraction, and cutout upload client.
+- `functions/api/wardrobe/extract.js` — authenticated same-origin Oracle proxy.
+- `functions/api/wardrobe/upload.js` — authenticated user-scoped R2 upload and rollback proxy.
+- `functions/api/admin/push-draft.js` — administrator-claim proxy to the secured notification AI gateway.
 - `data/content.json` — occasions and editable demo content.
 - `_headers` — Cloudflare security and cache headers.
 - `admin.html`, `admin.js`, `admin.css` — administrator activity dashboard.

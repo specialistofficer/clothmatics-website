@@ -1,0 +1,70 @@
+TAP version 13
+# Subtest: specific categories survive broad roles and unfamiliar types do not silently become shirts
+ok 1 - specific categories survive broad roles and unfamiliar types do not silently become shirts
+  ---
+  duration_ms: 2.3856
+  type: 'test'
+  ...
+# Subtest: straight hem and actual fabric survive; stale pink title and generic material cannot override pixels
+ok 2 - straight hem and actual fabric survive; stale pink title and generic material cannot override pixels
+  ---
+  duration_ms: 0.6461
+  type: 'test'
+  ...
+# Subtest: no default hem, pocket, material, fit or sleeves are fabricated
+ok 3 - no default hem, pocket, material, fit or sleeves are fabricated
+  ---
+  duration_ms: 0.1919
+  type: 'test'
+  ...
+# Subtest: legacy and mismatched-source evidence requires a fresh photo analysis
+ok 4 - legacy and mismatched-source evidence requires a fresh photo analysis
+  ---
+  duration_ms: 0.3049
+  type: 'test'
+  ...
+# Subtest: color point validation rejects bad coordinates and never trusts model-provided hex
+ok 5 - color point validation rejects bad coordinates and never trusts model-provided hex
+  ---
+  duration_ms: 0.3091
+  type: 'test'
+  ...
+# Subtest: median RGB comes from fabric pixels and ignores transparency plus isolated highlights
+ok 6 - median RGB comes from fabric pixels and ignores transparency plus isolated highlights
+  ---
+  duration_ms: 0.3977
+  type: 'test'
+  ...
+# Subtest: quality acceptance requires every comparison to pass without uncertainty
+ok 7 - quality acceptance requires every comparison to pass without uncertainty
+  ---
+  duration_ms: 2.1213
+  type: 'test'
+  ...
+# Subtest: delete patch touches only the expected owned 3D record
+ok 8 - delete patch touches only the expected owned 3D record
+  ---
+  duration_ms: 1.1922
+  type: 'test'
+  ...
+# Subtest: v2 proxy compiles bounded evidence and keeps a seed across busy retries without identity leakage
+ok 9 - v2 proxy compiles bounded evidence and keeps a seed across busy retries without identity leakage
+  ---
+  duration_ms: 33.5316
+  type: 'test'
+  ...
+# Subtest: v2 refuses the old Kaggle prompt stripper and invalid manifests
+ok 10 - v2 refuses the old Kaggle prompt stripper and invalid manifests
+  ---
+  duration_ms: 6.8788
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 157.2013

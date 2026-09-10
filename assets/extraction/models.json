@@ -1,0 +1,17 @@
+{
+  "u2netp": {
+    "sha256": "309c8469258dda742793dce0ebea8e6dd393174f89934733ecc8b14c76f4ddd8",
+    "chunks": [
+      "u2netp-0.bin"
+    ]
+  },
+  "modnet": {
+    "sha256": "5069a5e306b9f5e9f4f2b0360264c9f8ea13b257c7c39943c7cf6a2ec3a102ae",
+    "chunks": [
+      "modnet-0.bin",
+      "modnet-1.bin",
+      "modnet-2.bin",
+      "modnet-3.bin"
+    ]
+  }
+}

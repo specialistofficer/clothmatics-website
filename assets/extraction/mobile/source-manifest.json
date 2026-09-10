@@ -1,0 +1,17 @@
+{
+  "src/ai/offlinePipeline.ts": "751d36234c390f26cd2cb9bf70f5cc72dc3825b96c3a599f992888fc4c4058d5",
+  "src/ai/imageTensor.ts": "7cb4214d9e8240d72b07401dd0cc9e89b41a264b1c486ac0874c1a549e26e756",
+  "src/ai/mattingModels.ts": "4d9d2fb6a69df283b1318432722e168474c1c51b9f21b62f1e39a358f9fec943",
+  "src/ai/matting.ts": "1c44fd79772797961c4929e2c9eb8e268a6eead23173c2d006fb628f5e1b60b5",
+  "src/ai/maskPostprocess.ts": "0e43159c14795017adec174ff4904a249a0d0aab5274e36d1a44418d942385af",
+  "src/ai/garmentPartition.ts": "527f043ae0d902612d3a1ca89ca889f1cb6e76b9a38414737d31148af36b3143",
+  "src/ai/extractionValidator.ts": "bfa7759cd9a9d0c413f7e3855fc3b7dba596e674b290a48de0b4006b61d5cc9f",
+  "src/ai/wornPairSeams.ts": "5a66195af30bc0ccd1326a10176b7fc56709c6bf781c88540ea46d74953c609d",
+  "src/ai/pixelColor.ts": "d6eb94c07bfc286eeb50e32a4529cd0fe50d39db0400ce3a5651129c503deafb",
+  "src/ai/contestedPixels.ts": "28d81a5f7b5efb1d1728c0889eb9dd4b60570c8d7453cd838b292571075c3f77",
+  "src/ai/extractionTelemetry.ts": "c4f0f9be13ffedeabf7f32ff92b5205443e6a8a831b67cd721bfb47cc672d004",
+  "src/ai/wornPartitionPipeline.ts": "ea24ee12dba3086ad9ece5de61585626e0ec47a905da63c761d01d489ad3a7b8",
+  "src/ai/nsfwService.ts": "c53e85e79d599684ff23e42c80786dc76f583aabc3263ff28e79d3edd1579fd4",
+  "src/ai/regionSaveQuality.ts": "21beb7ebf0f150f5a293ea4dc6d1783c3dffc7c91f69499443bb9dfc0fb0c595",
+  "src/config/extractionFlags.ts": "0225ef6c930f6754cac77d4865bdf49695e01e777d6847b0a6c694475e773715"
+}

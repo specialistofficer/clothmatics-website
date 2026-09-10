@@ -1,0 +1,53 @@
+/* The hidden attribute is authoritative, including flex/grid action buttons. */
+.ghost-studio [hidden],.hanger-loader[hidden]{display:none!important}
+body:has(dialog[open]){overflow:hidden}
+.ghost-studio{width:min(1000px,calc(100vw - 32px));max-height:calc(100dvh - 32px);padding:0;border:1px solid #e5e1f2;border-radius:24px;background:#fff;overflow:hidden}
+.ghost-studio[open]{display:flex;flex-direction:column}
+.ghost-header{position:relative;flex:none;padding:24px 28px 16px;border-bottom:1px solid #eeeaf6}
+.ghost-header h2{margin:7px 38px 8px 0;font-size:clamp(20px,2.8vw,28px);line-height:1.25;color:#15122b}
+.ghost-header p{margin:0;color:#726a8e;font-size:13px;line-height:1.6}
+.ghost-content{overflow-y:auto;overscroll-behavior:contain;min-height:0;padding:20px 28px}
+.ghost-comparison{margin:0;gap:16px}
+.ghost-comparison figure{min-width:0;padding:12px;background:#faf9fe}
+.ghost-comparison img,.ghost-comparison [data-ghost-placeholder]{height:clamp(180px,36dvh,360px)}
+.ghost-footer{flex:none;padding:14px 28px 20px;border-top:1px solid #e5e1f2;background:#fff}
+.ghost-footer [data-ghost-status]{margin:0 0 12px;font-size:13px;line-height:1.5;color:#655c7e}
+.ghost-actions{gap:8px;justify-content:flex-start}
+.ghost-actions .button{min-height:42px;padding:10px 14px;font-size:12px;white-space:normal}
+.ghost-actions [data-ghost-close]{margin-left:auto}
+.ghost-actions .danger-button,.ghost-confirm .danger-button{color:#b42318!important;border:1px solid #f2c5c0!important;background:#fff5f4!important}
+.hanger-loader{display:flex;align-items:center;gap:20px;margin:16px 0;padding:14px 24px;border:1px solid #e7e0fc;border-radius:20px;background:radial-gradient(ellipse at top right,#ffeafa66,transparent 65%),#faf9ff}
+.hanger-art{position:relative;flex:0 0 118px;height:126px}
+.hanger-art svg{width:118px;height:118px;overflow:visible}
+.hanger-ring-track{fill:none;stroke:#eee6fd;stroke-width:10}
+.hanger-ring{fill:none;stroke-width:11;stroke-linecap:round;stroke-dasharray:345 101;transform-origin:90px 90px;animation:hanger-orbit 2.8s linear infinite}
+.hanger-wire{fill:none;stroke:#462090;stroke-width:6;stroke-linecap:round;stroke-linejoin:round}
+.hanger-center{transform-origin:90px 110px;animation:hanger-float 3s ease-in-out infinite}
+.hanger-clothes{animation:hanger-assemble 4.8s ease-in-out infinite;transform-origin:90px 120px}
+.hanger-sparkles{animation:hanger-shimmer 2.4s ease-in-out infinite}
+.hanger-shadow{position:absolute;bottom:0;left:24%;width:52%;height:8px;background:#ae88ed55;filter:blur(5px);border-radius:50%}
+.hanger-copy{display:flex;flex-direction:column;gap:6px;min-width:0}
+.hanger-eyebrow{font-size:9px;letter-spacing:2px;color:#8676b1;font-weight:800}
+.hanger-copy b{font-size:18px;color:#2d1b69;line-height:1.3}
+[data-hanger-message]{font-size:12px;line-height:1.5;color:#746a91;overflow-wrap:anywhere}
+.hanger-dots{display:flex;gap:5px;margin-top:4px}
+.hanger-dots i{width:6px;height:6px;border-radius:50%;background:#b29bea;animation:hanger-shimmer 1.6s ease-in-out infinite}
+.hanger-dots i:nth-child(2){animation-delay:.2s}.hanger-dots i:nth-child(3){animation-delay:.4s}.hanger-dots i:nth-child(4){animation-delay:.6s;background:#ff4fa3}
+.ghost-confirm{width:min(440px,calc(100vw - 32px));padding:28px;border:1px solid #e5e1f2;border-radius:22px;color:#15122b;background:#fff;box-shadow:0 24px 90px #24133f30}
+.ghost-confirm .confirm-icon{display:grid;place-items:center;width:44px;height:44px;border-radius:14px;color:#b42318;background:#fff0ee;font-size:30px}
+.ghost-confirm h2{font-size:23px;line-height:1.25;margin:18px 0 12px}.ghost-confirm p{font-size:14px;line-height:1.65;color:#756a89}
+.confirm-original{padding:12px 14px;border-radius:12px;background:#f5f2fc;font-size:13px;line-height:1.55;color:#52456e}
+.ghost-confirm form{display:flex;justify-content:flex-end;gap:10px;margin-top:24px}.ghost-confirm button{padding:12px 15px;border-radius:11px;border:1px solid #ded7f3;background:#fff;font-weight:700;cursor:pointer}
+.ghost-confirm button:focus-visible{outline:3px solid #6c63ff;outline-offset:3px}
+.garment-review-preview{align-self:start;position:sticky;top:0;min-height:0}.garment-review-preview img{max-height:420px;object-fit:contain}
+.garment-evidence-fields{grid-column:1/-1;border:1px solid #e5e1f2;border-radius:14px;padding:14px;background:#faf9fe}
+.garment-evidence-fields summary{cursor:pointer;font-size:13px;font-weight:800;color:#574485}
+.garment-evidence-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.garment-evidence-grid label{display:flex;flex-direction:column;gap:6px;font-size:12px}.garment-evidence-grid textarea{min-height:70px;resize:vertical;width:100%;padding:10px;border:1px solid #ded7f3;border-radius:10px;font:inherit;background:#fff}
+.garment-color-evidence{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;font-size:11px;color:#746a91}.garment-color-evidence span{display:inline-flex;align-items:center;gap:5px}.garment-color-evidence i{width:13px;height:13px;border:1px solid #0002;border-radius:50%}
+@keyframes hanger-orbit{to{transform:rotate(360deg)}}
+@keyframes hanger-float{50%{transform:translateY(-4px) rotate(2deg)}}
+@keyframes hanger-shimmer{0%,100%{opacity:.4}50%{opacity:1}}
+@keyframes hanger-assemble{0%,12%,100%{opacity:0;transform:translateY(6px) scale(.95)}30%,85%{opacity:1;transform:none}}
+@media(max-width:620px){.ghost-studio{width:calc(100vw - 16px);max-height:calc(100dvh - 16px);border-radius:18px}.ghost-header{padding:18px 18px 14px}.ghost-content{padding:16px 18px}.ghost-footer{padding:12px 18px 16px}.ghost-comparison{grid-template-columns:1fr 1fr;gap:8px}.ghost-comparison figure{padding:8px}.ghost-comparison img,.ghost-comparison [data-ghost-placeholder]{height:190px}.ghost-comparison figcaption{font-size:10px}.ghost-actions .button{flex:1 1 42%;padding:9px;font-size:11px}.ghost-actions [data-ghost-close]{margin-left:0}.hanger-loader{gap:12px;padding:12px}.hanger-art{flex-basis:88px;height:96px}.hanger-art svg{width:88px;height:88px}.hanger-copy b{font-size:15px}.garment-evidence-grid{grid-template-columns:1fr}.garment-review-preview{position:static}.garment-review-preview img{max-height:260px}.ghost-confirm{padding:22px}}
+@media(prefers-reduced-motion:reduce){.hanger-loader *{animation:none!important}.hanger-clothes,.hanger-sparkles{opacity:1}.hanger-ring{transform:rotate(-60deg)}}

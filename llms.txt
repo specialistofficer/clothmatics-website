@@ -1,0 +1,29 @@
+# ClothMatics
+
+> ClothMatics is a personal digital wardrobe and outfit-planning service for Android and the web. It organizes clothes a user owns, supports wardrobe-grounded outfit planning, and tracks wardrobe use.
+
+Garment capture and image changes happen in the Android app. The website provides a public product overview and, after authentication, access to the user's private wardrobe companion. Personal wardrobe data is never public.
+
+## Product
+
+- [ClothMatics home](https://clothmatics.pages.dev/): Product overview, core capabilities, mobile/web boundaries, and access to the signed-in wardrobe.
+- [About ClothMatics](https://clothmatics.pages.dev/about): Purpose, product boundaries, operating principles, and accountability links.
+- [Help and FAQ](https://clothmatics.pages.dev/faq): Factual answers about accounts, wardrobe access, outfits, planning, privacy, account deletion, and troubleshooting.
+- [Photo guide](https://clothmatics.pages.dev/photo-guide): Instructions for taking clear full-body outfit and single-garment photos.
+- [Google Play](https://clothmatics.pages.dev/r?to=play): Official Android app listing.
+
+## Policies and support
+
+- [Privacy Policy](https://clothmatics.pages.dev/privacy): Data handling, permissions, AI features, retention, user rights, and deletion practices.
+- [Terms of Use](https://clothmatics.pages.dev/terms): Terms for accounts, wardrobe services, user content, AI features, plans, and acceptable use.
+- [Help and contact](https://clothmatics.pages.dev/contact): Product support, privacy questions, and authenticated account-deletion requests.
+
+## Discovery
+
+- [XML sitemap](https://clothmatics.pages.dev/sitemap.xml): Canonical list of public indexable pages.
+- [Crawler policy](https://clothmatics.pages.dev/robots.txt): Crawler access and content-use signals.
+- [MCP Server Card](https://clothmatics.pages.dev/.well-known/mcp/server-card.json): Discovery metadata for the read-only ClothMatics Public Guide MCP server.
+
+## Optional
+
+- [Social preview image](https://clothmatics.pages.dev/assets/clothmatics-social.png): Official ClothMatics preview artwork.

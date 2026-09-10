@@ -1,0 +1,235 @@
+/* ClothMatics app palette: violet-to-pink brand gradient and soft lavender surfaces. */
+:root{
+  --ink:#1a1a2e;
+  --muted:#6e6e8a;
+  --purple:#6c63ff;
+  --pink:#ff4fa3;
+  --indigo:#2d1b69;
+  --paper:#f8f7ff;
+  --line:#e6e2ff;
+  --white:#ffffff;
+  --gold:#ffc857;
+  --success:#34c759;
+  --danger:#ff5a5f;
+  --surface:#ffffff;
+  --surface-soft:#f1eeff;
+  --brand-gradient:linear-gradient(120deg,#6c63ff 0%,#ff4fa3 100%);
+  --shadow:0 24px 70px rgba(45,27,105,.14);
+  --shadow-soft:0 10px 30px rgba(45,27,105,.08);
+}
+
+body{
+  background:
+    radial-gradient(circle at 8% 4%,rgba(108,99,255,.12),transparent 28rem),
+    radial-gradient(circle at 92% 18%,rgba(255,79,163,.10),transparent 30rem),
+    var(--paper);
+}
+
+::selection{color:#fff;background:#6c63ff}
+.noise{opacity:.018}
+.gradient-text{background-image:var(--brand-gradient)}
+.site-header{background:rgba(248,247,255,.82);backdrop-filter:blur(18px);border-bottom:1px solid rgba(108,99,255,.10)}
+.desktop-nav a:hover,footer a:hover,.text-link:hover{color:var(--purple)}
+
+.button,.card-actions button,.dialog-actions button,.camera-choice,.camera-mode-card{
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease,background-color .18s ease;
+}
+.button-primary,.camera-gallery-button{
+  background:var(--brand-gradient)!important;
+  box-shadow:0 11px 25px rgba(108,99,255,.25);
+}
+.button-primary:hover,.camera-gallery-button:hover{transform:translateY(-1px);box-shadow:0 14px 30px rgba(108,99,255,.32)}
+.button:focus-visible,button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+  outline:3px solid rgba(255,79,163,.30);
+  outline-offset:2px;
+}
+
+.proof-strip{background:linear-gradient(100deg,#2d1b69,#6c63ff)}
+.story .step-card.featured,.final-cta,.stylist-promo,.festival-strip,.learned-style,.style-score-card{
+  background:linear-gradient(135deg,#2d1b69 0%,#6c63ff 56%,#ff4fa3 100%);
+}
+.product-showcase,.answer-hub{background:linear-gradient(180deg,#f1eeff 0%,#fbfaff 100%)}
+
+/* Authenticated workspace */
+.app-view{
+  background:
+    radial-gradient(circle at 85% 0,rgba(255,79,163,.10),transparent 34rem),
+    linear-gradient(145deg,#f8f7ff,#f1eeff 72%);
+}
+.app-sidebar{
+  background:linear-gradient(180deg,#2d1b69 0%,#3f2b8f 58%,#6c3fc4 100%);
+  border-right:1px solid rgba(255,255,255,.06);
+  box-shadow:12px 0 34px rgba(35,23,70,.08);
+}
+.app-sidebar nav button,.app-sidebar nav a{color:#dedaff}
+.app-sidebar nav button:first-letter{color:inherit}
+.app-sidebar nav button:hover,.app-sidebar nav a:hover{color:#fff;background:rgba(255,255,255,.07)}
+.app-sidebar nav button.active{
+  color:#fff;
+  background:linear-gradient(110deg,rgba(108,99,255,.60),rgba(255,79,163,.30));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 9px 22px rgba(11,7,28,.18);
+}
+.app-sidebar nav button.active .nav-icon{color:#fff}
+.sidebar-note{background:rgba(255,255,255,.055);border-color:rgba(255,255,255,.09)}
+.app-content{max-width:1600px;width:100%;margin-inline:auto}
+.app-kicker{color:#6c63ff}
+.user-chip>span,.notification-kind-icon,.badge-grid article>span{background:var(--brand-gradient)}
+
+:is(
+  .stat-grid article,.dash-card,.home-insights article,.insight-summary article,
+  .quest-summary article,.outfit-library-card,.calendar-card,.day-plans,
+  .weekly-metrics article,.weekly-detail article,.weekly-suggestion,.festival-card,
+  .purchase-form,.purchase-result,.profile-card-web,.preference-grid,
+  .stylist-form,.outfit-result,.look-card,.camera-capture-card,.camera-tips,
+  .style-result-summary article,.style-result-card,.notification-card
+){
+  border-color:var(--line);
+  background:linear-gradient(155deg,#ffffff,#fff 72%);
+  box-shadow:var(--shadow-soft);
+}
+.stat-grid article{position:relative;overflow:hidden}
+.stat-grid article::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:linear-gradient(#6c63ff,#ff4fa3)}
+.stat-grid b,.weekly-metrics b,.insight-summary b,.quest-summary b{color:#6c63ff}
+.closet-item,.complete-outfit-grid article,.auto-extract-result{
+  border-color:var(--line);
+  background:var(--surface);
+  box-shadow:0 7px 22px rgba(45,27,105,.06);
+}
+.closet-item:hover,.outfit-library-card:hover,.look-card:hover,.festival-card:hover{
+  transform:translateY(-2px);
+  border-color:#c9c3ff;
+  box-shadow:0 14px 34px rgba(45,27,105,.11);
+}
+.closet-item,.outfit-library-card,.look-card,.festival-card{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.closet-item .item-image,.demo-item div,.complete-outfit-grid img,.generated-items img{background:linear-gradient(145deg,#f1eeff,#fbfaff)}
+.readonly-pill,.stylist-context,.mobile-action-note,.upload-privacy-note,.camera-mode-guide{color:#4f47bc;background:#f1eeff}
+
+.search,dialog input,dialog select,dialog textarea,.purchase-form input,.builder-fields input,.builder-search input,
+.garment-review-fields input,.garment-review-fields select{border-color:#ded9ff;background:#fff}
+.search:focus-within,dialog input:focus,dialog select:focus,dialog textarea:focus,.purchase-form input:focus,
+.builder-fields input:focus,.builder-search input:focus,.garment-review-fields input:focus,.garment-review-fields select:focus{
+  border-color:#8e86ff;
+  box-shadow:0 0 0 4px rgba(108,99,255,.12);
+  outline:0;
+}
+
+dialog{border:1px solid rgba(83,61,125,.12);background:#ffffff;box-shadow:0 34px 100px rgba(30,19,58,.28)}
+dialog::backdrop,.garment-upload-dialog::backdrop{background:rgba(25,17,48,.68);backdrop-filter:blur(10px)}
+.camera-preview,.garment-review-preview,.garment-dropzone,.auto-extract-results{
+  border-color:#ded9ff;
+  background:linear-gradient(145deg,#fbfaff,#f1eeff);
+}
+.camera-mode-card.active{border-color:#9c95ff;background:linear-gradient(145deg,#fff,#f1eeff)}
+.camera-mode-card.active>span,.camera-choice-primary{background:var(--brand-gradient)}
+.style-result-image{background:#2d1b69}
+.style-color-chips span{color:#4f47bc;border-color:#d8d2ff;background:#f1eeff}
+
+.danger-button{color:var(--danger)!important;border-color:#ffc7c9!important;background:#fff5f6!important}
+.danger-button:hover{border-color:#ff8a8e!important;background:#fff0f1!important}
+.confirm-dialog .danger-button{color:#fff!important;border-color:transparent!important;background:#ff5a5f!important;box-shadow:0 9px 20px rgba(255,90,95,.22)}
+
+.toast{display:flex;min-height:48px;align-items:center;border:1px solid rgba(255,255,255,.13);border-radius:15px;background:#2d1b69;box-shadow:0 16px 38px rgba(32,20,63,.26);font-weight:700}
+.toast[data-tone="success"]{background:#238c43}
+.toast[data-tone="error"]{background:#c53f49}
+
+.google-button{display:flex;align-items:center;justify-content:center;gap:10px;height:52px;border:1.5px solid var(--line);font-size:15.5px;font-weight:600;color:var(--ink);transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease}
+.google-button:hover{transform:translateY(-1px);border-color:#c9c3ff;box-shadow:0 9px 24px rgba(45,27,105,.09)}
+.google-mark{width:20px;height:20px;flex:0 0 20px}
+.auth-divider{gap:12px;height:48px}
+.auth-divider::before,.auth-divider::after{content:"";height:1px;flex:1;background:var(--line)}
+.mark-all-notifications{min-height:42px;padding:10px 15px;border:1px solid #d8d2ff;border-radius:13px;background:#fff;color:#6c63ff;font:700 12px "DM Sans",sans-serif;cursor:pointer;box-shadow:0 5px 15px rgba(45,27,105,.05)}
+.mark-all-notifications:hover{border-color:#9c95ff;background:#f6f4ff}
+.notification-list>.empty-state{min-height:174px;border:1px solid var(--line);border-radius:22px;background:var(--surface);box-shadow:var(--shadow-soft)}
+.signout{margin-top:auto;padding:12px 10px;border-radius:12px;color:#dedaff}
+.signout:hover{color:#fff;background:rgba(255,255,255,.07)}
+
+@media(max-width:620px){
+  .site-header{background:rgba(248,247,255,.94)}
+  .app-sidebar{box-shadow:0 -8px 28px rgba(35,23,70,.16)}
+  .app-content{background:transparent}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .button,.card-actions button,.dialog-actions button,.camera-choice,.camera-mode-card,
+  .closet-item,.outfit-library-card,.look-card,.festival-card{transition:none}
+}
+
+/* Keep public policy links accessible at every screen size. */
+footer { flex-wrap: wrap; gap: 20px; }
+footer > div { display: flex; flex-wrap: wrap; gap: 12px 20px; }
+
+/* One app-matched action palette across marketing, camera, forms and garment review. */
+:root{--action:#6c63ff;--action-hover:#5a52f0;--action-soft:#f1eeff;--focus:#ff4fa3}
+:root{--paper:#f5f3fb;--surface:#fff;--surface-soft:#faf9fd;--line:#e5e1f2;--nav:#15122b;--shadow-soft:0 12px 35px rgba(45,27,105,.08)}
+body,.app-view{background:var(--paper)}
+.step-card.featured,.feature-section,.final-cta,.stylist-promo{background:var(--nav)}
+.feature-section{color:#fff}
+.product-showcase{background:linear-gradient(180deg,#f5f3fb 0%,#fff 100%)}
+.gradient-text{background-image:var(--brand-gradient)}
+.button-primary,.camera-gallery-button,.camera-choice-primary,
+.dialog-actions .button-primary,.garment-review-fields .button-primary{
+  color:#fff!important;background:var(--brand-gradient)!important;border:1px solid transparent!important;
+  box-shadow:0 6px 16px rgba(108,99,255,.20);
+}
+.button-primary:hover:not(:disabled),.camera-gallery-button:hover:not(:disabled),.camera-choice-primary:hover:not(:disabled){filter:saturate(1.08) brightness(.97)}
+.button-ghost,.dialog-actions button:not(.button-primary):not(.danger-button),.card-actions button:not(.danger-button){background:#fff;color:var(--action);border:1px solid #d8d2ff;box-shadow:none}
+.button-ghost:hover,.dialog-actions button:not(.button-primary):not(.danger-button):hover,.card-actions button:not(.danger-button):hover{background:var(--action-soft);border-color:#9c95ff}
+.app-sidebar nav button.active{background:linear-gradient(110deg,rgba(108,99,255,.72),rgba(255,79,163,.34));box-shadow:inset 3px 0 #ff8fc4;color:#fff}
+.app-kicker,.camera-mode-guide b{color:var(--action)}
+.camera-choice-primary small,.camera-choice-primary span{color:inherit}
+.camera-choice:not(.camera-choice-primary){background:#fff;color:var(--ink);border:1px solid var(--line)}
+.camera-mode-card.active{background:var(--action-soft);border-color:#9c95ff}
+.camera-mode-card.active>span{background:var(--action);color:#fff}
+button:disabled,.button:disabled{opacity:1!important;background:#e5e2f3!important;border-color:#d9d5ea!important;color:#74718b!important;box-shadow:none!important;transform:none!important;cursor:not-allowed;filter:none!important}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+.garment-review-preview,.auto-extract-result>img{background-color:#f8f7ff;background-image:linear-gradient(45deg,#e9e6f7 25%,transparent 25%),linear-gradient(-45deg,#e9e6f7 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#e9e6f7 75%),linear-gradient(-45deg,transparent 75%,#e9e6f7 75%);background-size:20px 20px;background-position:0 0,0 10px,10px -10px,-10px 0}
+.auto-extract-result.active{border-color:var(--action);box-shadow:0 0 0 2px var(--action-soft)}
+.garment-process-steps li.active{color:var(--action);background:var(--action-soft);border-color:#b8b3ff}
+.garment-process-steps li.done{color:#238c43;background:#ecfaef;border-color:#b9e8c4}
+.garment-upload-dialog{max-height:90dvh;overflow-y:auto}
+.dialog-actions button,.camera-choice,.button{min-height:44px}
+@media(max-width:620px){.garment-review-fields .dialog-actions{display:flex;flex-wrap:wrap;gap:10px}.garment-review-fields .dialog-actions button{flex:1 1 140px}.garment-review-fields .dialog-actions .button-primary{flex-basis:100%}.site-header .header-actions{gap:8px}.button{padding-inline:14px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+.hero-orb,.orb{background:radial-gradient(circle,rgba(108,99,255,.12),rgba(255,79,163,.05) 70%);box-shadow:none}
+.orb-two{border-color:#d0cbff}
+dialog::backdrop,.garment-upload-dialog::backdrop{background:rgba(30,20,63,.68)}
+.camera-mode-card>span,.camera-thumbnail-strip button,.auto-extract-result em.working{background:var(--action-soft);color:var(--action)}
+.style-result-image>span,.camera-preview-badge,.garment-review-count{background:var(--action);color:#fff}
+.garment-process-steps li.active:before{background:var(--action);color:#fff}
+
+/* Existing garments retain their source photo and gain an optional 3D rendition. */
+.ghost-card-button{position:relative;margin:10px 12px 0;padding:10px 12px;min-height:42px;border:1px solid #d8d2ff;border-radius:11px;background:var(--action-soft);color:var(--action);font:700 12px "DM Sans",sans-serif;cursor:pointer}
+.ghost-card-button:hover{background:#e6e2ff;border-color:#b8b3ff}
+.garment-view-toggle{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:3px;margin:10px 12px 0;padding:3px;border:1px solid #d8d2ff;border-radius:12px;background:var(--action-soft)}
+.garment-view-toggle button{min-height:36px;border:0;border-radius:8px;background:transparent;color:var(--action);font:700 12px "DM Sans",sans-serif;cursor:pointer}
+.garment-view-toggle button.active{background:#fff;color:var(--ink);box-shadow:0 3px 10px rgba(45,27,105,.14)}
+.garment-view-toggle button:focus-visible{outline:3px solid rgba(108,99,255,.28);outline-offset:1px}
+.garment-detail-image>.garment-view-toggle{margin:10px 0 0}
+.garment-detail-image>img{display:block;width:100%;aspect-ratio:1;object-fit:contain;border-radius:19px;background:var(--paper)}
+.ghost-studio{width:min(960px,94vw);max-height:90dvh;padding:30px;overflow:auto;border-radius:24px}
+.ghost-studio h2{margin:10px 35px 12px 0}.ghost-studio>p{color:var(--muted);line-height:1.6}
+.ghost-comparison{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:24px}
+.ghost-comparison figure{margin:0;padding:14px;border:1px solid var(--line);border-radius:18px;background:var(--surface-soft)}
+.ghost-comparison img,.ghost-comparison [data-ghost-placeholder]{width:100%;height:330px;object-fit:contain;border-radius:12px}
+.ghost-comparison [data-ghost-placeholder]:not([hidden]){display:grid;place-items:center;text-align:center;color:var(--muted);padding:24px}
+.ghost-comparison figcaption{padding-top:12px;font-size:12px;font-weight:700;color:var(--ink)}
+.ghost-actions{display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap}
+.ghost-working:before{content:"";display:inline-block;width:16px;height:16px;margin-right:10px;border:2px solid #d8d2ff;border-top-color:var(--action);border-radius:50%;vertical-align:middle;animation:ghost-spin 1s linear infinite}
+@keyframes ghost-spin{to{transform:rotate(360deg)}}
+@media(max-width:620px){.ghost-studio{padding:22px}.ghost-comparison{grid-template-columns:1fr}.ghost-comparison img,.ghost-comparison [data-ghost-placeholder]{height:240px}.ghost-actions .button{flex:1}.garment-detail-image>img{max-height:280px}}
+
+/* Admin-aligned surfaces and stable garment detail/card geometry. */
+.app-sidebar{background:var(--nav)}
+.closet-item .item-image{min-height:0;aspect-ratio:1/1;padding:8px}
+.closet-item .item-image img{display:block;width:100%;height:100%;object-fit:contain;object-position:center}
+.closet-item .item-info{min-height:64px;overflow:hidden}
+.closet-item .item-info b{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-height:1.3}
+.closet-item .item-info small{display:block;margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.garment-dialog{max-height:min(90dvh,820px);overflow-y:auto;background:var(--surface);border:1px solid var(--line)}
+.garment-hero{align-items:start}
+.garment-detail-image{min-width:0}
+.garment-detail-image>img{max-height:340px}
+.garment-edit-form{min-width:0}
+.garment-edit-form label,.garment-edit-form input,.garment-edit-form select{min-width:0}
+@media(max-width:620px){.garment-dialog{width:min(94vw,560px);padding:20px}.garment-hero{gap:16px}.garment-detail-image>img{max-height:280px}.closet-item .item-image{padding:5px}}

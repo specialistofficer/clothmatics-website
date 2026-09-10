@@ -12,6 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./admin.css" />
     <link rel="stylesheet" href="./admin-coupons.css" />
+    <link rel="stylesheet" href="./admin-parity.css" />
     <link rel="stylesheet" href="./admin-explorer.css" />
     <link rel="stylesheet" href="./admin-controls.css" />
   </head>
@@ -108,7 +109,7 @@
             <div class="coupon-layout">
               <form id="coupon-form" class="admin-card coupon-form">
                 <div><h3>New coupon</h3><p>Create a code that grants premium access in the ClothMatics mobile app.</p></div>
-                <label>Plan<select id="coupon-plan"><option value="monthly">Monthly</option><option value="yearly">Yearly</option><option value="custom">Custom campaign</option></select></label>
+                <label>Plan<select id="coupon-plan"><option value="monthly">Monthly</option><option value="custom">Custom campaign</option></select></label>
                 <label>Coupon code <span>Leave blank to generate one</span><div class="coupon-code-row"><input id="coupon-code" maxlength="32" autocomplete="off" placeholder="MONTH-7K4P2Q" /><button id="generate-coupon-code" type="button">Generate</button></div></label>
                 <div class="coupon-fields"><label>Premium access <span>Number of days granted</span><input id="coupon-days" type="number" min="1" max="3650" step="1" value="30" required /></label><label>Maximum redemptions <span>Optional</span><input id="coupon-max" type="number" min="1" step="1" placeholder="100" /></label><label>Code expires after <span>Optional, days from creation</span><input id="coupon-expiry" type="number" min="1" step="1" placeholder="30" /></label><label>Campaign label <span>Optional, admin reference</span><input id="coupon-label" maxlength="80" placeholder="Launch promotion" /></label></div>
                 <div id="coupon-message" class="coupon-message hidden" role="status"></div>
