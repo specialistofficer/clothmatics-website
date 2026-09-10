@@ -1,6 +1,5 @@
 import { clean } from "../../_shared/firebase-rest.mjs";
 import {
-  SAMPLE_SHOPPING_RESULTS,
   normalizeProduct,
   fetchSerpApiShopping
 } from "./search.js";
@@ -29,6 +28,146 @@ export async function onRequestOptions() {
     }
   });
 }
+
+export const DIVERSE_SAMPLE_PRODUCTS = [
+  // Men Tops
+  {
+    position: 1,
+    title: "Dennis Lingo Men's Slim Fit Casual Cotton Shirt - White",
+    product_id: "m_top_1",
+    product_link: "https://www.amazon.in/dp/B08246Y679",
+    source: "Amazon.in",
+    price: "₹699",
+    extracted_price: 699,
+    old_price: "₹1,849",
+    extracted_old_price: 1849,
+    thumbnail: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&q=80",
+    delivery: "Free delivery"
+  },
+  {
+    position: 2,
+    title: "Highlander Men Navy Blue Solid Knitted Cotton Polo T-shirt",
+    product_id: "m_top_2",
+    product_link: "https://www.myntra.com/tshirts/highlander/men-navy-polo/12345",
+    source: "Myntra",
+    price: "₹549",
+    extracted_price: 549,
+    old_price: "₹1,099",
+    extracted_old_price: 1099,
+    thumbnail: "https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=400&q=80",
+    delivery: "Free delivery by Tomorrow"
+  },
+  {
+    position: 3,
+    title: "Marks & Spencer Men Pure Linen Striped Casual Shirt",
+    product_id: "m_top_3",
+    product_link: "https://www.ajio.com/marks-spencer-men-linen-shirt/p/461234",
+    source: "AJIO.com",
+    price: "₹1,799",
+    extracted_price: 1799,
+    old_price: "₹2,999",
+    extracted_old_price: 2999,
+    thumbnail: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=400&q=80",
+    delivery: "Free delivery"
+  },
+  // Men Shoes
+  {
+    position: 4,
+    title: "Puma Men White Rebound Layup Minimalist Sneakers",
+    product_id: "m_shoe_1",
+    product_link: "https://www.myntra.com/sneakers/puma/men-white-sneakers/45678",
+    source: "Myntra",
+    price: "₹1,899",
+    extracted_price: 1899,
+    old_price: "₹3,999",
+    extracted_old_price: 3999,
+    thumbnail: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&q=80",
+    delivery: "Free delivery"
+  },
+  {
+    position: 5,
+    title: "Red Tape Men Classic Tan Brown Leather Casual Loafers",
+    product_id: "m_shoe_2",
+    product_link: "https://www.amazon.in/dp/B07Z8K1234",
+    source: "Amazon.in",
+    price: "₹1,499",
+    extracted_price: 1499,
+    old_price: "₹4,299",
+    extracted_old_price: 4299,
+    thumbnail: "https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=400&q=80",
+    delivery: "Free delivery"
+  },
+  // Men Layering
+  {
+    position: 6,
+    title: "Mast & Harbour Men Navy Blue Casual Cotton Overshirt Jacket",
+    product_id: "m_layer_1",
+    product_link: "https://www.myntra.com/jackets/mast-harbour/men-jacket/78910",
+    source: "Myntra",
+    price: "₹1,299",
+    extracted_price: 1299,
+    old_price: "₹2,799",
+    extracted_old_price: 2799,
+    thumbnail: "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&q=80",
+    delivery: "Free delivery"
+  },
+  // Men Accessories
+  {
+    position: 7,
+    title: "Titan Men Black Leather Analog Minimalist Watch & Belt Combo",
+    product_id: "m_acc_1",
+    product_link: "https://www.tatacliq.com/titan-men-watch/p/mp1234",
+    source: "Tata CLiQ",
+    price: "₹1,995",
+    extracted_price: 1995,
+    old_price: "₹2,495",
+    extracted_old_price: 2495,
+    thumbnail: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=400&q=80",
+    delivery: "Free delivery"
+  },
+  // Women Tops
+  {
+    position: 8,
+    title: "Tokyo Talkies Women White Regular Fit Solid Formal Shirt",
+    product_id: "w_top_1",
+    product_link: "https://www.myntra.com/shirts/tokyo-talkies/women-white-shirt/54321",
+    source: "Myntra",
+    price: "₹499",
+    extracted_price: 499,
+    old_price: "₹1,199",
+    extracted_old_price: 1199,
+    thumbnail: "https://images.unsplash.com/photo-1598554747436-c9293d6a588f?w=400&q=80",
+    delivery: "Free delivery"
+  },
+  // Women Bottoms
+  {
+    position: 9,
+    title: "KOTTY Women's Beige High Waist Wide Leg Straight Trouser",
+    product_id: "w_bot_1",
+    product_link: "https://www.amazon.in/dp/B09XYZ",
+    source: "Amazon.in",
+    price: "₹470",
+    extracted_price: 470,
+    old_price: "₹1,000",
+    extracted_old_price: 1000,
+    thumbnail: "https://images.unsplash.com/photo-1506629082955-511b1aa562c8?w=400&q=80",
+    delivery: "Free delivery"
+  },
+  // Women Shoes
+  {
+    position: 10,
+    title: "Bata Women White Chunky Casual Sneakers",
+    product_id: "w_shoe_1",
+    product_link: "https://www.bata.in/women-white-sneakers",
+    source: "Bata.in",
+    price: "₹1,299",
+    extracted_price: 1299,
+    old_price: "₹1,999",
+    extracted_old_price: 1999,
+    thumbnail: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=400&q=80",
+    delivery: "Free delivery"
+  }
+];
 
 /**
  * Gemini AI Stylist: Generates intelligent, trending complete-the-look outfit pairings.
@@ -349,8 +488,8 @@ export async function handleCompleteLook({
   hl = "en",
   env = {}
 }) {
-  const apiKey = env.SERPAPI_API_KEY || env.SERPAPI_KEY;
-  const geminiKey = env.GEMINI_API_KEY;
+  const apiKey = String(env.SERPAPI_API_KEY || env.SERPAPI_KEY || "").trim();
+  const geminiKey = String(env.GEMINI_API_KEY || "").trim();
 
   const rawGender = String(profile.gender || profile.shoppingProfile?.gender || "").toLowerCase();
   const isFemale = rawGender.includes("fem") || rawGender.includes("wom") || rawGender === "female";
@@ -388,20 +527,27 @@ export async function handleCompleteLook({
 
   if (apiKey) {
     try {
-      rawResults = await fetchSerpApiShopping({ query, gl, hl, apiKey });
+      const data = await fetchSerpApiShopping({ query, gl, hl, apiKey });
+      rawResults = Array.isArray(data?.shopping_results) ? data.shopping_results : [];
       if (!rawResults.length) {
         // Broaden search terms slightly if exact query had no results
         const broadened = query.split(" ").slice(0, 3).join(" ");
-        rawResults = await fetchSerpApiShopping({ query: broadened, gl, hl, apiKey });
+        const data2 = await fetchSerpApiShopping({ query: broadened, gl, hl, apiKey });
+        rawResults = Array.isArray(data2?.shopping_results) ? data2.shopping_results : [];
+      }
+      if (!rawResults.length) {
+        rawResults = DIVERSE_SAMPLE_PRODUCTS;
+        isSample = true;
+        notice = "No live shopping results found for this specific query. Showing curated matches.";
       }
     } catch (error) {
       console.warn("SerpApi live request error:", error.message);
-      rawResults = SAMPLE_SHOPPING_RESULTS;
+      rawResults = DIVERSE_SAMPLE_PRODUCTS;
       isSample = true;
       notice = "Shopping provider is temporarily unavailable. Showing preview matches.";
     }
   } else {
-    rawResults = SAMPLE_SHOPPING_RESULTS;
+    rawResults = DIVERSE_SAMPLE_PRODUCTS;
     isSample = true;
     notice = "SerpApi API key not configured in Cloudflare environment yet. Displaying sample products for preview.";
   }
