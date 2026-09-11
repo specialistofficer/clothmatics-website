@@ -10,7 +10,14 @@ import {
   getFallbackStylingPlan,
   filterProductsStrict,
   handleCompleteLook,
-  hasValidImage
+  hasValidImage,
+  DIVERSE_SAMPLE_PRODUCTS,
+  getUserProfileSizes,
+  getUserProfilePreferences,
+  extractProductSize,
+  normalizeProductTitleForDeduplication,
+  deduplicateAndRankProducts,
+  createItemStylingReason
 } from "../functions/api/shopping/complete-look.js";
 import {
   getAnchorCategories,
@@ -20,7 +27,9 @@ import {
   getActiveBudgetRange,
   calculateMatchDetails,
   resolveBuyLink,
-  getCategoryFallbackImage
+  getCategoryFallbackImage,
+  getUserProfileSizes as getHelperSizes,
+  getUserProfilePreferences as getHelperPrefs
 } from "../complete-look-helpers.js";
 
 test("normalizeProduct correctly maps SerpApi shopping_results format", () => {
@@ -435,6 +444,247 @@ test("getCategoryFallbackImage provides distinct, valid fashion studio URLs for 
   assert.notEqual(womenTop, womenShoes);
   assert.notEqual(menTop, womenTop);
 });
+
+test("m_acc_tactical and category fallback images do NOT contain cosmetic/makeup photography", () => {
+  const tacticalWatch = DIVERSE_SAMPLE_PRODUCTS.find(p => p.id === "m_acc_tactical");
+  assert(tacticalWatch != null, "m_acc_tactical sample product must exist");
+  assert(!tacticalWatch.thumbnail.includes("photo-1522335789203-aabd1fc54bc9"), "Must not use cosmetics flatlay URL");
+  assert(tacticalWatch.thumbnail.startsWith("https://images.unsplash.com/"), "Must be valid studio photography");
+
+  // Fallback for men's accessories must also not use cosmetics flatlay
+  const menAccFallback = getCategoryFallbackImage("accessories", "men");
+  assert(!menAccFallback.includes("photo-1522335789203-aabd1fc54bc9"), "Men accessories fallback must not be cosmetics");
+
+  // Verify none of the diverse sample products use the old cosmetics photo
+  for (const prod of DIVERSE_SAMPLE_PRODUCTS) {
+    assert(!prod.thumbnail.includes("photo-1522335789203-aabd1fc54bc9"), `Product ${prod.id} must not use cosmetics photo`);
+  }
+});
+
+test("getUserProfileSizes extracts sizes from both nested shoppingProfile and flat structures", () => {
+  const profileNested = {
+    shoppingProfile: {
+      sizes: {
+        top: { alphaSize: "42" },
+        bottom: { waistInches: 32 },
+        shoes: { uk: "9" },
+        dress: { alphaSize: "M" }
+      }
+    }
+  };
+
+  const sizes = getUserProfileSizes(profileNested);
+  assert.equal(sizes.top, "42");
+  assert.equal(sizes.bottom, "32");
+  assert.equal(sizes.shoes, "9");
+  assert.equal(sizes.dress, "M");
+
+  const helperSizes = getHelperSizes(profileNested);
+  assert.deepEqual(sizes, helperSizes);
+
+  const profileFlat = {
+    sizes: {
+      top: "L",
+      bottom: 34,
+      shoes: 10
+    }
+  };
+  const flatSizes = getUserProfileSizes(profileFlat);
+  assert.equal(flatSizes.top, "L");
+  assert.equal(flatSizes.bottom, "34");
+  assert.equal(flatSizes.shoes, "10");
+  assert.equal(flatSizes.dress, null);
+
+  const emptySizes = getUserProfileSizes({});
+  assert.deepEqual(emptySizes, { top: null, bottom: null, shoes: null, dress: null });
+});
+
+test("getUserProfilePreferences extracts user style preferences and exclusions", () => {
+  const profile = {
+    preferences: {
+      fitPreference: "Slim Fit",
+      favoriteColors: ["Navy", "Olive"],
+      avoidColors: ["Mustard", "Yellow"],
+      hardExclusions: ["leather"],
+      styleLean: ["Minimalist"]
+    },
+    shoppingProfile: {
+      preferredBrands: ["H&M", "Zara"],
+      avoidedBrands: ["FastFashion"],
+      preferredFits: ["Relaxed Fit"]
+    }
+  };
+
+  const prefs = getUserProfilePreferences(profile);
+  assert.equal(prefs.fitPreference, "Slim Fit");
+  assert(prefs.preferredFits.includes("Relaxed Fit") && prefs.preferredFits.includes("Slim Fit"));
+  assert(prefs.favoriteColors.includes("Navy") && prefs.favoriteColors.includes("Olive"));
+  assert(prefs.avoidColors.includes("Mustard") && prefs.avoidColors.includes("Yellow"));
+  assert(prefs.hardExclusions.includes("leather"));
+  assert(prefs.preferredBrands.includes("H&M") && prefs.preferredBrands.includes("Zara"));
+  assert(prefs.avoidedBrands.includes("FastFashion"));
+
+  const helperPrefs = getHelperPrefs(profile);
+  assert.deepEqual(prefs, helperPrefs);
+});
+
+test("extractProductSize and normalizeProductTitleForDeduplication handle retailer title variations", () => {
+  const title1 = "Mast & Harbour Men Olive Green Solid Casual Overshirt (46) by Myntra";
+  const title2 = "Mast & Harbour Men Olive Green Solid Casual Overshirt (42) by Myntra";
+  const title3 = "Men Navy Blue Slim Fit Chinos Size: 32";
+  const title4 = "Puma Men White Leather Court Sneakers UK 9";
+
+  assert.equal(extractProductSize(title1), "46");
+  assert.equal(extractProductSize(title2), "42");
+  assert.equal(extractProductSize(title3), "32");
+  assert.equal(extractProductSize(title4), "9");
+
+  const norm1 = normalizeProductTitleForDeduplication(title1);
+  const norm2 = normalizeProductTitleForDeduplication(title2);
+
+  // After normalization, size tags and retailer suffixes are stripped
+  assert.equal(norm1, norm2);
+  assert(!norm1.includes("46"));
+  assert(!norm1.includes("42"));
+  assert(!norm1.includes("myntra"));
+});
+
+test("deduplicateAndRankProducts drops duplicate size variants and prioritizes user's size", () => {
+  const products = [
+    {
+      id: "prod_46",
+      title: "Mast & Harbour Men Olive Green Solid Casual Overshirt (46) by Myntra",
+      source: "Myntra",
+      extractedPrice: 1299
+    },
+    {
+      id: "prod_42",
+      title: "Mast & Harbour Men Olive Green Solid Casual Overshirt (42) by Myntra",
+      source: "Myntra",
+      extractedPrice: 1299
+    },
+    {
+      id: "prod_other",
+      title: "H&M Men Regular Fit Cotton Worker Jacket",
+      source: "H&M",
+      extractedPrice: 2499
+    }
+  ];
+
+  // User wears size 42 in tops
+  const result = deduplicateAndRankProducts(products, {
+    userSizes: { top: "42" },
+    category: "tops"
+  });
+
+  // Only 2 products should remain: the user-matched size 42 overshirt and the H&M jacket
+  assert.equal(result.length, 2);
+
+  const overshirt = result.find(p => p.title.includes("Mast & Harbour"));
+  assert(overshirt != null);
+  assert.equal(overshirt.id, "prod_42", "Must pick size 42 variant instead of size 46");
+  assert.equal(overshirt.extractedSize, "42");
+  assert.equal(overshirt.userSizeMatch, true);
+
+  // The size matching product should be ranked first
+  assert.equal(result[0].id, "prod_42");
+});
+
+test("deduplicateAndRankProducts filters out avoided colors and hard exclusions", () => {
+  const products = [
+    { id: "1", title: "Dennis Lingo Men Navy Blue Oxford Shirt", source: "Amazon.in" },
+    { id: "2", title: "Men Mustard Yellow Graphic Cotton T-Shirt", source: "Myntra" },
+    { id: "3", title: "Men Real Leather Biker Jacket", source: "AJIO.com" }
+  ];
+
+  const result = deduplicateAndRankProducts(products, {
+    userPrefs: {
+      avoidColors: ["Yellow", "Mustard"],
+      hardExclusions: ["Leather"]
+    },
+    category: "tops"
+  });
+
+  assert.equal(result.length, 1);
+  assert.equal(result[0].id, "1");
+});
+
+test("createItemStylingReason produces distinct, accurate rationales for watches, belts, shoes, and overshirts", () => {
+  const anchorPant = { category: "Bottoms", subCategory: "Trousers", primaryColor: "Grey" };
+  const profile = {
+    shoppingProfile: {
+      sizes: {
+        top: { alphaSize: "42" },
+        bottom: { waistInches: 32 },
+        shoes: { uk: "9" }
+      }
+    }
+  };
+
+  const watchProduct = {
+    title: "Fastrack Men Matte Black Digital Tactical Sports Watch",
+    category: "accessories"
+  };
+  const beltProduct = {
+    title: "Tommy Hilfiger Men Tan Brown Braided Genuine Leather Belt",
+    category: "accessories"
+  };
+  const overshirtProduct = {
+    title: "Mast & Harbour Men Olive Green Casual Overshirt",
+    category: "layering"
+  };
+  const shoeProduct = {
+    title: "Red Tape Men Tan Brown Leather Loafers",
+    category: "shoes"
+  };
+
+  const watchReason = createItemStylingReason(watchProduct, { category: "accessories" }, anchorPant, profile);
+  const beltReason = createItemStylingReason(beltProduct, { category: "accessories" }, anchorPant, profile);
+  const overshirtReason = createItemStylingReason(overshirtProduct, { category: "layering" }, anchorPant, profile);
+  const shoeReason = createItemStylingReason(shoeProduct, { category: "shoes" }, anchorPant, profile);
+
+  // Watch rationale must describe watch, not belt
+  assert(watchReason.toLowerCase().includes("watch"));
+  assert(!watchReason.toLowerCase().includes("belt"));
+
+  // Belt rationale must describe belt, not watch
+  assert(beltReason.toLowerCase().includes("belt"));
+  assert(beltReason.toLowerCase().includes("waistline"));
+  assert(!beltReason.toLowerCase().includes("watch"));
+
+  // Overshirt rationale must describe overshirt and olive color
+  assert(overshirtReason.toLowerCase().includes("overshirt"));
+  assert(overshirtReason.toLowerCase().includes("olive"));
+
+  // Shoe rationale must describe loafers
+  assert(shoeReason.toLowerCase().includes("loafers"));
+  assert(shoeReason.includes("curated for UK 9"));
+});
+
+test("filterProductsStrict rejects products matching user avoidColors or hardExclusions", () => {
+  const testProducts = [
+    { id: "1", title: "Men White Oxford Casual Shirt", extractedPrice: 899, thumbnail: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400" },
+    { id: "2", title: "Men Bright Mustard Yellow Linen Shirt", extractedPrice: 999, thumbnail: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400" },
+    { id: "3", title: "Men Polyester Gym Running T-Shirt", extractedPrice: 499, thumbnail: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400" }
+  ];
+
+  const filtered = filterProductsStrict({
+    products: testProducts,
+    gender: "men",
+    anchorCategory: "Bottoms Trousers",
+    targetCategory: "tops",
+    userPrefs: {
+      avoidColors: ["Mustard", "Yellow"],
+      hardExclusions: ["Polyester"]
+    }
+  });
+
+  const ids = filtered.map(p => p.id);
+  assert(ids.includes("1"));
+  assert(!ids.includes("2"), "Must exclude mustard yellow");
+  assert(!ids.includes("3"), "Must exclude polyester hard exclusion");
+});
+
 
 
 

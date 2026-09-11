@@ -141,8 +141,52 @@ export function getCategoryFallbackImage(category = "", gender = "men") {
   if (cat === "bottoms") return "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=500&q=80";
   if (cat === "shoes") return "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=500&q=80";
   if (cat === "layering") return "https://images.unsplash.com/photo-1544441893-675973e31985?w=500&q=80";
-  if (cat === "accessories") return "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=500&q=80";
+  if (cat === "accessories") return "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=500&q=80";
   return "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500&q=80";
+}
+
+export function getUserProfileSizes(profile = {}) {
+  const sp = profile.shoppingProfile || {};
+  const sizes = sp.sizes || profile.shoppingSizes || profile.sizes || {};
+
+  const top = sizes.top?.alphaSize || (typeof sizes.top === "string" || typeof sizes.top === "number" ? String(sizes.top) : null) || null;
+  const bottom = sizes.bottom?.alphaSize || (sizes.bottom?.waistInches != null ? String(sizes.bottom.waistInches) : null) || (typeof sizes.bottom === "string" || typeof sizes.bottom === "number" ? String(sizes.bottom) : null) || null;
+  const shoes = (sizes.shoes?.uk != null ? String(sizes.shoes.uk) : null) || (sizes.shoes?.india != null ? String(sizes.shoes.india) : null) || (sizes.shoes?.eu != null ? String(sizes.shoes.eu) : null) || (typeof sizes.shoes === "string" || typeof sizes.shoes === "number" ? String(sizes.shoes) : null) || null;
+  const dress = sizes.dress?.alphaSize || (typeof sizes.dress === "string" ? String(sizes.dress) : null) || null;
+
+  return { top, bottom, shoes, dress };
+}
+
+export function getUserProfilePreferences(profile = {}) {
+  const prefs = profile.preferences || {};
+  const sp = profile.shoppingProfile || {};
+
+  const fitPreference = prefs.fitPreference || sp.preferredFits?.[0] || null;
+  const preferredFits = Array.from(new Set([...(sp.preferredFits || []), ...(prefs.fitPreference ? [prefs.fitPreference] : [])].filter(Boolean)));
+  const avoidedFits = Array.from(new Set([...(sp.avoidedFits || [])].filter(Boolean)));
+
+  const favoriteColors = Array.from(new Set([...(prefs.favoriteColors || []), ...(sp.preferredColors || [])].filter(Boolean)));
+  const avoidColors = Array.from(new Set([...(prefs.avoidColors || []), ...(sp.avoidedColors || [])].filter(Boolean)));
+
+  const preferredBrands = Array.from(new Set([...(sp.preferredBrands || [])].filter(Boolean)));
+  const avoidedBrands = Array.from(new Set([...(sp.avoidedBrands || [])].filter(Boolean)));
+
+  const preferredStyles = Array.from(new Set([...(prefs.styleLean || []), ...(sp.preferredStyles || [])].filter(Boolean)));
+  const hardExclusions = Array.from(new Set([...(prefs.hardExclusions || [])].filter(Boolean)));
+  const stylingPriority = prefs.stylingPriority || null;
+
+  return {
+    fitPreference,
+    preferredFits,
+    avoidedFits,
+    favoriteColors,
+    avoidColors,
+    preferredBrands,
+    avoidedBrands,
+    preferredStyles,
+    hardExclusions,
+    stylingPriority
+  };
 }
 
 export function buildSmartShoppingQuery(item = {}, tabId = "", profile = {}) {
@@ -151,25 +195,29 @@ export function buildSmartShoppingQuery(item = {}, tabId = "", profile = {}) {
   const matchedTab = categories.find((c) => c.id === tabId) || categories[0];
   const style = detectGarmentStyle(item);
   const compColor = getComplementaryColor(item.primaryColor);
+  const sizes = getUserProfileSizes(profile);
+  const prefs = getUserProfilePreferences(profile);
+
+  const fitTerm = prefs.fitPreference ? `${prefs.fitPreference} fit` : "";
 
   // Style-specific search queries tailored to anchor garment
   if (style === "streetwear" && matchedTab.id === "tops") {
-    return `${gender} oversized graphic t-shirt`;
+    return [gender, "oversized graphic t-shirt", sizes.top ? `size ${sizes.top}` : ""].filter(Boolean).join(" ").trim();
   }
   if (style === "streetwear" && matchedTab.id === "shoes") {
-    return `${gender} chunky skate sneakers`;
+    return [gender, "chunky skate sneakers", sizes.shoes ? `size ${sizes.shoes}` : ""].filter(Boolean).join(" ").trim();
   }
   if (style === "smart_casual" && matchedTab.id === "tops") {
-    return `${gender} ${compColor} knitted polo shirt`;
+    return [gender, compColor, fitTerm, "knitted polo shirt", sizes.top ? `size ${sizes.top}` : ""].filter(Boolean).join(" ").trim();
   }
   if (style === "formal" && matchedTab.id === "tops") {
-    return `${gender} ${compColor} pure cotton oxford shirt`;
+    return [gender, compColor, fitTerm, "pure cotton oxford shirt", sizes.top ? `size ${sizes.top}` : ""].filter(Boolean).join(" ").trim();
   }
   if (style === "rugged" && matchedTab.id === "tops") {
-    return `${gender} heavyweight crewneck t-shirt`;
+    return [gender, "heavyweight crewneck t-shirt", sizes.top ? `size ${sizes.top}` : ""].filter(Boolean).join(" ").trim();
   }
 
-  const parts = [gender, compColor, matchedTab.searchTerms];
+  const parts = [gender, compColor, fitTerm, matchedTab.searchTerms];
   return parts.filter(Boolean).join(" ").trim();
 }
 

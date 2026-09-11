@@ -375,7 +375,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 1295,
     old_price: "₹1,795",
     extracted_old_price: 1795,
-    thumbnail: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400&q=80",
+    thumbnail: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=400&q=80",
     delivery: "Free delivery",
     category: "accessories",
     style: "streetwear",
@@ -800,6 +800,257 @@ export function detectAnchorStyle(item = {}) {
   return "smart_casual";
 }
 
+export function getUserProfileSizes(profile = {}) {
+  const sp = profile.shoppingProfile || {};
+  const sizes = sp.sizes || profile.shoppingSizes || profile.sizes || {};
+
+  const top = sizes.top?.alphaSize || (typeof sizes.top === "string" || typeof sizes.top === "number" ? String(sizes.top) : null) || null;
+  const bottom = sizes.bottom?.alphaSize || (sizes.bottom?.waistInches != null ? String(sizes.bottom.waistInches) : null) || (typeof sizes.bottom === "string" || typeof sizes.bottom === "number" ? String(sizes.bottom) : null) || null;
+  const shoes = (sizes.shoes?.uk != null ? String(sizes.shoes.uk) : null) || (sizes.shoes?.india != null ? String(sizes.shoes.india) : null) || (sizes.shoes?.eu != null ? String(sizes.shoes.eu) : null) || (typeof sizes.shoes === "string" || typeof sizes.shoes === "number" ? String(sizes.shoes) : null) || null;
+  const dress = sizes.dress?.alphaSize || (typeof sizes.dress === "string" ? String(sizes.dress) : null) || null;
+
+  return { top, bottom, shoes, dress };
+}
+
+export function getUserProfilePreferences(profile = {}) {
+  const prefs = profile.preferences || {};
+  const sp = profile.shoppingProfile || {};
+
+  const fitPreference = prefs.fitPreference || sp.preferredFits?.[0] || null;
+  const preferredFits = Array.from(new Set([...(sp.preferredFits || []), ...(prefs.fitPreference ? [prefs.fitPreference] : [])].filter(Boolean)));
+  const avoidedFits = Array.from(new Set([...(sp.avoidedFits || [])].filter(Boolean)));
+
+  const favoriteColors = Array.from(new Set([...(prefs.favoriteColors || []), ...(sp.preferredColors || [])].filter(Boolean)));
+  const avoidColors = Array.from(new Set([...(prefs.avoidColors || []), ...(sp.avoidedColors || [])].filter(Boolean)));
+
+  const preferredBrands = Array.from(new Set([...(sp.preferredBrands || [])].filter(Boolean)));
+  const avoidedBrands = Array.from(new Set([...(sp.avoidedBrands || [])].filter(Boolean)));
+
+  const preferredStyles = Array.from(new Set([...(prefs.styleLean || []), ...(sp.preferredStyles || [])].filter(Boolean)));
+  const hardExclusions = Array.from(new Set([...(prefs.hardExclusions || [])].filter(Boolean)));
+  const stylingPriority = prefs.stylingPriority || null;
+
+  return {
+    fitPreference,
+    preferredFits,
+    avoidedFits,
+    favoriteColors,
+    avoidColors,
+    preferredBrands,
+    avoidedBrands,
+    preferredStyles,
+    hardExclusions,
+    stylingPriority
+  };
+}
+
+export function extractProductSize(title = "") {
+  const t = String(title || "");
+  const bracketMatch = t.match(/\((XS|S|M|L|XL|XXL|\d{1,2})\)/i);
+  if (bracketMatch) return bracketMatch[1].toUpperCase();
+
+  const sizeWordMatch = t.match(/\b(?:size|uk|india)\s*[:-]?\s*(XS|S|M|L|XL|XXL|\d{1,2})\b/i);
+  if (sizeWordMatch) return sizeWordMatch[1].toUpperCase();
+
+  const trailingNumber = t.match(/\b(\d{1,2})\s+by\s+myntra\b/i);
+  if (trailingNumber) return trailingNumber[1];
+
+  return null;
+}
+
+export function normalizeProductTitleForDeduplication(title = "") {
+  return String(title || "")
+    .toLowerCase()
+    .replace(/\((xs|s|m|l|xl|xxl|\d{1,2})\)/gi, "")
+    .replace(/\b(?:size|uk|india)\s*[:-]?\s*(xs|s|m|l|xl|xxl|\d{1,2})\b/gi, "")
+    .replace(/\bby\s+myntra\b/gi, "")
+    .replace(/\s+-\s+.*$/i, "")
+    .replace(/[^a-z0-9\s]/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function deduplicateAndRankProducts(products = [], { userSizes = {}, userPrefs = {}, category = "", anchorItem = {} } = {}) {
+  const targetUserSize = (category === "tops" ? userSizes.top
+    : category === "bottoms" ? userSizes.bottom
+    : category === "shoes" ? userSizes.shoes
+    : category === "dresses" ? userSizes.dress
+    : null);
+
+  const targetSizeStr = targetUserSize ? String(targetUserSize).trim().toUpperCase() : null;
+
+  const avoidColors = (userPrefs.avoidColors || []).map((c) => String(c).toLowerCase());
+  const hardExclusions = (userPrefs.hardExclusions || []).map((e) => String(e).toLowerCase());
+
+  const filtered = products.filter((p) => {
+    const t = String(p.title || "").toLowerCase();
+    for (const ac of avoidColors) {
+      if (ac && new RegExp(`\\b${ac}\\b`, "i").test(t)) return false;
+    }
+    for (const ex of hardExclusions) {
+      if (ex && new RegExp(`\\b${ex}\\b`, "i").test(t)) return false;
+    }
+    return true;
+  });
+
+  const groups = new Map();
+  for (const prod of filtered) {
+    const normTitle = normalizeProductTitleForDeduplication(prod.title);
+    const brand = String(prod.source || "").toLowerCase();
+    const key = `${normTitle}__${brand}`;
+
+    if (!groups.has(key)) {
+      groups.set(key, []);
+    }
+    groups.get(key).push(prod);
+  }
+
+  const deduplicated = [];
+  for (const [, group] of groups.entries()) {
+    if (group.length === 1) {
+      const prod = group[0];
+      const prodSize = extractProductSize(prod.title);
+      const isSizeMatch = Boolean(targetSizeStr && prodSize && prodSize === targetSizeStr);
+      deduplicated.push({
+        ...prod,
+        extractedSize: prodSize,
+        userSizeMatch: isSizeMatch
+      });
+      continue;
+    }
+
+    // Multiple listings of the same product with different sizes (e.g. size 46 vs 42)
+    let chosen = null;
+    if (targetSizeStr) {
+      chosen = group.find((p) => {
+        const sz = extractProductSize(p.title);
+        return sz && sz === targetSizeStr;
+      });
+    }
+
+    if (!chosen) {
+      chosen = group[0];
+    }
+
+    const prodSize = extractProductSize(chosen.title);
+    const isSizeMatch = Boolean(targetSizeStr && prodSize && prodSize === targetSizeStr);
+    deduplicated.push({
+      ...chosen,
+      extractedSize: prodSize,
+      userSizeMatch: isSizeMatch
+    });
+  }
+
+  deduplicated.sort((a, b) => {
+    if (a.userSizeMatch && !b.userSizeMatch) return -1;
+    if (!a.userSizeMatch && b.userSizeMatch) return 1;
+    return 0;
+  });
+
+  return deduplicated;
+}
+
+export function createItemStylingReason(product = {}, piece = {}, anchorItem = {}, profile = {}) {
+  const title = String(product.title || "").toLowerCase();
+  const cat = String(piece.category || product.category || "").toLowerCase();
+  const anchorDesc = [anchorItem.primaryColor, anchorItem.subCategory || anchorItem.category || "garment"].filter(Boolean).join(" ");
+  const userSizes = getUserProfileSizes(profile);
+  const sizeNote = (cat === "tops" && userSizes.top) ? ` (curated for size ${userSizes.top})`
+    : (cat === "bottoms" && userSizes.bottom) ? ` (curated for waist ${userSizes.bottom})`
+    : (cat === "shoes" && userSizes.shoes) ? ` (curated for UK ${userSizes.shoes})`
+    : "";
+
+  // 1. Watches
+  if (/watch|chronograph/i.test(title)) {
+    if (/tactical|digital|sports|shock/i.test(title)) {
+      return `A matte black tactical sports watch introduces a sharp, contemporary edge that complements the relaxed lines of your ${anchorDesc}${sizeNote}.`;
+    }
+    return `A minimalist analog watch adds an understated, sophisticated finishing touch that refines your ${anchorDesc} without competing for attention${sizeNote}.`;
+  }
+
+  // 2. Belts
+  if (/belt/i.test(title)) {
+    const isBraided = /braid|woven/i.test(title);
+    const color = /tan|brown/i.test(title) ? "tan brown" : /black/i.test(title) ? "black" : "leather";
+    return `A ${color} ${isBraided ? "braided " : ""}leather belt cleanly structures the waistline, providing a tailored transition with your ${anchorDesc}.`;
+  }
+
+  // 3. Sunglasses
+  if (/sunglass|shades|aviator|wayfarer/i.test(title)) {
+    return `Polarized classic sunglasses add modern styling and an outdoor-ready silhouette that sharpens your ${anchorDesc} look.`;
+  }
+
+  // 4. Bags & Wallets
+  if (/tote|handbag|clutch|bag|backpack/i.test(title)) {
+    return `A structured bag offers sleek practical utility while maintaining the clean, proportioned lines of your ${anchorDesc}.`;
+  }
+
+  // 5. Jewelry
+  if (/earring|necklace|bracelet|chain|ring/i.test(title)) {
+    return `Minimalist jewelry provides an elegant metallic accent that elevates your ${anchorDesc} ensemble.`;
+  }
+
+  // 6. Footwear
+  if (/loafer|moccasin/i.test(title)) {
+    return `Classic leather loafers anchor the outfit with smart-casual sophistication, pairing effortlessly with your ${anchorDesc}${sizeNote}.`;
+  }
+  if (/sneaker|skate|trainer/i.test(title)) {
+    return `Clean low-profile sneakers provide effortless modern balance and comfortable proportions alongside your ${anchorDesc}${sizeNote}.`;
+  }
+  if (/boot|chelsea/i.test(title)) {
+    return `Leather boots deliver grounded structure and subtle textural contrast to complement your ${anchorDesc}${sizeNote}.`;
+  }
+  if (/heel|pump|stiletto/i.test(title)) {
+    return `Pointed-toe heels lengthen the silhouette and elevate your ${anchorDesc} with feminine polish${sizeNote}.`;
+  }
+
+  // 7. Layering & Jackets
+  if (/overshirt|shacket/i.test(title)) {
+    const isOlive = /olive|green/i.test(title);
+    const isCheck = /check|plaid|textured/i.test(title);
+    const isNeutral = /beige|ecru|cream|navy|khaki|grey/i.test(title);
+    const colorDesc = isOlive ? "An olive green" : isNeutral ? "A neutral-toned" : "A casual";
+    return `${colorDesc} ${isCheck ? "textured check " : ""}overshirt creates relaxed depth and structured volume that balances your ${anchorDesc}${sizeNote}.`;
+  }
+  if (/blazer|suit jacket/i.test(title)) {
+    return `A tailored structured blazer sharpens the shoulder line and brings formal refinement to your ${anchorDesc}${sizeNote}.`;
+  }
+  if (/bomber/i.test(title)) {
+    return `A lightweight utility bomber jacket adds modern volume and clean silhouette contrast against your ${anchorDesc}${sizeNote}.`;
+  }
+  if (/denim jacket|trucker/i.test(title)) {
+    return `A classic denim jacket introduces durable texture and casual versatility over your ${anchorDesc}${sizeNote}.`;
+  }
+  if (/cardigan|shrug/i.test(title)) {
+    return `A soft knit layer provides tactile softness and fluid drape to complement your ${anchorDesc}${sizeNote}.`;
+  }
+
+  // 8. Tops
+  if (/polo/i.test(title)) {
+    return `A breathable knitted cotton polo adds tailored texture and crisp collar structure above your ${anchorDesc}${sizeNote}.`;
+  }
+  if (/oxford|button-down|formal shirt/i.test(title)) {
+    return `A crisp pure cotton shirt frames the torso cleanly and ensures sharp, tailored proportions with your ${anchorDesc}${sizeNote}.`;
+  }
+  if (/tee|t-shirt/i.test(title)) {
+    return `A premium heavyweight cotton tee keeps the foundation clean, minimalist, and perfectly proportioned with your ${anchorDesc}${sizeNote}.`;
+  }
+
+  // 9. Bottoms
+  if (/chino|trouser|pant/i.test(title)) {
+    return `Tailored stretch chinos ground the lower body with clean, elongated drape beneath your ${anchorDesc}${sizeNote}.`;
+  }
+  if (/jean/i.test(title)) {
+    return `Classic slim-straight denim provides timeless casual contrast that highlights your ${anchorDesc}${sizeNote}.`;
+  }
+
+  if (piece.stylingReason && piece.stylingReason.length > 20) {
+    return `${piece.stylingReason}${sizeNote}`;
+  }
+
+  return `Curated to pair with your ${anchorDesc} for a balanced, stylish outfit${sizeNote}.`;
+}
+
 /**
  * Gemini AI Stylist: Generates intelligent, trending complete-the-look outfit pairings.
  * Produces a full coordinated 3-to-4 piece outfit around the anchor piece.
@@ -814,6 +1065,8 @@ export async function generateStylingPlanWithGemini({ item = {}, profile = {}, t
   const skinTone = clean(profile.skinTone || profile.aiAnalysis?.skinTone || "Medium / Wheatish", 50);
   const bodyType = clean(profile.bodyTypeSelfReported || profile.aiAnalysis?.bodyType || "Regular / Proportional", 50);
   const city = clean(profile.city || "Metropolitan India", 50);
+  const userSizes = getUserProfileSizes(profile);
+  const userPrefs = getUserProfilePreferences(profile);
 
   const anchorTitle = clean(item.title || "Garment", 100);
   const anchorCat = clean(item.category || "", 50);
@@ -831,11 +1084,22 @@ export async function generateStylingPlanWithGemini({ item = {}, profile = {}, t
   const systemPrompt = `You are the lead AI Personal Fashion Stylist for ClothMatics.
 Your task is to generate a COMPLETE COORDINATED OUTFIT around an anchor garment owned by the user.
 
-USER PROFILE:
+USER PROFILE & SIZES:
 - Gender: Strictly ${gender}
 - Skin Tone: ${skinTone}
 - Body Type & Silhouette: ${bodyType}
 - Location / City: ${city}
+- Top Size: ${userSizes.top || "Not specified (use standard fit)"}
+- Bottom Size: ${userSizes.bottom || "Not specified (use standard waist/inseam)"}
+- Footwear Size: ${userSizes.shoes ? `UK/India ${userSizes.shoes}` : "Not specified"}
+- Dress Size: ${userSizes.dress || "Not specified"}
+- Fit Preference: ${userPrefs.fitPreference || "Regular / Volume balanced"}
+- Preferred Styles: ${userPrefs.preferredStyles.length ? userPrefs.preferredStyles.join(", ") : "Modern Versatile"}
+- Preferred Colors: ${userPrefs.favoriteColors.length ? userPrefs.favoriteColors.join(", ") : "Earthy / Balanced"}
+- Colors to STRICTLY AVOID: ${userPrefs.avoidColors.length ? userPrefs.avoidColors.join(", ") : "None"}
+- Hard Exclusions to NEVER recommend: ${userPrefs.hardExclusions.length ? userPrefs.hardExclusions.join(", ") : "None"}
+- Preferred Brands: ${userPrefs.preferredBrands.length ? userPrefs.preferredBrands.join(", ") : "Zara, H&M, Snitch, Puma, Marks & Spencer"}
+- Avoided Brands: ${userPrefs.avoidedBrands.length ? userPrefs.avoidedBrands.join(", ") : "None"}
 
 ANCHOR GARMENT:
 - Title: ${anchorTitle}
@@ -867,6 +1131,11 @@ CLOTHMATICS AI STYLIST CORE RULES:
      * For Men: e.g., 'men black oversized graphic cotton streetwear t-shirt (Zara OR H&M OR Snitch OR Puma)'
      * For Women: e.g., 'women black ribbed high neck knit top (Zara OR H&M OR Vero Moda OR Marks & Spencer)'
 7. INDIVIDUAL PIECE REASONING: Each piece in 'pieces' must have its own distinct, specific styling reason explaining why its silhouette, color, and fabric balance with the anchor garment.
+8. STRICT USER PROFILE & SIZE ADHERENCE:
+   - NEVER recommend colors listed under 'Colors to STRICTLY AVOID' (${userPrefs.avoidColors.join(', ') || 'none'}).
+   - NEVER recommend garments matching 'Hard Exclusions' (${userPrefs.hardExclusions.join(', ') || 'none'}).
+   - If user has fit preference (${userPrefs.fitPreference || 'balanced'}), integrate it into the top/layering style.
+   - If user has shoe size (UK/India ${userSizes.shoes || 'standard'}), recommend footwear styles suited to that profile.
 
 Return pure JSON only in this exact format:
 {
@@ -1433,7 +1702,8 @@ export function filterProductsStrict({
   allowAboveBudget = false,
   gender = "men",
   anchorCategory = "",
-  targetCategory = ""
+  targetCategory = "",
+  userPrefs = {}
 }) {
   const isMale = gender === "men";
   const isFemale = gender === "women";
@@ -1513,6 +1783,24 @@ export function filterProductsStrict({
     if (min !== null && item.extractedPrice < min) return false;
     if (max !== null && item.extractedPrice > max) return false;
 
+    // 5. User Preferences: Avoided colors, hard exclusions, and avoided brands
+    if (userPrefs.avoidColors && Array.isArray(userPrefs.avoidColors) && userPrefs.avoidColors.length > 0) {
+      for (const color of userPrefs.avoidColors) {
+        if (color && new RegExp(`\\b${color}\\b`, "i").test(title)) return false;
+      }
+    }
+    if (userPrefs.hardExclusions && Array.isArray(userPrefs.hardExclusions) && userPrefs.hardExclusions.length > 0) {
+      for (const excl of userPrefs.hardExclusions) {
+        if (excl && new RegExp(`\\b${excl}\\b`, "i").test(title)) return false;
+      }
+    }
+    if (userPrefs.avoidedBrands && Array.isArray(userPrefs.avoidedBrands) && userPrefs.avoidedBrands.length > 0) {
+      const source = (item.source || "").toLowerCase();
+      for (const brand of userPrefs.avoidedBrands) {
+        if (brand && (title.includes(brand.toLowerCase()) || source.includes(brand.toLowerCase()))) return false;
+      }
+    }
+
     return true;
   });
 }
@@ -1539,6 +1827,8 @@ export async function handleCompleteLook({
   const rawGender = String(profile.gender || profile.shoppingProfile?.gender || "").toLowerCase();
   const isFemale = rawGender.includes("fem") || rawGender.includes("wom") || rawGender === "female";
   const gender = isFemale ? "women" : "men";
+  const userSizes = getUserProfileSizes(profile);
+  const userPrefs = getUserProfilePreferences(profile);
 
   // Step 1: Call Gemini AI for trending multi-piece outfit styling plan
   let stylingPlan = null;
@@ -1616,7 +1906,7 @@ export async function handleCompleteLook({
     notice = "SerpApi API key not configured in Cloudflare environment yet. Displaying sample products for preview.";
   }
 
-  // Step 3: For each piece in the outfit, pool, filter, and strictly cap at maximum 3 products
+  // Step 3: For each piece in the outfit, pool, filter, deduplicate, and strictly cap at maximum 3 products
   const outfitCategories = [];
 
   for (let i = 0; i < pieces.length; i++) {
@@ -1634,7 +1924,8 @@ export async function handleCompleteLook({
       allowAboveBudget,
       gender,
       anchorCategory: anchorDesc,
-      targetCategory: piece.category
+      targetCategory: piece.category,
+      userPrefs
     });
 
     // If budget was too strict and returned 0 products, relax budget to ensure user always gets 3 curated picks
@@ -1646,27 +1937,46 @@ export async function handleCompleteLook({
         allowAboveBudget: true,
         gender,
         anchorCategory: anchorDesc,
-        targetCategory: piece.category
+        targetCategory: piece.category,
+        userPrefs
       });
     }
 
+    // Deduplicate duplicate listings (e.g. size 46 vs 42) and prioritize user's size
+    let deduplicated = deduplicateAndRankProducts(catFiltered, {
+      userSizes,
+      userPrefs,
+      category: piece.category,
+      anchorItem: item
+    });
+
     // If budget or live search yielded fewer than 3 items, backfill from sampleForPiece
-    if (catFiltered.length < 3) {
-      const existingIds = new Set(catFiltered.map((p) => p.id || p.product_id));
-      const needed = 3 - catFiltered.length;
+    if (deduplicated.length < 3) {
+      const existingIds = new Set(deduplicated.map((p) => p.id || p.product_id));
+      const needed = 3 - deduplicated.length;
       const backfills = sampleForPiece.filter((p) => !existingIds.has(p.id || p.product_id) && hasValidImage(p)).slice(0, needed);
-      catFiltered = [...catFiltered, ...backfills];
+      deduplicated = deduplicateAndRankProducts([...deduplicated, ...backfills], {
+        userSizes,
+        userPrefs,
+        category: piece.category,
+        anchorItem: item
+      });
     }
 
     // Fallback: If still 0, use sampleForPiece directly
-    if (catFiltered.length === 0 && sampleForPiece.length > 0) {
-      catFiltered = sampleForPiece;
+    if (deduplicated.length === 0 && sampleForPiece.length > 0) {
+      deduplicated = deduplicateAndRankProducts(sampleForPiece, {
+        userSizes,
+        userPrefs,
+        category: piece.category,
+        anchorItem: item
+      });
     }
 
-    // STRICT CAPPING: Maximum 3 products per category!
-    const capped = catFiltered.slice(0, 3).map((prod) => ({
+    // STRICT CAPPING: Maximum 3 products per category with item-specific styling rationale!
+    const capped = deduplicated.slice(0, 3).map((prod) => ({
       ...prod,
-      stylingReason: piece.stylingReason,
+      stylingReason: createItemStylingReason(prod, piece, item, profile),
       category: piece.category,
       categoryLabel: piece.categoryLabel,
       icon: piece.icon
@@ -1679,6 +1989,7 @@ export async function handleCompleteLook({
       stylingReason: piece.stylingReason,
       searchTerm: piece.searchTerm,
       recommendedColors: piece.recommendedColors || [],
+      targetSize: (piece.category === "tops" ? userSizes.top : piece.category === "bottoms" ? userSizes.bottom : piece.category === "shoes" ? userSizes.shoes : piece.category === "dresses" ? userSizes.dress : null),
       products: capped
     });
   }
@@ -1694,6 +2005,10 @@ export async function handleCompleteLook({
       styleArchetype: stylingPlan.styleArchetype || "Smart Casual",
       colorHarmony: stylingPlan.colorHarmony || "Complementary Contrast",
       silhouetteBalance: stylingPlan.silhouetteBalance || "Volume-Balanced Proportion",
+      userProfile: {
+        sizes: userSizes,
+        preferences: userPrefs
+      },
       pieces: stylingPlan.pieces,
       categories: outfitCategories
     },

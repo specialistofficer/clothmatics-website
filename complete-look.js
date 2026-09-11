@@ -12,7 +12,9 @@ import {
   getActiveBudgetRange,
   calculateMatchDetails,
   resolveBuyLink,
-  getCategoryFallbackImage
+  getCategoryFallbackImage,
+  getUserProfileSizes,
+  getUserProfilePreferences
 } from "./complete-look-helpers.js";
 
 function safeUrl(value = "") {
@@ -68,6 +70,38 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
       const domGender = document.getElementById("profile-gender")?.value;
       if (domGender) profile.gender = domGender;
     }
+    if (!profile.bodyTypeSelfReported) {
+      const domBodyType = document.getElementById("profile-body-type")?.value;
+      if (domBodyType) profile.bodyTypeSelfReported = domBodyType;
+    }
+
+    // Merge active sizes from DOM profile fields if not already populated
+    profile.shoppingProfile = { ...(profile.shoppingProfile || {}) };
+    profile.shoppingProfile.sizes = { ...(profile.shoppingProfile.sizes || profile.shoppingSizes || profile.sizes || {}) };
+
+    const domTop = document.getElementById("size-top")?.value;
+    const domBottom = document.getElementById("size-bottom")?.value;
+    const domDress = document.getElementById("size-dress")?.value;
+    const domShoes = document.getElementById("size-shoes")?.value;
+
+    if (domTop && !profile.shoppingProfile.sizes.top?.alphaSize) {
+      profile.shoppingProfile.sizes.top = { alphaSize: domTop };
+    }
+    if (domBottom && !profile.shoppingProfile.sizes.bottom?.alphaSize) {
+      profile.shoppingProfile.sizes.bottom = { alphaSize: domBottom };
+    }
+    if (domDress && !profile.shoppingProfile.sizes.dress?.alphaSize) {
+      profile.shoppingProfile.sizes.dress = { alphaSize: domDress };
+    }
+    if (domShoes && !profile.shoppingProfile.sizes.shoes?.uk && !profile.shoppingProfile.sizes.shoes?.india) {
+      profile.shoppingProfile.sizes.shoes = { uk: Number(domShoes) || domShoes, india: Number(domShoes) || domShoes };
+    }
+
+    // Merge learned style profile if present
+    if (state.profileStyle && !profile.profileStyle) {
+      profile.profileStyle = state.profileStyle;
+    }
+
     return profile;
   }
 
@@ -205,10 +239,14 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
     const gender = getProfileGender(profile, activeItem);
     const genderLabel = gender === "women" ? "Women's Collection" : "Men's Collection";
 
-    const hasProfileSizes = Boolean(
-      profile.shoppingProfile?.sizes &&
-      Object.values(profile.shoppingProfile.sizes).some((s) => s && Object.values(s).some(Boolean))
-    );
+    const userSizes = getUserProfileSizes(profile);
+    const sizesSummary = [
+      userSizes.top ? `Top: ${userSizes.top}` : "",
+      userSizes.bottom ? `Bottom: ${userSizes.bottom}` : "",
+      userSizes.shoes ? `Shoes: UK ${userSizes.shoes}` : "",
+      userSizes.dress ? `Dress: ${userSizes.dress}` : ""
+    ].filter(Boolean).join(" · ");
+    const hasProfileSizes = Boolean(sizesSummary);
 
     const anchorMeta = [
       activeItem.primaryColor,
@@ -228,7 +266,7 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
           <div class="complete-look-hero-meta">
             <span>${escapeHtml(anchorMeta || "Wardrobe Piece")}</span>
             <span class="complete-look-gender-tag">${escapeHtml(genderLabel)}</span>
-            ${hasProfileSizes ? "<span>Sizes active</span>" : "<span>Universal sizing</span>"}
+            ${hasProfileSizes ? `<span class="complete-look-size-tag">📏 ${escapeHtml(sizesSummary)}</span>` : "<span>Universal sizing</span>"}
           </div>
         </div>
       </div>
@@ -366,7 +404,8 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
       const tagsHtml = [
         styleArchetype ? `<span class="complete-look-stylist-tag">🎯 ${escapeHtml(styleArchetype)}</span>` : "",
         colorHarmony ? `<span class="complete-look-stylist-tag">🎨 ${escapeHtml(colorHarmony)}</span>` : "",
-        silhouetteBalance ? `<span class="complete-look-stylist-tag">⚖️ ${escapeHtml(silhouetteBalance)}</span>` : ""
+        silhouetteBalance ? `<span class="complete-look-stylist-tag">⚖️ ${escapeHtml(silhouetteBalance)}</span>` : "",
+        sizesSummary ? `<span class="complete-look-stylist-tag complete-look-stylist-tag-size">📏 Profile Sizes: ${escapeHtml(sizesSummary)}</span>` : ""
       ].filter(Boolean).join("");
 
       const stylistBanner = `
@@ -482,10 +521,17 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
     const fallbackImage = getCategoryFallbackImage(categoryKey, gender);
     const imageSrc = safeUrl(product.thumbnail) || fallbackImage;
 
+    const sizeBadgeHtml = product.userSizeMatch && product.extractedSize ? `
+      <span class="complete-look-badge-sizetag match">Size ${escapeHtml(product.extractedSize)} · Your size</span>
+    ` : product.extractedSize ? `
+      <span class="complete-look-badge-sizetag">Size ${escapeHtml(product.extractedSize)}</span>
+    ` : "";
+
     return `
       <article class="complete-look-card" data-product-id="${escapeHtml(product.id || product.product_id || "")}">
         <div class="complete-look-card-img-wrap">
           <span class="complete-look-badge-retailer">${escapeHtml(retailerName)}</span>
+          ${sizeBadgeHtml}
           <span class="complete-look-badge-match ${isBestMatch ? "complete-look-badge-best" : ""}">
             ${isBestMatch ? "★ Best Match" : `${matchPercent}% Match`}
           </span>

@@ -390,6 +390,27 @@
   color: #ffffff;
   border: 0;
 }
+.complete-look-badge-sizetag {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(4px);
+  z-index: 2;
+}
+.complete-look-badge-sizetag.match {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #065f46;
+  font-weight: 800;
+}
 
 /* Card Body */
 .complete-look-card-body {
@@ -549,6 +570,15 @@
   border-radius: 6px;
   letter-spacing: 0.3px;
 }
+.complete-look-size-tag {
+  background: #fdf2f8;
+  color: #be185d;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.2px;
+}
 
 /* Ready to Style State */
 .complete-look-ready {
@@ -650,6 +680,11 @@
   font-weight: 700;
   color: #4b3bb2;
   box-shadow: 0 2px 6px rgba(108, 99, 255, 0.08);
+}
+.complete-look-stylist-tag-size {
+  background: #ecfdf5;
+  border-color: #bbf7d0;
+  color: #065f46;
 }
 
 /* Category Sections for Multi-Piece Outfit */
