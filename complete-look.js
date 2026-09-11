@@ -11,7 +11,8 @@ import {
   buildSmartShoppingQuery,
   getActiveBudgetRange,
   calculateMatchDetails,
-  resolveBuyLink
+  resolveBuyLink,
+  getCategoryFallbackImage
 } from "./complete-look-helpers.js";
 
 function safeUrl(value = "") {
@@ -358,6 +359,15 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
       // Display AI Stylist Vision Banner
       const outfitTitle = outfitData?.title || stylingIntent?.outfitTitle || "Curated Coordinated Outfit";
       const stylistAdvice = outfitData?.stylingAdvice || stylingIntent?.overallStylingAdvice || stylingIntent?.stylingReason || "";
+      const styleArchetype = outfitData?.styleArchetype || stylingIntent?.styleArchetype || "";
+      const colorHarmony = outfitData?.colorHarmony || stylingIntent?.colorHarmony || "";
+      const silhouetteBalance = outfitData?.silhouetteBalance || stylingIntent?.silhouetteBalance || "";
+
+      const tagsHtml = [
+        styleArchetype ? `<span class="complete-look-stylist-tag">🎯 ${escapeHtml(styleArchetype)}</span>` : "",
+        colorHarmony ? `<span class="complete-look-stylist-tag">🎨 ${escapeHtml(colorHarmony)}</span>` : "",
+        silhouetteBalance ? `<span class="complete-look-stylist-tag">⚖️ ${escapeHtml(silhouetteBalance)}</span>` : ""
+      ].filter(Boolean).join("");
 
       const stylistBanner = `
         <div class="complete-look-stylist-banner">
@@ -366,6 +376,7 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
           </div>
           <h3 class="complete-look-outfit-title">${escapeHtml(outfitTitle)}</h3>
           <p class="complete-look-stylist-reason">${escapeHtml(stylistAdvice)}</p>
+          ${tagsHtml ? `<div class="complete-look-stylist-tags">${tagsHtml}</div>` : ""}
         </div>
       `;
 
@@ -391,7 +402,7 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
                 <span class="complete-look-category-pill">${cat.products.length} Best Picks</span>
               </div>
               <div class="complete-look-grid">
-                ${cat.products.map((product, idx) => renderProductCard(product, idx, activeItem, cat)).join("")}
+                ${cat.products.map((product, idx) => renderProductCard(product, idx, activeItem, cat, gender)).join("")}
               </div>
             </section>
           `).join("");
@@ -409,7 +420,7 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
         // Fallback flat grid if outfitData categories were absent
         sectionsHtml = `
           <div class="complete-look-grid">
-            ${searchResults.map((product, idx) => renderProductCard(product, idx, activeItem, null)).join("")}
+            ${searchResults.map((product, idx) => renderProductCard(product, idx, activeItem, null, gender)).join("")}
           </div>
         `;
       }
@@ -440,7 +451,7 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
     attachEvents();
   }
 
-  function renderProductCard(product, index, anchorItem, categoryObj) {
+  function renderProductCard(product, index, anchorItem, categoryObj, gender = "men") {
     const { isBestMatch, matchPercent } = calculateMatchDetails(product, index);
 
     const ratingHtml = product.rating ? `
@@ -467,6 +478,9 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
 
     const buyLink = safeUrl(resolveBuyLink(product)) || "#";
     const retailerName = product.source || "Retailer";
+    const categoryKey = product.category || categoryObj?.id || "tops";
+    const fallbackImage = getCategoryFallbackImage(categoryKey, gender);
+    const imageSrc = safeUrl(product.thumbnail) || fallbackImage;
 
     return `
       <article class="complete-look-card" data-product-id="${escapeHtml(product.id || product.product_id || "")}">
@@ -475,7 +489,7 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
           <span class="complete-look-badge-match ${isBestMatch ? "complete-look-badge-best" : ""}">
             ${isBestMatch ? "★ Best Match" : `${matchPercent}% Match`}
           </span>
-          <img src="${safeUrl(product.thumbnail) || "./assets/clothmatics-logo.png"}" alt="${escapeHtml(product.title)}" loading="lazy" onerror="this.src='./assets/clothmatics-logo.png'">
+          <img src="${imageSrc}" alt="${escapeHtml(product.title)}" loading="lazy" onerror="this.onerror=null;this.src='${fallbackImage}'">
         </div>
         <div class="complete-look-card-body">
           <h4 class="complete-look-card-title" title="${escapeHtml(product.title)}">${escapeHtml(product.title)}</h4>

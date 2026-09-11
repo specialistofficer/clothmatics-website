@@ -632,6 +632,25 @@
   color: #4b4562;
   line-height: 1.5;
 }
+.complete-look-stylist-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.complete-look-stylist-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #ffffff;
+  border: 1px solid #d9d0ff;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #4b3bb2;
+  box-shadow: 0 2px 6px rgba(108, 99, 255, 0.08);
+}
 
 /* Category Sections for Multi-Piece Outfit */
 .complete-look-sections-wrap {

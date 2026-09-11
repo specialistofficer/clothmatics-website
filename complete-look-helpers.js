@@ -122,6 +122,29 @@ export function detectGarmentStyle(item = {}) {
   return "smart_casual";
 }
 
+export function getCategoryFallbackImage(category = "", gender = "men") {
+  const isFemale = String(gender).toLowerCase().includes("fem") || String(gender).toLowerCase().includes("wom");
+  const cat = String(category).toLowerCase();
+
+  if (isFemale) {
+    if (cat === "tops") return "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=500&q=80";
+    if (cat === "bottoms") return "https://images.unsplash.com/photo-1551854838-212c50b4c184?w=500&q=80";
+    if (cat === "shoes") return "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=500&q=80";
+    if (cat === "layering") return "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=500&q=80";
+    if (cat === "accessories" || cat === "bags") return "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=500&q=80";
+    if (cat === "jewelry") return "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&q=80";
+    return "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=500&q=80";
+  }
+
+  // Men
+  if (cat === "tops") return "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500&q=80";
+  if (cat === "bottoms") return "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=500&q=80";
+  if (cat === "shoes") return "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=500&q=80";
+  if (cat === "layering") return "https://images.unsplash.com/photo-1544441893-675973e31985?w=500&q=80";
+  if (cat === "accessories") return "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=500&q=80";
+  return "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500&q=80";
+}
+
 export function buildSmartShoppingQuery(item = {}, tabId = "", profile = {}) {
   const gender = getProfileGender(profile, item);
   const categories = getAnchorCategories(item);

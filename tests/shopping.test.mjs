@@ -9,7 +9,8 @@ import {
 import {
   getFallbackStylingPlan,
   filterProductsStrict,
-  handleCompleteLook
+  handleCompleteLook,
+  hasValidImage
 } from "../functions/api/shopping/complete-look.js";
 import {
   getAnchorCategories,
@@ -18,7 +19,8 @@ import {
   buildSmartShoppingQuery,
   getActiveBudgetRange,
   calculateMatchDetails,
-  resolveBuyLink
+  resolveBuyLink,
+  getCategoryFallbackImage
 } from "../complete-look-helpers.js";
 
 test("normalizeProduct correctly maps SerpApi shopping_results format", () => {
@@ -166,11 +168,11 @@ test("getFallbackStylingPlan generates gender-appropriate and complementary plan
 
 test("filterProductsStrict enforces strict gender and complementary category exclusion", () => {
   const testProducts = [
-    { id: "1", title: "Dennis Lingo Men's Slim Fit Casual Shirt", extractedPrice: 699 },
-    { id: "2", title: "KOTTY Women's Beige High Waist Wide Leg Straight Trouser", extractedPrice: 470 },
-    { id: "3", title: "Girls Printed Regular Cotton Top", extractedPrice: 399 },
-    { id: "4", title: "Men's Solid Formal Chino Pants", extractedPrice: 899 },
-    { id: "5", title: "Men's White Minimalist Leather Sneakers", extractedPrice: 1499 }
+    { id: "1", title: "Dennis Lingo Men's Slim Fit Casual Shirt", extractedPrice: 699, thumbnail: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400" },
+    { id: "2", title: "KOTTY Women's Beige High Waist Wide Leg Straight Trouser", extractedPrice: 470, thumbnail: "https://images.unsplash.com/photo-1506629082955-511b1aa562c8?w=400" },
+    { id: "3", title: "Girls Printed Regular Cotton Top", extractedPrice: 399, thumbnail: "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=400" },
+    { id: "4", title: "Men's Solid Formal Chino Pants", extractedPrice: 899, thumbnail: "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=400" },
+    { id: "5", title: "Men's White Minimalist Leather Sneakers", extractedPrice: 1499, thumbnail: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400" }
   ];
 
   // User is Male, Anchor item is a pair of Trousers (Bottoms)
@@ -328,5 +330,111 @@ test("resolveBuyLink always returns non-empty, valid store destinations (no 404s
   };
   assert(resolveBuyLink(catalogProduct).includes("prds=catalogid:123456"));
 });
+
+test("hasValidImage validator correctly rejects empty, non-https, or logo URLs", () => {
+  assert.equal(hasValidImage({ thumbnail: "https://images.unsplash.com/photo-1?w=400" }), true);
+  assert.equal(hasValidImage({ thumbnail: "" }), false);
+  assert.equal(hasValidImage({}), false);
+  assert.equal(hasValidImage({ thumbnail: "http://insecure.com/pic.jpg" }), true);
+  assert.equal(hasValidImage({ thumbnail: "ftp://files.com/pic.jpg" }), false);
+  assert.equal(hasValidImage({ thumbnail: "./assets/clothmatics-logo.png" }), false);
+  assert.equal(hasValidImage({ thumbnail: "https://clothmatics.pages.dev/assets/clothmatics-logo.png" }), false);
+  assert.equal(hasValidImage({ thumbnail: "https://abc.com" }), false); // too short (< 15 chars)
+});
+
+test("every product returned by handleCompleteLook has a valid non-empty HTTPS thumbnail", async () => {
+  const result = await handleCompleteLook({
+    item: {
+      title: "Black Relaxed Utility Cargo Pants",
+      category: "Bottoms",
+      subCategory: "Cargos",
+      primaryColor: "Black"
+    },
+    profile: { gender: "men" },
+    env: {}
+  });
+
+  assert.equal(result.ok, true);
+  assert(result.products.length > 0);
+
+  // Every single product across all categories must have a valid non-empty thumbnail!
+  for (const product of result.products) {
+    assert.equal(hasValidImage(product), true, `Product ${product.id || product.title} must have a valid thumbnail`);
+    assert(product.thumbnail.startsWith("https://") || product.thumbnail.startsWith("http://"));
+    assert(!product.thumbnail.includes("clothmatics-logo.png"), "No product should have website logo as thumbnail");
+  }
+
+  for (const category of result.outfit.categories) {
+    for (const product of category.products) {
+      assert.equal(hasValidImage(product), true, `Category product ${product.id} must have a valid thumbnail`);
+    }
+  }
+});
+
+test("handleCompleteLook includes AI Stylist styleArchetype, colorHarmony, and silhouetteBalance", async () => {
+  const result = await handleCompleteLook({
+    item: {
+      title: "Light Blue Cotton Stretch Chinos",
+      category: "Bottoms",
+      subCategory: "Chinos",
+      primaryColor: "Light Blue"
+    },
+    profile: {
+      gender: "men",
+      skinTone: "Wheatish / Warm",
+      bodyTypeSelfReported: "Athletic"
+    },
+    env: {}
+  });
+
+  assert.equal(result.ok, true);
+  assert(result.outfit.styleArchetype != null && result.outfit.styleArchetype.length > 0);
+  assert(result.outfit.colorHarmony != null && result.outfit.colorHarmony.length > 0);
+  assert(result.outfit.silhouetteBalance != null && result.outfit.silhouetteBalance.length > 0);
+
+  assert.equal(result.intent.styleArchetype, result.outfit.styleArchetype);
+});
+
+test("women complete look guarantees at least 3 items in every category with working images", async () => {
+  const result = await handleCompleteLook({
+    item: {
+      title: "Beige High Waist Wide Leg Trousers",
+      category: "Bottoms",
+      subCategory: "Trousers",
+      primaryColor: "Beige"
+    },
+    profile: { gender: "women" },
+    env: {}
+  });
+
+  assert.equal(result.ok, true);
+  assert(result.outfit.categories.length >= 3);
+
+  for (const category of result.outfit.categories) {
+    assert(category.products.length <= 3, "Never exceeds 3 products per category");
+    assert(category.products.length >= 2, `Expected at least 2-3 products in ${category.id}`);
+    for (const prod of category.products) {
+      assert.equal(hasValidImage(prod), true);
+      assert.equal(prod.gender, "women");
+    }
+  }
+});
+
+test("getCategoryFallbackImage provides distinct, valid fashion studio URLs for each category and gender", () => {
+  const menTop = getCategoryFallbackImage("tops", "men");
+  const menShoes = getCategoryFallbackImage("shoes", "men");
+  const womenTop = getCategoryFallbackImage("tops", "women");
+  const womenShoes = getCategoryFallbackImage("shoes", "women");
+
+  assert(menTop.startsWith("https://images.unsplash.com"));
+  assert(menShoes.startsWith("https://images.unsplash.com"));
+  assert(womenTop.startsWith("https://images.unsplash.com"));
+  assert(womenShoes.startsWith("https://images.unsplash.com"));
+
+  assert.notEqual(menTop, menShoes);
+  assert.notEqual(womenTop, womenShoes);
+  assert.notEqual(menTop, womenTop);
+});
+
 
 

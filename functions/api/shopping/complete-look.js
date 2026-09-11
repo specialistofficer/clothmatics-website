@@ -29,6 +29,15 @@ export async function onRequestOptions() {
   });
 }
 
+export function hasValidImage(product = {}) {
+  const thumb = String(product.thumbnail || product.image || "").trim();
+  if (!thumb) return false;
+  if (!thumb.startsWith("https://") && !thumb.startsWith("http://")) return false;
+  if (thumb.includes("clothmatics-logo.png")) return false;
+  if (thumb.length < 16) return false;
+  return true;
+}
+
 export const DIVERSE_SAMPLE_PRODUCTS = [
   // -------------------------------------------------------------
   // MEN TOPS
@@ -317,13 +326,30 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     style: "formal",
     gender: "men"
   },
+  {
+    id: "m_layer_denim",
+    position: 17,
+    title: "Roadster Men Blue Washed Denim Trucker Jacket",
+    product_id: "m_layer_denim",
+    product_link: "https://www.google.com/search?tbm=shop&q=buy+Roadster+Men+Blue+Washed+Denim+Trucker+Jacket+myntra",
+    source: "Myntra",
+    price: "₹1,499",
+    extracted_price: 1499,
+    old_price: "₹2,999",
+    extracted_old_price: 2999,
+    thumbnail: "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=500&q=80",
+    delivery: "Free delivery",
+    category: "layering",
+    style: "rugged",
+    gender: "men"
+  },
 
   // -------------------------------------------------------------
   // MEN ACCESSORIES
   // -------------------------------------------------------------
   {
     id: "m_acc_formal",
-    position: 17,
+    position: 18,
     title: "Titan Men Black Leather Analog Minimalist Watch",
     product_id: "m_acc_formal",
     product_link: "https://www.tatacliq.com/search/?searchCategory=all&text=Titan+Men+Black+Leather+Watch",
@@ -340,7 +366,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   },
   {
     id: "m_acc_tactical",
-    position: 18,
+    position: 19,
     title: "Fastrack Men Matte Black Digital Tactical Sports Watch",
     product_id: "m_acc_tactical",
     product_link: "https://www.amazon.in/s?k=Fastrack+Men+Matte+Black+Digital+Sports+Watch",
@@ -357,7 +383,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   },
   {
     id: "m_acc_belt",
-    position: 19,
+    position: 20,
     title: "Tommy Hilfiger Men Tan Brown Braided Genuine Leather Belt",
     product_id: "m_acc_belt",
     product_link: "https://www.amazon.in/s?k=Tommy+Hilfiger+Men+Tan+Brown+Braided+Leather+Belt",
@@ -367,6 +393,23 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     old_price: "₹1,999",
     extracted_old_price: 1999,
     thumbnail: "https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=400&q=80",
+    delivery: "Free delivery",
+    category: "accessories",
+    style: "smart_casual",
+    gender: "men"
+  },
+  {
+    id: "m_acc_shades",
+    position: 21,
+    title: "Vincent Chase Men Polarized Classic Aviator Sunglasses",
+    product_id: "m_acc_shades",
+    product_link: "https://www.amazon.in/s?k=Vincent+Chase+Men+Polarized+Classic+Aviator+Sunglasses",
+    source: "Amazon.in",
+    price: "₹999",
+    extracted_price: 999,
+    old_price: "₹1,999",
+    extracted_old_price: 1999,
+    thumbnail: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=500&q=80",
     delivery: "Free delivery",
     category: "accessories",
     style: "smart_casual",
@@ -427,13 +470,30 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     style: "streetwear",
     gender: "women"
   },
+  {
+    id: "w_top_wrap",
+    position: 23,
+    title: "ONLY Women Beige Ribbed Long Sleeve Fitted Knit Top",
+    product_id: "w_top_wrap",
+    product_link: "https://www.ajio.com/search/?text=ONLY+Women+Beige+Ribbed+Long+Sleeve+Top",
+    source: "AJIO.com",
+    price: "₹799",
+    extracted_price: 799,
+    old_price: "₹1,699",
+    extracted_old_price: 1699,
+    thumbnail: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=500&q=80",
+    delivery: "Free delivery",
+    category: "tops",
+    style: "smart_casual",
+    gender: "women"
+  },
 
   // -------------------------------------------------------------
   // WOMEN BOTTOMS
   // -------------------------------------------------------------
   {
     id: "w_bot_beige",
-    position: 23,
+    position: 24,
     title: "KOTTY Women's Beige High Waist Wide Leg Straight Trouser",
     product_id: "w_bot_beige",
     product_link: "https://www.amazon.in/s?k=KOTTY+Womens+Beige+High+Waist+Wide+Leg+Straight+Trouser",
@@ -450,7 +510,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   },
   {
     id: "w_bot_black",
-    position: 24,
+    position: 25,
     title: "Kotty Women Black High-Rise Flared Stretch Trousers",
     product_id: "w_bot_black",
     product_link: "https://www.amazon.in/s?k=Kotty+Women+Black+High+Rise+Flared+Trousers",
@@ -465,13 +525,47 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     style: "formal",
     gender: "women"
   },
+  {
+    id: "w_bot_denim",
+    position: 26,
+    title: "Levi's Women 721 High Rise Dark Wash Skinny Stretch Jeans",
+    product_id: "w_bot_denim",
+    product_link: "https://www.amazon.in/s?k=Levis+Women+721+High+Rise+Dark+Wash+Jeans",
+    source: "Amazon.in",
+    price: "₹1,899",
+    extracted_price: 1899,
+    old_price: "₹3,999",
+    extracted_old_price: 3999,
+    thumbnail: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=500&q=80",
+    delivery: "Free delivery",
+    category: "bottoms",
+    style: "casual",
+    gender: "women"
+  },
+  {
+    id: "w_bot_skirt",
+    position: 27,
+    title: "H&M Women Black Pleated A-Line High Waist Midi Skirt",
+    product_id: "w_bot_skirt",
+    product_link: "https://www.google.com/search?tbm=shop&q=buy+HM+Women+Black+Pleated+Midi+Skirt",
+    source: "Myntra",
+    price: "₹1,299",
+    extracted_price: 1299,
+    old_price: "₹2,299",
+    extracted_old_price: 2299,
+    thumbnail: "https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=500&q=80",
+    delivery: "Free delivery",
+    category: "bottoms",
+    style: "formal",
+    gender: "women"
+  },
 
   // -------------------------------------------------------------
   // WOMEN SHOES
   // -------------------------------------------------------------
   {
     id: "w_shoe_sneaker",
-    position: 25,
+    position: 28,
     title: "Bata Women White Chunky Casual Sneakers",
     product_id: "w_shoe_sneaker",
     product_link: "https://www.amazon.in/s?k=Bata+Women+White+Chunky+Casual+Sneakers",
@@ -488,7 +582,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   },
   {
     id: "w_shoe_heels",
-    position: 26,
+    position: 29,
     title: "Carlton London Women Nude Pointed-Toe Block Heels",
     product_id: "w_shoe_heels",
     product_link: "https://www.google.com/search?tbm=shop&q=buy+Carlton+London+Women+Nude+Pointed+Block+Heels+myntra",
@@ -503,13 +597,47 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     style: "formal",
     gender: "women"
   },
+  {
+    id: "w_shoe_loafer",
+    position: 30,
+    title: "Carlton London Women Black Chunky Lug-Sole Loafers",
+    product_id: "w_shoe_loafer",
+    product_link: "https://www.ajio.com/search/?text=Carlton+London+Women+Black+Chunky+Lug+Sole+Loafers",
+    source: "AJIO.com",
+    price: "₹1,695",
+    extracted_price: 1695,
+    old_price: "₹3,295",
+    extracted_old_price: 3295,
+    thumbnail: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=500&q=80",
+    delivery: "Free delivery",
+    category: "shoes",
+    style: "smart_casual",
+    gender: "women"
+  },
+  {
+    id: "w_shoe_pumps",
+    position: 31,
+    title: "DressBerry Women Classic Black Pointed-Toe Stiletto Pumps",
+    product_id: "w_shoe_pumps",
+    product_link: "https://www.amazon.in/s?k=DressBerry+Women+Classic+Black+Pointed+Toe+Pumps",
+    source: "Amazon.in",
+    price: "₹1,399",
+    extracted_price: 1399,
+    old_price: "₹2,799",
+    extracted_old_price: 2799,
+    thumbnail: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=500&q=80",
+    delivery: "Free delivery",
+    category: "shoes",
+    style: "formal",
+    gender: "women"
+  },
 
   // -------------------------------------------------------------
   // WOMEN LAYERING
   // -------------------------------------------------------------
   {
     id: "w_layer_blazer",
-    position: 27,
+    position: 32,
     title: "Marks & Spencer Women Beige Double-Breasted Relaxed Blazer",
     product_id: "w_layer_blazer",
     product_link: "https://www.ajio.com/search/?text=Marks+and+Spencer+Women+Beige+Relaxed+Blazer",
@@ -526,7 +654,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   },
   {
     id: "w_layer_denim",
-    position: 28,
+    position: 33,
     title: "Vero Moda Women Light Blue Cropped Washed Denim Jacket",
     product_id: "w_layer_denim",
     product_link: "https://www.amazon.in/s?k=Vero+Moda+Women+Cropped+Denim+Jacket",
@@ -541,13 +669,47 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     style: "casual",
     gender: "women"
   },
+  {
+    id: "w_layer_cardigan",
+    position: 34,
+    title: "Marks & Spencer Women Cream Ribbed Soft Knit Cardigan",
+    product_id: "w_layer_cardigan",
+    product_link: "https://www.ajio.com/search/?text=Marks+and+Spencer+Women+Cream+Ribbed+Knit+Cardigan",
+    source: "AJIO.com",
+    price: "₹1,999",
+    extracted_price: 1999,
+    old_price: "₹3,999",
+    extracted_old_price: 3999,
+    thumbnail: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=500&q=80",
+    delivery: "Free delivery",
+    category: "layering",
+    style: "smart_casual",
+    gender: "women"
+  },
+  {
+    id: "w_layer_trench",
+    position: 35,
+    title: "Mango Women Classic Double-Breasted Tailored Crepe Shrug",
+    product_id: "w_layer_trench",
+    product_link: "https://www.google.com/search?tbm=shop&q=buy+Mango+Women+Tailored+Crepe+Shrug+myntra",
+    source: "Myntra",
+    price: "₹2,490",
+    extracted_price: 2490,
+    old_price: "₹4,990",
+    extracted_old_price: 4990,
+    thumbnail: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=500&q=80",
+    delivery: "Free delivery",
+    category: "layering",
+    style: "formal",
+    gender: "women"
+  },
 
   // -------------------------------------------------------------
   // WOMEN ACCESSORIES & BAGS
   // -------------------------------------------------------------
   {
     id: "w_acc_tote",
-    position: 29,
+    position: 36,
     title: "Lavie Women Structured Black Faux Leather Laptop Tote Bag",
     product_id: "w_acc_tote",
     product_link: "https://www.ajio.com/search/?text=Lavie+Women+Structured+Black+Tote+Bag",
@@ -564,7 +726,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   },
   {
     id: "w_acc_gold",
-    position: 30,
+    position: 37,
     title: "AccessHer Minimalist 18K Gold Plated Layered Chain & Hoop Earrings",
     product_id: "w_acc_gold",
     product_link: "https://www.amazon.in/s?k=AccessHer+Minimalist+Gold+Plated+Layered+Chain+Earrings",
@@ -574,6 +736,40 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     old_price: "₹1,299",
     extracted_old_price: 1299,
     thumbnail: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400&q=80",
+    delivery: "Free delivery",
+    category: "accessories",
+    style: "smart_casual",
+    gender: "women"
+  },
+  {
+    id: "w_acc_clutch",
+    position: 38,
+    title: "Baggit Women Rose Gold Metallic Evening Box Clutch",
+    product_id: "w_acc_clutch",
+    product_link: "https://www.amazon.in/s?k=Baggit+Women+Rose+Gold+Metallic+Evening+Box+Clutch",
+    source: "Amazon.in",
+    price: "₹990",
+    extracted_price: 990,
+    old_price: "₹1,990",
+    extracted_old_price: 1990,
+    thumbnail: "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?w=500&q=80",
+    delivery: "Free delivery",
+    category: "accessories",
+    style: "formal",
+    gender: "women"
+  },
+  {
+    id: "w_acc_belt",
+    position: 39,
+    title: "Ginger by Lifestyle Women Tan Brown Classic Faux Leather Belt",
+    product_id: "w_acc_belt",
+    product_link: "https://www.amazon.in/s?k=Ginger+by+Lifestyle+Women+Tan+Brown+Classic+Belt",
+    source: "Amazon.in",
+    price: "₹399",
+    extracted_price: 399,
+    old_price: "₹799",
+    extracted_old_price: 799,
+    thumbnail: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&q=80",
     delivery: "Free delivery",
     category: "accessories",
     style: "smart_casual",
@@ -615,6 +811,10 @@ export async function generateStylingPlanWithGemini({ item = {}, profile = {}, t
   const isFemale = rawGender.includes("fem") || rawGender.includes("wom") || rawGender === "female";
   const gender = isFemale ? "Women" : "Men";
 
+  const skinTone = clean(profile.skinTone || profile.aiAnalysis?.skinTone || "Medium / Wheatish", 50);
+  const bodyType = clean(profile.bodyTypeSelfReported || profile.aiAnalysis?.bodyType || "Regular / Proportional", 50);
+  const city = clean(profile.city || "Metropolitan India", 50);
+
   const anchorTitle = clean(item.title || "Garment", 100);
   const anchorCat = clean(item.category || "", 50);
   const anchorSubCat = clean(item.subCategory || "", 50);
@@ -633,7 +833,9 @@ Your task is to generate a COMPLETE COORDINATED OUTFIT around an anchor garment 
 
 USER PROFILE:
 - Gender: Strictly ${gender}
-- Body type: ${profile.bodyTypeSelfReported || "Normal"}
+- Skin Tone: ${skinTone}
+- Body Type & Silhouette: ${bodyType}
+- Location / City: ${city}
 
 ANCHOR GARMENT:
 - Title: ${anchorTitle}
@@ -641,30 +843,45 @@ ANCHOR GARMENT:
 - Color: ${anchorColor}
 - Fit: ${anchorFit}
 - Material: ${anchorMaterial}
-- Detected Style Vibe: ${style}
+- Detected Style Archetype: ${style}
 
-STRICT FASHION RULES:
-1. GENDER MUST BE STRICTLY ${gender.toUpperCase()}: Every query, title, and recommendation must be exclusively for ${gender}. Never output unisex or opposing gender clothing.
+CLOTHMATICS AI STYLIST CORE RULES:
+1. GENDER PURITY: Must be strictly ${gender.toUpperCase()}. Every piece, title, and query must be designed exclusively for ${gender}. Never output unisex or opposing gender clothing.
 2. NEVER RECOMMEND THE SAME CATEGORY AS THE ANCHOR:
    ${isBottom ? "- The anchor item is a PAIR OF PANTS/TROUSERS. You must NEVER recommend pants, trousers, jeans, or chinos! Recommend 1 Top, 1 Footwear, 1 Layering/Jacket, and 1 Accessory." : ""}
    ${isTop ? "- The anchor item is a TOP/SHIRT. You must NEVER recommend tops or shirts! Recommend 1 Bottom (Trousers/Chinos/Jeans), 1 Footwear, 1 Layering, and 1 Accessory." : ""}
    ${isDress ? "- The anchor item is a DRESS. Recommend 1 Footwear, 1 Layering shrug/jacket, 1 Handbag/Clutch, and 1 Jewelry/Accessory." : ""}
    ${isShoes ? "- The anchor item is FOOTWEAR. Recommend 1 Bottom, 1 Top, 1 Layering, and 1 Accessory." : ""}
-3. STYLE COHESION & DIFFERENTIATION:
-   - Match the specific style vibe of the anchor piece. For example, black cargo pants get streetwear graphic tees and chunky skate sneakers; light blue chinos get navy knitted polos and loafers; grey trousers get crisp white oxford shirts and dress sneakers. Do NOT recommend the same shirt for different pants!
-4. INDIVIDUAL PIECE REASONING: Each piece in 'pieces' must have its own distinct, specific styling reason explaining why it works with the anchor garment.
+3. SKIN TONE & COLOR HARMONY:
+   - Skin Tone Harmony: Complement the user's skin tone (${skinTone}). Warm/wheatish/dusky skin pairs with rich earthy tones (olive, warm navy, mustard, terracotta, camel, ecru); cool/fair skin pairs with crisp contrast (deep navy, emerald, charcoal, cobalt, pure white).
+   - Ground bold/distinctive colors with clean neutrals (crisp white, deep navy, rich black, beige).
+4. BODY TYPE & SILHOUETTE BALANCING:
+   - Balance volume: Wide-leg/baggy/relaxed bottoms require fitted, structured, or cropped tops. Slim/tapered bottoms can take relaxed/oversized layers or boxy tees.
+5. STYLE ARCHETYPE COHESION:
+   - Streetwear: Heavyweight oversized boxy graphic tees (240 GSM), chunky low-profile skate sneakers (Puma, Nike, Comet), utility bombers, tactical digital watch / crossbody bag.
+   - Smart Casual: Knitted cotton polos, tan/brown leather penny loafers, unstructured overshirts, braided leather belts.
+   - Formal: Pure cotton oxford/poplin button-downs, minimalist clean leather dress sneakers or black derbies, navy/charcoal blazers, analog dress watches.
+   - Parisian Chic: Ribbed knit high-neck tops, pointed-toe nude/black block heels, double-breasted blazers, structured faux-leather tote bags.
+6. BRAND-TARGETED SEARCH QUERIES:
+   - In each piece's 'searchTerm', append top reputable fashion brands for crisp, studio-grade Google Shopping results:
+     * For Men: e.g., 'men black oversized graphic cotton streetwear t-shirt (Zara OR H&M OR Snitch OR Puma)'
+     * For Women: e.g., 'women black ribbed high neck knit top (Zara OR H&M OR Vero Moda OR Marks & Spencer)'
+7. INDIVIDUAL PIECE REASONING: Each piece in 'pieces' must have its own distinct, specific styling reason explaining why its silhouette, color, and fabric balance with the anchor garment.
 
 Return pure JSON only in this exact format:
 {
   "outfitTitle": "Short descriptive title for this complete look",
-  "overallStylingAdvice": "2-3 sentences explaining overall aesthetic, balance, and color harmony.",
+  "overallStylingAdvice": "2-3 sentences explaining overall aesthetic, silhouette balance, and color harmony.",
+  "styleArchetype": "e.g. Urban Streetwear / Smart Casual / Tailored Formal / Contemporary Parisian Chic",
+  "colorHarmony": "e.g. High-Contrast Monotone / Complementary Contrast / Neutral Grounding",
+  "silhouetteBalance": "e.g. Volume-Balanced Proportion / Elongated Tailored Line",
   "pieces": [
     {
       "category": "tops",
       "categoryLabel": "Tops & Shirts",
       "icon": "👕",
       "searchTerm": "${gender.toLowerCase()} ...",
-      "stylingReason": "Why this specific top and color pairs with the anchor garment...",
+      "stylingReason": "Why this specific top, color, and fit pairs with the anchor garment...",
       "recommendedColors": ["color1", "color2"]
     },
     {
@@ -719,6 +936,9 @@ Return pure JSON only in this exact format:
             return {
               outfitTitle: parsed.outfitTitle || "Coordinated Outfit Look",
               overallStylingAdvice: parsed.overallStylingAdvice || parsed.stylingAdvice || "",
+              styleArchetype: parsed.styleArchetype || (style === "streetwear" ? "Urban Streetwear" : style === "formal" ? "Tailored Formal" : "Smart Casual"),
+              colorHarmony: parsed.colorHarmony || "Harmonious Complementary Contrast",
+              silhouetteBalance: parsed.silhouetteBalance || "Volume-Balanced Proportion",
               pieces: parsed.pieces,
               targetCategory: primary.category,
               searchTerm: primary.searchTerm,
@@ -760,6 +980,9 @@ export function getFallbackStylingPlan({ item = {}, profile = {}, targetCategory
   let pieces = [];
   let outfitTitle = "Coordinated Outfit Look";
   let overallStylingAdvice = "";
+  let styleArchetype = "Smart Casual";
+  let colorHarmony = "Harmonious Complementary Contrast";
+  let silhouetteBalance = "Volume-Balanced Proportion";
 
   if (isBottom) {
     if (gender === "men") {
@@ -767,6 +990,9 @@ export function getFallbackStylingPlan({ item = {}, profile = {}, targetCategory
         // e.g. Black Cargo Pants / Baggy Joggers
         outfitTitle = "Urban Streetwear Utility Look";
         overallStylingAdvice = `Pairing your ${item.primaryColor || "black"} cargo pants with an oversized graphic tee and chunky skate sneakers creates a balanced, modern streetwear proportion.`;
+        styleArchetype = "Urban Streetwear";
+        colorHarmony = "High-Contrast Monotone";
+        silhouetteBalance = "Volume-Balanced Boxy Proportion";
         pieces = [
           {
             category: "tops",
@@ -805,12 +1031,15 @@ export function getFallbackStylingPlan({ item = {}, profile = {}, targetCategory
         // e.g. Grey Slim Trousers
         outfitTitle = "Modern Tailored Professional Look";
         overallStylingAdvice = `Tailored ${item.primaryColor || "grey"} trousers provide a crisp, refined base. Anchoring with a pure cotton oxford shirt and navy blazer achieves timeless corporate elegance.`;
+        styleArchetype = "Tailored Formal";
+        colorHarmony = "Timeless Executive Palette (White & Navy)";
+        silhouetteBalance = "Clean Elongated Line";
         pieces = [
           {
             category: "tops",
             categoryLabel: "Tops & Shirts",
             icon: "👕",
-            searchTerm: "men white slim fit oxford cotton shirt",
+            searchTerm: "men white slim fit oxford cotton shirt (Zara OR Marks & Spencer OR Dennis Lingo)",
             stylingReason: `A crisp white button-down oxford shirt is the timeless foundation for tailored ${item.primaryColor || "grey"} trousers.`,
             recommendedColors: ["white", "light blue"]
           },
@@ -818,7 +1047,7 @@ export function getFallbackStylingPlan({ item = {}, profile = {}, targetCategory
             category: "shoes",
             categoryLabel: "Footwear",
             icon: "👟",
-            searchTerm: "men minimalist white leather low top sneakers",
+            searchTerm: "men minimalist white leather low top sneakers (Puma OR Comet OR Zara)",
             stylingReason: `Clean low-profile white sneakers modernize the trousers for contemporary smart-office versatility.`,
             recommendedColors: ["white"]
           },
@@ -826,7 +1055,7 @@ export function getFallbackStylingPlan({ item = {}, profile = {}, targetCategory
             category: "layering",
             categoryLabel: "Jackets & Layers",
             icon: "🧥",
-            searchTerm: "men navy blue slim fit formal blazer",
+            searchTerm: "men navy blue slim fit formal blazer (Van Heusen OR Raymond OR Zara)",
             stylingReason: `A tailored navy blazer creates the definitive menswear grey-and-navy power pairing.`,
             recommendedColors: ["navy", "charcoal"]
           },
@@ -834,7 +1063,7 @@ export function getFallbackStylingPlan({ item = {}, profile = {}, targetCategory
             category: "accessories",
             categoryLabel: "Accessories",
             icon: "⌚",
-            searchTerm: "men black leather analog minimalist watch",
+            searchTerm: "men black leather analog minimalist watch (Titan OR Fossil)",
             stylingReason: `An understated analog dial maintains sleek executive polish.`,
             recommendedColors: ["black", "silver"]
           }
@@ -843,12 +1072,15 @@ export function getFallbackStylingPlan({ item = {}, profile = {}, targetCategory
         // e.g. Blue Denim Jeans
         outfitTitle = "Classic Americana Rugged Look";
         overallStylingAdvice = `Denim calls for textured, durable layers. A checked flannel overshirt and leather chelsea boots deliver effortless, masculine character.`;
+        styleArchetype = "Rugged Americana";
+        colorHarmony = "Earthy Textured Contrast";
+        silhouetteBalance = "Durable Structured Layering";
         pieces = [
           {
             category: "tops",
             categoryLabel: "Tops & Shirts",
             icon: "👕",
-            searchTerm: "men red black checked cotton flannel casual shirt",
+            searchTerm: "men red black checked cotton flannel casual shirt (Roadster OR Wrangler)",
             stylingReason: `A checked flannel shirt adds visual texture and rugged warmth against denim.`,
             recommendedColors: ["red", "black", "navy"]
           },
@@ -856,7 +1088,7 @@ export function getFallbackStylingPlan({ item = {}, profile = {}, targetCategory
             category: "shoes",
             categoryLabel: "Footwear",
             icon: "🥾",
-            searchTerm: "men dark brown leather chelsea ankle boots",
+            searchTerm: "men dark brown leather chelsea ankle boots (Woodland OR Red Tape)",
             stylingReason: `Sturdy leather chelsea boots seamlessly ground the jeans for all-day versatility.`,
             recommendedColors: ["brown", "tan"]
           },
@@ -864,7 +1096,7 @@ export function getFallbackStylingPlan({ item = {}, profile = {}, targetCategory
             category: "layering",
             categoryLabel: "Jackets & Layers",
             icon: "🧥",
-            searchTerm: "men navy blue casual cotton overshirt jacket",
+            searchTerm: "men navy blue casual cotton overshirt jacket (Mast & Harbour OR H&M)",
             stylingReason: `A solid cotton overshirt provides an easy neutral contrast over the flannel.`,
             recommendedColors: ["navy", "olive"]
           },
@@ -872,7 +1104,7 @@ export function getFallbackStylingPlan({ item = {}, profile = {}, targetCategory
             category: "accessories",
             categoryLabel: "Accessories",
             icon: "⌚",
-            searchTerm: "men tan brown braided genuine leather belt",
+            searchTerm: "men tan brown braided genuine leather belt (Tommy Hilfiger OR Woodland)",
             stylingReason: `Rich tan leather hardware ties together the boots and waistband.`,
             recommendedColors: ["tan", "brown"]
           }
@@ -881,12 +1113,15 @@ export function getFallbackStylingPlan({ item = {}, profile = {}, targetCategory
         // Smart Casual default, e.g. Light Blue Chinos / Khakis
         outfitTitle = "Refined Smart-Casual Look";
         overallStylingAdvice = `Your ${item.primaryColor || "chino"} trousers provide a relaxed, versatile canvas. Pairing with a rich navy knitted polo and tan loafers creates an effortlessly sophisticated color block.`;
+        styleArchetype = "Smart Casual";
+        colorHarmony = "Complementary Contrast (Navy & Tan)";
+        silhouetteBalance = "Refined Tapered Silhouette";
         pieces = [
           {
             category: "tops",
             categoryLabel: "Tops & Shirts",
             icon: "👕",
-            searchTerm: "men navy blue solid knitted cotton polo t-shirt",
+            searchTerm: "men navy blue solid knitted cotton polo t-shirt (Highlander OR Rare Rabbit OR H&M)",
             stylingReason: `A deep navy knitted polo creates high-contrast, polished sophistication against ${item.primaryColor || "light"} chinos.`,
             recommendedColors: ["navy", "white"]
           },
@@ -894,7 +1129,7 @@ export function getFallbackStylingPlan({ item = {}, profile = {}, targetCategory
             category: "shoes",
             categoryLabel: "Footwear",
             icon: "👟",
-            searchTerm: "men classic tan brown leather casual loafers",
+            searchTerm: "men classic tan brown leather casual loafers (Red Tape OR Hush Puppies)",
             stylingReason: `Warm tan leather loafers elevate the chinos for an Italian smart-casual aesthetic.`,
             recommendedColors: ["tan", "brown"]
           },
@@ -910,7 +1145,7 @@ export function getFallbackStylingPlan({ item = {}, profile = {}, targetCategory
             category: "accessories",
             categoryLabel: "Accessories",
             icon: "⌚",
-            searchTerm: "men tan brown braided genuine leather belt",
+            searchTerm: "men tan brown braided genuine leather belt (Tommy Hilfiger OR H&M)",
             stylingReason: `Braided leather coordinates with the loafers to cleanly frame the waistband.`,
             recommendedColors: ["tan", "brown"]
           }
@@ -921,12 +1156,15 @@ export function getFallbackStylingPlan({ item = {}, profile = {}, targetCategory
       if (style === "streetwear" || style === "casual") {
         outfitTitle = "Modern Athleisure Street Look";
         overallStylingAdvice = `Relaxed bottoms pair best with a cropped fitted top and chunky sneakers for an active, effortless urban silhouette.`;
+        styleArchetype = "Modern Athleisure";
+        colorHarmony = "Sporty Clean Neutrals";
+        silhouetteBalance = "Cropped Waist with Relaxed Hem";
         pieces = [
           {
             category: "tops",
             categoryLabel: "Tops & Shirts",
             icon: "👚",
-            searchTerm: "women white oversized graphic drop shoulder crop tee",
+            searchTerm: "women white oversized graphic drop shoulder crop tee (Bonkers Corner OR H&M)",
             stylingReason: `A boxy cropped graphic tee highlights the waistline while complementing the casual trouser cut.`,
             recommendedColors: ["white", "black"]
           },
@@ -942,7 +1180,7 @@ export function getFallbackStylingPlan({ item = {}, profile = {}, targetCategory
             category: "layering",
             categoryLabel: "Jackets & Layers",
             icon: "🧥",
-            searchTerm: "women light blue cropped washed denim jacket",
+            searchTerm: "women light blue cropped washed denim jacket (Vero Moda OR Levi's)",
             stylingReason: `A cropped denim jacket keeps the silhouette compact and modern.`,
             recommendedColors: ["light blue"]
           },
@@ -950,7 +1188,7 @@ export function getFallbackStylingPlan({ item = {}, profile = {}, targetCategory
             category: "accessories",
             categoryLabel: "Accessories",
             icon: "👜",
-            searchTerm: "women structured black faux leather laptop tote bag",
+            searchTerm: "women structured black faux leather laptop tote bag (Lavie OR Baggit)",
             stylingReason: `A sleek faux-leather tote elevates casual street styling.`,
             recommendedColors: ["black"]
           }
@@ -959,12 +1197,15 @@ export function getFallbackStylingPlan({ item = {}, profile = {}, targetCategory
         // Women Smart / Formal / Chic (e.g. Beige Wide Leg Trousers)
         outfitTitle = "Contemporary Parisian Chic Look";
         overallStylingAdvice = `Wide-leg ${item.primaryColor || "beige"} trousers have an elegant fluid drape. Balancing them with a fitted black top and tailored blazer creates an elongated, poised silhouette.`;
+        styleArchetype = "Contemporary Parisian Chic";
+        colorHarmony = "Monochrome Grounding (Black & Nude)";
+        silhouetteBalance = "Fluid Flared Drape with Fitted Top";
         pieces = [
           {
             category: "tops",
             categoryLabel: "Tops & Shirts",
             icon: "👚",
-            searchTerm: "women black sleeveless ribbed high neck knit top",
+            searchTerm: "women black sleeveless ribbed high neck knit top (Zara OR H&M)",
             stylingReason: `A fitted black high-neck top provides clean visual contrast and balances the voluminous trousers.`,
             recommendedColors: ["black", "white"]
           },
@@ -988,7 +1229,7 @@ export function getFallbackStylingPlan({ item = {}, profile = {}, targetCategory
             category: "accessories",
             categoryLabel: "Accessories",
             icon: "✨",
-            searchTerm: "women minimalist 18k gold plated layered chain hoop earrings",
+            searchTerm: "women minimalist 18k gold plated layered chain hoop earrings (AccessHer OR Zaveri)",
             stylingReason: `Delicate gold hardware adds warm, luxurious accents near the neckline.`,
             recommendedColors: ["gold"]
           }
@@ -999,12 +1240,15 @@ export function getFallbackStylingPlan({ item = {}, profile = {}, targetCategory
     // Anchor is a TOP -> NEVER recommend tops!
     outfitTitle = "Sharp Tonal Coordinates";
     overallStylingAdvice = `Your ${item.primaryColor || ""} ${item.title || "top"} is the focal point. Balancing with neutral tailored bottoms and clean footwear creates an intentional, harmonious outfit.`;
+    styleArchetype = "Refined Casual";
+    colorHarmony = "Neutral Anchoring";
+    silhouetteBalance = "Proportional Separates";
     pieces = [
       {
         category: "bottoms",
         categoryLabel: "Pants & Trousers",
         icon: "👖",
-        searchTerm: gender === "men" ? "men beige slim fit stretch chino trousers" : "women beige high waist wide leg straight trouser",
+        searchTerm: gender === "men" ? "men beige slim fit stretch chino trousers (Highlander OR Zara)" : "women beige high waist wide leg straight trouser (Kotty OR Zara)",
         stylingReason: `Straight-fit neutral trousers anchor your ${item.title || "top"} without competing for attention.`,
         recommendedColors: ["beige", "navy", "black"]
       },
@@ -1012,7 +1256,7 @@ export function getFallbackStylingPlan({ item = {}, profile = {}, targetCategory
         category: "shoes",
         categoryLabel: "Footwear",
         icon: "👟",
-        searchTerm: gender === "men" ? "men minimalist white leather low top sneakers" : "women bata white chunky casual sneakers",
+        searchTerm: gender === "men" ? "men minimalist white leather low top sneakers (Puma OR Comet)" : "women bata white chunky casual sneakers",
         stylingReason: `Crisp low-profile sneakers maintain casual versatility and match the relaxed vibe.`,
         recommendedColors: ["white"]
       },
@@ -1037,6 +1281,9 @@ export function getFallbackStylingPlan({ item = {}, profile = {}, targetCategory
     // Anchor is a DRESS
     outfitTitle = "Elevated Occasion Ensemble";
     overallStylingAdvice = `Your dress creates the single silhouette. Complementing it with delicate strappy heels, structured layering, and metallic accents completes a stunning look.`;
+    styleArchetype = "Evening Occasion";
+    colorHarmony = "Metallic Accents on Neutral Base";
+    silhouetteBalance = "Elongated Single-Piece Line";
     pieces = [
       {
         category: "shoes",
@@ -1075,6 +1322,9 @@ export function getFallbackStylingPlan({ item = {}, profile = {}, targetCategory
     // Anchor is SHOES
     outfitTitle = "Head-to-Toe Footwear Coordinates";
     overallStylingAdvice = `Building from the ground up, tailored trousers and a contrasting top ensure your footwear takes its rightful place in the look.`;
+    styleArchetype = "Footwear-Anchored Style";
+    colorHarmony = "Tonal Contrast";
+    silhouetteBalance = "Clean Break Tailored Hem";
     pieces = [
       {
         category: "bottoms",
@@ -1113,6 +1363,9 @@ export function getFallbackStylingPlan({ item = {}, profile = {}, targetCategory
     // General fallback
     outfitTitle = "Smart-Casual Coordinated Look";
     overallStylingAdvice = "A versatile, balanced pairing designed to coordinate effortlessly with your wardrobe item.";
+    styleArchetype = "Smart Casual";
+    colorHarmony = "Harmonious Complementary Contrast";
+    silhouetteBalance = "Volume-Balanced Proportion";
     pieces = [
       {
         category: "tops",
@@ -1154,6 +1407,9 @@ export function getFallbackStylingPlan({ item = {}, profile = {}, targetCategory
   return {
     outfitTitle,
     overallStylingAdvice,
+    styleArchetype,
+    colorHarmony,
+    silhouetteBalance,
     pieces,
     targetCategory: primary.category,
     searchTerm: primary.searchTerm,
@@ -1197,6 +1453,12 @@ export function filterProductsStrict({
   const maleExcludeRegex = /\b(men|man|men's|man's|male|boy|boys|gentleman|boxer|briefs)\b/i;
 
   return products.filter((item) => {
+    // 0. Mandatory Valid Image Guarantee:
+    // Any product without an accessible, verified HTTPS thumbnail is excluded
+    if (!hasValidImage(item)) {
+      return false;
+    }
+
     const title = (item.title || "").toLowerCase();
     const itemCat = (item.category || "").toLowerCase();
 
@@ -1258,7 +1520,7 @@ export function filterProductsStrict({
 /**
  * Main handler for /api/shopping/complete-look
  * Returns a complete coordinated outfit matching the ClothMatics AI Stylist experience.
- * Strictly caps every category to maximum 3 curated suggestions.
+ * Strictly caps every category to maximum 3 curated suggestions with guaranteed valid images.
  */
 export async function handleCompleteLook({
   item = {},
@@ -1323,11 +1585,13 @@ export async function handleCompleteLook({
         try {
           const data = await fetchSerpApiShopping({ query, gl, hl, apiKey });
           const raw = Array.isArray(data?.shopping_results) ? data.shopping_results : [];
-          return raw.map((p, idx) => ({
-            ...normalizeProduct(p, idx),
-            category: piece.category,
-            gender
-          }));
+          return raw
+            .map((p, idx) => ({
+              ...normalizeProduct(p, idx),
+              category: piece.category,
+              gender
+            }))
+            .filter(hasValidImage);
         } catch (err) {
           console.warn(`SerpApi search error for ${piece.category}:`, err.message);
           return [];
@@ -1357,10 +1621,10 @@ export async function handleCompleteLook({
 
   for (let i = 0; i < pieces.length; i++) {
     const piece = pieces[i];
-    const liveForPiece = liveByPieceIndex[i] || [];
-    const sampleForPiece = sampleNormalized.filter((p) => p.category === piece.category && p.gender === gender);
+    const liveForPiece = (liveByPieceIndex[i] || []).filter(hasValidImage);
+    const sampleForPiece = sampleNormalized.filter((p) => p.category === piece.category && p.gender === gender && hasValidImage(p));
 
-    // Candidates for this piece ONLY contain items matching this specific category!
+    // Candidates for this piece ONLY contain items matching this specific category with verified images!
     const candidatePool = [...liveForPiece, ...sampleForPiece];
 
     let catFiltered = filterProductsStrict({
@@ -1384,6 +1648,14 @@ export async function handleCompleteLook({
         anchorCategory: anchorDesc,
         targetCategory: piece.category
       });
+    }
+
+    // If budget or live search yielded fewer than 3 items, backfill from sampleForPiece
+    if (catFiltered.length < 3) {
+      const existingIds = new Set(catFiltered.map((p) => p.id || p.product_id));
+      const needed = 3 - catFiltered.length;
+      const backfills = sampleForPiece.filter((p) => !existingIds.has(p.id || p.product_id) && hasValidImage(p)).slice(0, needed);
+      catFiltered = [...catFiltered, ...backfills];
     }
 
     // Fallback: If still 0, use sampleForPiece directly
@@ -1419,6 +1691,9 @@ export async function handleCompleteLook({
     outfit: {
       title: stylingPlan.outfitTitle,
       stylingAdvice: stylingPlan.overallStylingAdvice,
+      styleArchetype: stylingPlan.styleArchetype || "Smart Casual",
+      colorHarmony: stylingPlan.colorHarmony || "Complementary Contrast",
+      silhouetteBalance: stylingPlan.silhouetteBalance || "Volume-Balanced Proportion",
       pieces: stylingPlan.pieces,
       categories: outfitCategories
     },
