@@ -1,13 +1,171 @@
-let nextId=0;
-export function hangerLoaderMarkup(){
-  const id=`hanger-loop-${++nextId}`;
-  return `<div class="hanger-loader" data-phase="prepare" hidden><div class="hanger-art" aria-hidden="true"><svg viewBox="0 0 180 180"><defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6C63FF"/><stop offset=".52" stop-color="#AB35F5"/><stop offset="1" stop-color="#FF4FA3"/></linearGradient></defs><circle class="hanger-ring-track" cx="90" cy="90" r="71"/><circle class="hanger-ring" cx="90" cy="90" r="71" stroke="url(#${id})"/><g class="hanger-center"><path class="hanger-wire" d="M82 65c0-13 20-13 20 0 0 7-12 8-12 17m0 0-48 24c-5 3-6 6-6 11m54-35 48 24c5 3 6 6 6 11"/><g class="hanger-clothes"><path fill="#6C3FF2" d="m55 107-14 7-7 19 14 5 4-10v25h28v-25l4 10 14-5-7-19-14-7c-4 9-18 9-22 0Z"/><path fill="#FF4FA3" d="m107 107-14 7-7 19 14 5 4-10v25h28v-25l4 10 14-5-7-19-14-7c-4 9-18 9-22 0Z"/><path fill="#BA9BFF" stroke="#7D51DF" stroke-width="1.5" d="m81 104-13 9-7 31 13 3 5-20v29h26v-29l5 20 13-3-7-31-14-9-10 7Z"/><path stroke="#7143D9" stroke-width="2" d="M92 112v44"/></g></g><g class="hanger-sparkles" fill="#AE38F2"><path d="m139 47 4 11 11 4-11 4-4 11-4-11-11-4 11-4Z"/><path fill="#FF4FA3" d="m151 83 3 7 7 3-7 3-3 7-3-7-7-3 7-3Z"/><path d="m34 63 2 6 6 2-6 2-2 6-2-6-6-2 6-2Z"/></g></svg><span class="hanger-shadow"></span></div><div class="hanger-copy"><span class="hanger-eyebrow">CLOTHMATICS</span><b data-hanger-title>Preparing your photo</b><span data-hanger-message></span><span class="hanger-dots" aria-hidden="true"><i></i><i></i><i></i><i></i></span></div></div>`;
+let nextId = 0;
+
+export const OUTFIT_BUILD_STEPS = [
+  {
+    step: 1,
+    num: "1",
+    title: "A style appears",
+    desc: "Your first piece is in.",
+    image: "./assets/loader/outfit-build-step-1.png",
+    alt: "A style appears - Your first piece is in"
+  },
+  {
+    step: 2,
+    num: "2",
+    title: "Layers come together",
+    desc: "Building your look…",
+    image: "./assets/loader/outfit-build-step-2.png",
+    alt: "Layers come together - Building your look"
+  },
+  {
+    step: 3,
+    num: "3",
+    title: "More style, more you",
+    desc: "Finding the perfect pieces…",
+    image: "./assets/loader/outfit-build-step-3.png",
+    alt: "More style, more you - Finding the perfect pieces"
+  },
+  {
+    step: 4,
+    num: "4",
+    title: "Your outfit is ready",
+    desc: "Style looks good on you.",
+    image: "./assets/loader/outfit-build-step-4.png",
+    alt: "Your outfit is ready - Style looks good on you"
+  }
+];
+
+export function outfitBuildLoaderMarkup({
+  kicker = "CLOTHMATICS",
+  title = "Outfit Build",
+  subtitle = "TURNING YOUR STYLE INTO SOMETHING GREAT…",
+  initialStep = 1,
+  hidden = true
+} = {}) {
+  const chevronSvg = `<div class="outfit-loader-chevron" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></div>`;
+
+  const cardsHtml = OUTFIT_BUILD_STEPS.map((s, idx) => {
+    const isLast = idx === OUTFIT_BUILD_STEPS.length - 1;
+    const activeClass = s.step === initialStep ? " active" : (s.step < initialStep ? " completed" : "");
+    const card = `
+      <div class="outfit-loader-card${activeClass}" data-step="${s.step}">
+        <div class="outfit-loader-card-box">
+          <img src="${s.image}" alt="${s.alt}" width="225" height="240" loading="eager" />
+        </div>
+        <div class="outfit-loader-card-info">
+          <span class="outfit-loader-card-num">${s.num}</span>
+          <div class="outfit-loader-card-text">
+            <b class="outfit-loader-card-heading">${s.title}</b>
+            <span class="outfit-loader-card-desc">${s.desc}</span>
+          </div>
+        </div>
+      </div>
+    `;
+    return isLast ? card : card + chevronSvg;
+  }).join("");
+
+  return `
+    <div class="hanger-loader outfit-build-loader" data-phase="prepare" data-active-step="${initialStep}"${hidden ? " hidden" : ""}>
+      <div class="outfit-loader-head">
+        <span class="outfit-loader-kicker">${kicker}</span>
+        <h3 class="outfit-loader-title">${title} <span class="outfit-loader-sparkle" aria-hidden="true">✦</span></h3>
+        <p class="outfit-loader-subtitle">${subtitle}</p>
+      </div>
+
+      <div class="outfit-loader-steps" role="progressbar" aria-label="${title} sequence" aria-valuemin="1" aria-valuemax="4" aria-valuenow="${initialStep}">
+        ${cardsHtml}
+      </div>
+
+      <div class="outfit-loader-pill">
+        <span class="outfit-loader-pill-tag">OUTFIT BUILD</span>
+        <span class="outfit-loader-dots" aria-hidden="true">
+          <i class="dot${initialStep === 1 ? ' active' : ''}" data-dot="1"></i>
+          <i class="dot${initialStep === 2 ? ' active' : ''}" data-dot="2"></i>
+          <i class="dot${initialStep === 3 ? ' active' : ''}" data-dot="3"></i>
+          <i class="dot${initialStep === 4 ? ' active' : ''}" data-dot="4"></i>
+        </span>
+        <span class="outfit-loader-pill-msg" data-hanger-message>SAME STYLE, BRIGHTER DAYS.</span>
+        <b data-hanger-title class="hidden-hanger-compat" style="display:none;">Preparing your photo</b>
+      </div>
+    </div>
+  `.trim();
 }
-export function updateHangerLoader(root,message,active=true){
-  const loader=root?.matches?.('.hanger-loader')?root:root?.querySelector('.hanger-loader');if(!loader)return;
-  const phase=/sav|uploading/i.test(message)?'save':/checking color|compar|verif/i.test(message)?'check':/generat|creating.*3d/i.test(message)?'generate':/analy|inspect|identify|scan|extract/i.test(message)?'inspect':'prepare';
-  const title={prepare:'Preparing your photo',inspect:'Finding every detail',generate:'Creating your 3D garment',check:'Checking the match',save:'Adding to your wardrobe'}[phase];
-  loader.dataset.phase=phase;loader.hidden=!active;loader.querySelector('[data-hanger-title]').textContent=title;loader.querySelector('[data-hanger-message]').textContent=message||'A small moment. A brighter you.';
+
+export function hangerLoaderMarkup(options = {}) {
+  return outfitBuildLoaderMarkup(options);
+}
+
+export function updateHangerLoader(root, message, active = true, explicitStep = null) {
+  const loader = root?.matches?.('.hanger-loader') ? root : root?.querySelector?.('.hanger-loader');
+  if (!loader) return;
+
+  const msg = String(message || "");
+  const phase = /sav|uploading|ready|finished/i.test(msg) ? 'save'
+    : /checking color|compar|verif|quality/i.test(msg) ? 'check'
+    : /generat|creating.*3d|layer/i.test(msg) ? 'generate'
+    : /analy|inspect|identify|scan|extract/i.test(msg) ? 'inspect'
+    : 'prepare';
+
+  const titleMap = {
+    prepare: 'Preparing your photo',
+    inspect: 'Finding every detail',
+    generate: 'Creating your 3D garment',
+    check: 'Checking the match',
+    save: 'Adding to your wardrobe'
+  };
+  const title = titleMap[phase] || 'Preparing your photo';
+
+  let step = explicitStep;
+  if (!step) {
+    if (phase === 'save' || /ready|saved|finished|looks good on you/i.test(msg)) {
+      step = 4;
+    } else if (phase === 'check' || /finding|curat|match|perfect pieces|shoes|accessories/i.test(msg)) {
+      step = 3;
+    } else if (phase === 'generate' || /layer|extract|creating|building/i.test(msg)) {
+      step = 2;
+    } else {
+      step = 1;
+    }
+  }
+
+  loader.dataset.phase = phase;
+  loader.dataset.activeStep = String(step);
+  loader.hidden = !active;
+
+  const titleEl = loader.querySelector('[data-hanger-title]');
+  if (titleEl) titleEl.textContent = title;
+
+  const msgEl = loader.querySelector('[data-hanger-message]');
+  if (msgEl) {
+    msgEl.textContent = msg || OUTFIT_BUILD_STEPS[step - 1]?.desc || 'SAME STYLE, BRIGHTER DAYS.';
+  }
+
+  const stepsContainer = loader.querySelector('.outfit-loader-steps');
+  if (stepsContainer) {
+    stepsContainer.setAttribute('aria-valuenow', String(step));
+  }
+
+  const cards = loader.querySelectorAll('.outfit-loader-card');
+  cards.forEach(card => {
+    const cardStep = Number(card.dataset.step || "0");
+    card.classList.remove('active', 'completed');
+    if (cardStep === step) {
+      card.classList.add('active');
+    } else if (cardStep < step) {
+      card.classList.add('completed');
+    }
+  });
+
+  const dots = loader.querySelectorAll('.outfit-loader-dots .dot');
+  dots.forEach(dot => {
+    const dotStep = Number(dot.dataset.dot || "0");
+    dot.classList.remove('active', 'completed');
+    if (dotStep === step) {
+      dot.classList.add('active');
+    } else if (dotStep < step) {
+      dot.classList.add('completed');
+    }
+  });
 }
 
 export function confirmDelete3D({title='this garment'}={}){

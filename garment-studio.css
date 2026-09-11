@@ -1,19 +1,19 @@
 /* The hidden attribute is authoritative, including flex/grid action buttons. */
 .ghost-studio [hidden],.hanger-loader[hidden]{display:none!important}
-body:has(dialog[open]){overflow:hidden}
-.ghost-studio{width:min(1000px,calc(100vw - 32px));max-height:calc(100dvh - 32px);padding:0;border:1px solid #e5e1f2;border-radius:24px;background:#fff;overflow:hidden}
+html:has(dialog[open]),body:has(dialog[open]){overflow:hidden}
+.ghost-studio{width:min(1000px,calc(100vw - 32px));max-height:calc(100dvh - 32px);padding:0;border:1px solid #e5e1f2;border-radius:24px;background:#fff;overflow:hidden;font-family:Manrope,Arial,sans-serif}
 .ghost-studio[open]{display:flex;flex-direction:column}
 .ghost-header{position:relative;flex:none;padding:24px 28px 16px;border-bottom:1px solid #eeeaf6}
-.ghost-header h2{margin:7px 38px 8px 0;font-size:clamp(20px,2.8vw,28px);line-height:1.25;color:#15122b}
+.ghost-header h2{margin:7px 38px 8px 0;font-family:inherit;font-size:clamp(20px,2.8vw,28px);line-height:1.25;color:#15122b}
 .ghost-header p{margin:0;color:#726a8e;font-size:13px;line-height:1.6}
 .ghost-content{overflow-y:auto;overscroll-behavior:contain;min-height:0;padding:20px 28px}
 .ghost-comparison{margin:0;gap:16px}
 .ghost-comparison figure{min-width:0;padding:12px;background:#faf9fe}
 .ghost-comparison img,.ghost-comparison [data-ghost-placeholder]{height:clamp(180px,36dvh,360px)}
-.ghost-footer{flex:none;padding:14px 28px 20px;border-top:1px solid #e5e1f2;background:#fff}
-.ghost-footer [data-ghost-status]{margin:0 0 12px;font-size:13px;line-height:1.5;color:#655c7e}
+.ghost-footer{display:block;flex:none;width:100%;max-width:none;margin:0;padding:14px 28px 20px;border-top:1px solid #e5e1f2;background:#fff}
+.ghost-footer [data-ghost-status]{display:block;margin:0 0 12px;font-size:13px;line-height:1.5;color:#655c7e}
 .ghost-actions{gap:8px;justify-content:flex-start}
-.ghost-actions .button{min-height:42px;padding:10px 14px;font-size:12px;white-space:normal}
+.ghost-actions .button{min-height:42px;padding:10px 14px;font-family:inherit;font-size:12px;white-space:normal}
 .ghost-actions [data-ghost-close]{margin-left:auto}
 .ghost-actions .danger-button,.ghost-confirm .danger-button{color:#b42318!important;border:1px solid #f2c5c0!important;background:#fff5f4!important}
 .hanger-loader{display:flex;align-items:center;gap:20px;margin:16px 0;padding:14px 24px;border:1px solid #e7e0fc;border-radius:20px;background:radial-gradient(ellipse at top right,#ffeafa66,transparent 65%),#faf9ff}
@@ -33,9 +33,9 @@ body:has(dialog[open]){overflow:hidden}
 .hanger-dots{display:flex;gap:5px;margin-top:4px}
 .hanger-dots i{width:6px;height:6px;border-radius:50%;background:#b29bea;animation:hanger-shimmer 1.6s ease-in-out infinite}
 .hanger-dots i:nth-child(2){animation-delay:.2s}.hanger-dots i:nth-child(3){animation-delay:.4s}.hanger-dots i:nth-child(4){animation-delay:.6s;background:#ff4fa3}
-.ghost-confirm{width:min(440px,calc(100vw - 32px));padding:28px;border:1px solid #e5e1f2;border-radius:22px;color:#15122b;background:#fff;box-shadow:0 24px 90px #24133f30}
+.ghost-confirm{width:min(440px,calc(100vw - 32px));padding:28px;border:1px solid #e5e1f2;border-radius:22px;color:#15122b;background:#fff;box-shadow:0 24px 90px #24133f30;font-family:Manrope,Arial,sans-serif}
 .ghost-confirm .confirm-icon{display:grid;place-items:center;width:44px;height:44px;border-radius:14px;color:#b42318;background:#fff0ee;font-size:30px}
-.ghost-confirm h2{font-size:23px;line-height:1.25;margin:18px 0 12px}.ghost-confirm p{font-size:14px;line-height:1.65;color:#756a89}
+.ghost-confirm h2{font-family:inherit;font-size:23px;line-height:1.25;margin:18px 0 12px}.ghost-confirm p{font-size:14px;line-height:1.65;color:#756a89}
 .confirm-original{padding:12px 14px;border-radius:12px;background:#f5f2fc;font-size:13px;line-height:1.55;color:#52456e}
 .ghost-confirm form{display:flex;justify-content:flex-end;gap:10px;margin-top:24px}.ghost-confirm button{padding:12px 15px;border-radius:11px;border:1px solid #ded7f3;background:#fff;font-weight:700;cursor:pointer}
 .ghost-confirm button:focus-visible{outline:3px solid #6c63ff;outline-offset:3px}
@@ -51,3 +51,271 @@ body:has(dialog[open]){overflow:hidden}
 @keyframes hanger-assemble{0%,12%,100%{opacity:0;transform:translateY(6px) scale(.95)}30%,85%{opacity:1;transform:none}}
 @media(max-width:620px){.ghost-studio{width:calc(100vw - 16px);max-height:calc(100dvh - 16px);border-radius:18px}.ghost-header{padding:18px 18px 14px}.ghost-content{padding:16px 18px}.ghost-footer{padding:12px 18px 16px}.ghost-comparison{grid-template-columns:1fr 1fr;gap:8px}.ghost-comparison figure{padding:8px}.ghost-comparison img,.ghost-comparison [data-ghost-placeholder]{height:190px}.ghost-comparison figcaption{font-size:10px}.ghost-actions .button{flex:1 1 42%;padding:9px;font-size:11px}.ghost-actions [data-ghost-close]{margin-left:0}.hanger-loader{gap:12px;padding:12px}.hanger-art{flex-basis:88px;height:96px}.hanger-art svg{width:88px;height:88px}.hanger-copy b{font-size:15px}.garment-evidence-grid{grid-template-columns:1fr}.garment-review-preview{position:static}.garment-review-preview img{max-height:260px}.ghost-confirm{padding:22px}}
 @media(prefers-reduced-motion:reduce){.hanger-loader *{animation:none!important}.hanger-clothes,.hanger-sparkles{opacity:1}.hanger-ring{transform:rotate(-60deg)}}
+
+/* Outfit Build 4-Step Sequence Loader */
+.outfit-build-loader {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 18px !important;
+  margin: 16px 0 !important;
+  padding: 24px 20px 20px !important;
+  border: 1px solid #e7e0fc !important;
+  border-radius: 24px !important;
+  background: radial-gradient(ellipse at top right, rgba(255, 234, 250, 0.5), transparent 70%), #faf9fe !important;
+  box-shadow: 0 10px 40px rgba(45, 27, 105, 0.04) !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.outfit-loader-head {
+  text-align: center;
+  margin-bottom: 2px;
+}
+.outfit-loader-kicker {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #6c3ff2;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 4px;
+}
+.outfit-loader-title {
+  font: 800 clamp(20px, 3.2vw, 26px)/1.2 "Manrope", sans-serif;
+  background: linear-gradient(135deg, #2d1b69 0%, #6c3ff2 50%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0 0 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.outfit-loader-sparkle {
+  color: #ec4899;
+  font-size: 18px;
+  display: inline-block;
+  animation: outfit-sparkle-pulse 2s ease-in-out infinite;
+}
+.outfit-loader-subtitle {
+  font: 700 10.5px/1.4 "DM Sans", sans-serif;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #746a91;
+  margin: 0;
+}
+
+.outfit-loader-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 920px;
+  box-sizing: border-box;
+}
+
+.outfit-loader-card {
+  flex: 1 1 0;
+  min-width: 130px;
+  max-width: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0.65;
+  transform: scale(0.97);
+}
+.outfit-loader-card.active {
+  opacity: 1;
+  transform: scale(1) translateY(-4px);
+}
+.outfit-loader-card.completed {
+  opacity: 0.9;
+  transform: scale(1);
+}
+
+.outfit-loader-card-box {
+  width: 100%;
+  aspect-ratio: 225 / 240;
+  background: #ffffff;
+  border: 1.5px solid #ebe5f8;
+  border-radius: 22px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(45, 27, 105, 0.05);
+  position: relative;
+  transition: all 0.3s ease;
+}
+.outfit-loader-card.active .outfit-loader-card-box {
+  border-color: #a855f7;
+  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.35), 0 14px 34px rgba(108, 99, 255, 0.18);
+  animation: outfit-box-glow 2.4s ease-in-out infinite;
+}
+.outfit-loader-card.completed .outfit-loader-card-box {
+  border-color: #c4b5fd;
+}
+.outfit-loader-card-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  transition: transform 0.3s ease;
+}
+.outfit-loader-card.active .outfit-loader-card-box img {
+  transform: scale(1.03);
+}
+
+.outfit-loader-chevron {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #b9a9ec;
+  margin-bottom: 38px;
+}
+.outfit-loader-chevron svg {
+  width: 18px;
+  height: 18px;
+}
+
+.outfit-loader-card-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  margin-top: 10px;
+  padding: 0 4px;
+  box-sizing: border-box;
+}
+.outfit-loader-card-num {
+  flex: 0 0 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #ede9fe;
+  color: #6c3ff2;
+  font: 800 11px/22px "Manrope", sans-serif;
+  text-align: center;
+  transition: all 0.25s ease;
+}
+.outfit-loader-card.active .outfit-loader-card-num {
+  background: linear-gradient(135deg, #6c3ff2, #ec4899);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(108, 99, 255, 0.4);
+}
+.outfit-loader-card.completed .outfit-loader-card-num {
+  background: #10b981;
+  color: #ffffff;
+}
+
+.outfit-loader-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.outfit-loader-card-heading {
+  font: 800 12.5px/1.25 "Manrope", sans-serif;
+  color: #1f1938;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.outfit-loader-card-desc {
+  font: 500 11px/1.3 "DM Sans", sans-serif;
+  color: #746a91;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.outfit-loader-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: min(760px, 96%);
+  background: #ffffff;
+  border: 1px solid #e9e3f7;
+  border-radius: 999px;
+  padding: 8px 18px;
+  box-shadow: 0 4px 16px rgba(45, 27, 105, 0.04);
+  margin-top: 4px;
+  box-sizing: border-box;
+}
+.outfit-loader-pill-tag {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: #6c3ff2;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.outfit-loader-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.outfit-loader-dots .dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #ded5f8;
+  transition: all 0.3s ease;
+}
+.outfit-loader-dots .dot.active {
+  width: 18px;
+  background: linear-gradient(135deg, #6c3ff2, #ec4899);
+  box-shadow: 0 2px 6px rgba(236, 72, 153, 0.35);
+}
+.outfit-loader-dots .dot.completed {
+  background: #a78bfa;
+}
+.outfit-loader-pill-msg {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: #6c5e8d;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@keyframes outfit-sparkle-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.25) rotate(10deg); opacity: 1; filter: drop-shadow(0 0 6px #ec4899); }
+}
+
+@keyframes outfit-box-glow {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.3), 0 12px 28px rgba(108, 99, 255, 0.16); }
+  50% { box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.45), 0 16px 36px rgba(236, 72, 153, 0.24); }
+}
+
+@media (max-width: 768px) {
+  .outfit-loader-steps {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .outfit-loader-chevron {
+    display: none;
+  }
+  .outfit-loader-card {
+    flex: 1 1 calc(50% - 12px);
+    max-width: none;
+    min-width: 120px;
+  }
+  .outfit-loader-pill {
+    flex-direction: column;
+    gap: 8px;
+    border-radius: 16px;
+    padding: 10px 14px;
+    text-align: center;
+  }
+}

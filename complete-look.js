@@ -16,6 +16,10 @@ import {
   getUserProfileSizes,
   getUserProfilePreferences
 } from "./complete-look-helpers.js";
+import {
+  outfitBuildLoaderMarkup,
+  updateHangerLoader
+} from "./garment-progress.mjs";
 
 function safeUrl(value = "") {
   try {
@@ -139,13 +143,13 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
 
     // Check if user has saved budget in profile
     const profile = getProfile();
-    const savedBudgets = profile.shoppingProfile?.categoryBudgets;
-    if (savedBudgets) {
-      const categories = getAnchorCategories(activeItem);
-      const catKey = categories[0]?.id || "tops";
-      if (savedBudgets[catKey]?.min != null || savedBudgets[catKey]?.max != null) {
-        const min = savedBudgets[catKey].min;
-        const max = savedBudgets[catKey].max;
+    searchStep = 1;
+
+    if (budgetOption) {
+      if (typeof budgetOption === "string") {
+        activeBudget = budgetOption;
+      } else if (typeof budgetOption === "object") {
+        const { min, max } = budgetOption;
         const standard = COMPLETE_LOOK_BUDGETS.find((b) => b.min === min && b.max === max);
         if (standard) {
           activeBudget = standard.key;
@@ -153,6 +157,26 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
           activeBudget = "custom";
           customMin = min != null ? String(min) : "";
           customMax = max != null ? String(max) : "";
+        }
+      }
+    } else {
+      // Check if user has saved budget in profile
+      const profile = getProfile();
+      const savedBudgets = profile.shoppingProfile?.categoryBudgets;
+      if (savedBudgets) {
+        const categories = getAnchorCategories(activeItem);
+        const catKey = categories[0]?.id || "tops";
+        if (savedBudgets[catKey]?.min != null || savedBudgets[catKey]?.max != null) {
+          const min = savedBudgets[catKey].min;
+          const max = savedBudgets[catKey].max;
+          const standard = COMPLETE_LOOK_BUDGETS.find((b) => b.min === min && b.max === max);
+          if (standard) {
+            activeBudget = standard.key;
+          } else {
+            activeBudget = "custom";
+            customMin = min != null ? String(min) : "";
+            customMax = max != null ? String(max) : "";
+          }
         }
       }
     }
@@ -171,11 +195,31 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
 
     isSearching = true;
     searchError = "";
+    searchStep = 1;
     render();
+
+    const searchTimer = setInterval(() => {
+      if (!isSearching) {
+        clearInterval(searchTimer);
+        return;
+      }
+      searchStep = Math.min(4, searchStep + 1);
+      const loader = container ? container.querySelector(".outfit-build-loader") : null;
+      if (loader) {
+        const stepMessages = [
+          "Your first piece is in.",
+          "Building your look with coordinated layers…",
+          "Finding the perfect shoes and accessories…",
+          "Polishing your complete styled outfit…"
+        ];
+        updateHangerLoader(loader, stepMessages[searchStep - 1], true, searchStep);
+      }
+    }, 2400);
 
     const { min, max } = getActiveBudgetRange(activeBudget, customMin, customMax);
 
     if (min != null && max != null && min > max) {
+      clearInterval(searchTimer);
       isSearching = false;
       searchError = "Minimum budget cannot be greater than maximum budget.";
       render();
@@ -226,6 +270,7 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
       stylingIntent = null;
       hasSearched = true;
     } finally {
+      clearInterval(searchTimer);
       isSearching = false;
       render();
     }
@@ -354,9 +399,13 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
     if (isSearching) {
       resultsBodyHtml = `
         <div class="complete-look-loading">
-          <div class="spinner"></div>
-          <p>Styling complete coordinated outfit with AI…</p>
-          <span class="complete-look-loading-sub">Curating complementary silhouettes, footwear, layers, and accessories</span>
+          ${outfitBuildLoaderMarkup({
+            kicker: "CLOTHMATICS AI STYLIST",
+            title: "Outfit Build",
+            subtitle: "TURNING YOUR STYLE INTO SOMETHING GREAT…",
+            initialStep: searchStep,
+            hidden: false
+          })}
         </div>
       `;
     } else if (searchError) {
