@@ -1,5 +1,5 @@
 /* The hidden attribute is authoritative, including flex/grid action buttons. */
-.ghost-studio [hidden],.hanger-loader[hidden]{display:none!important}
+.ghost-studio [hidden],.hanger-loader[hidden],.outfit-build-loader[hidden]{display:none!important}
 html:has(dialog[open]),body:has(dialog[open]){overflow:hidden}
 .ghost-studio{width:min(1000px,calc(100vw - 32px));max-height:calc(100dvh - 32px);padding:0;border:1px solid #e5e1f2;border-radius:24px;background:#fff;overflow:hidden;font-family:Manrope,Arial,sans-serif}
 .ghost-studio[open]{display:flex;flex-direction:column}

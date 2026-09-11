@@ -50,8 +50,9 @@
 /ghost-ui.mjs
   Cache-Control: no-store
 
-/garment-upload.mjs
+/downloads/*
   Cache-Control: no-store
+  X-Robots-Tag: noindex, nofollow
 
 /web-api.mjs
   Cache-Control: no-store
@@ -63,6 +64,15 @@
   Cache-Control: no-store
 
 /wardrobe-assistant-core.mjs
+  Cache-Control: no-store
+
+/complete-look.js
+  Cache-Control: no-store
+
+/complete-look-helpers.js
+  Cache-Control: no-store
+
+/complete-look.css
   Cache-Control: no-store
 
 /admin.html

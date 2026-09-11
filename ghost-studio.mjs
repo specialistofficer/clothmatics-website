@@ -1,6 +1,6 @@
 import {analyzeGhostGarment,buildGhostAnalysisFromItem,hasReusableGhostMetadata,generateGhostGarment,getGhostSource,verifyGhostResult,ghostStorageBlob,downloadGhostGarment} from './ghost-mannequin.mjs';
 import {uploadGarmentImage,deleteGarmentUpload} from './garment-upload.mjs';
-import {hangerLoaderMarkup,updateHangerLoader} from './garment-progress.mjs';
+import {hangerLoaderMarkup,updateHangerLoader} from './garment-progress.mjs?v=20260912-outfit-loader-v3';
 
 export function createGhostStudio({getUser,getItem,save,onSaved,onQuota,onRequestAdmin,onDelete,escapeHtml,safeUrl,services={}}){
   const api={analyzeGhostGarment,generateGhostGarment,getGhostSource,verifyGhostResult,ghostStorageBlob,downloadGhostGarment,uploadGarmentImage,deleteGarmentUpload,...services};
@@ -44,7 +44,7 @@ export function createGhostStudio({getUser,getItem,save,onSaved,onQuota,onReques
       upload=await api.uploadGarmentImage(user,await api.ghostStorageBlob(result),{signal});
       const value={image:upload.imageUrl,imageObjectKey:upload.objectKey,sourceImage:item.image,category:analysis.category,prompt:analysis.prompt,contractVersion:2,quality,kind:'ai_generated'};
       await save(user,item,value,{allowOverwrite:replacement,expectedImage,metadata:analysis.metadata});
-      upload=null;if(analysis.metadata)Object.assign(item,analysis.metadata);item.ghostMannequin=value;replacement=false;expectedImage=value.image;
+      upload=null;if(analysis.metadata){Object.assign(item,analysis.metadata);if(item.visualProfile)item.visualProfile={...item.visualProfile,sourceImage:item.image};}item.ghostMannequin=value;replacement=false;expectedImage=value.image;
       // Commit the replacement before removing the former object. A failed save
       // must leave the previous 3D image readable, including on retry-save.
       if(oldKey&&oldKey!==value.imageObjectKey)await api.deleteGarmentUpload(user,oldKey).catch(()=>{});

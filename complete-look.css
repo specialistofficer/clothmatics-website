@@ -549,6 +549,256 @@
   width: 100%;
 }
 
+.complete-look-loading .outfit-build-loader {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 18px !important;
+  margin: 16px 0 !important;
+  padding: 24px 20px 20px !important;
+  border: 1px solid #e7e0fc !important;
+  border-radius: 24px !important;
+  background: radial-gradient(ellipse at top right, rgba(255, 234, 250, 0.5), transparent 70%), #faf9fe !important;
+  box-shadow: 0 10px 40px rgba(45, 27, 105, 0.04) !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.complete-look-loading .outfit-loader-head {
+  text-align: center;
+  margin-bottom: 2px;
+}
+.complete-look-loading .outfit-loader-kicker {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #6c3ff2;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 4px;
+}
+.complete-look-loading .outfit-loader-title {
+  font: 800 clamp(20px, 3.2vw, 26px)/1.2 "Manrope", sans-serif;
+  background: linear-gradient(135deg, #2d1b69 0%, #6c3ff2 50%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0 0 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.complete-look-loading .outfit-loader-sparkle {
+  color: #ec4899;
+  font-size: 18px;
+  display: inline-block;
+  animation: outfit-sparkle-pulse 2s ease-in-out infinite;
+}
+.complete-look-loading .outfit-loader-subtitle {
+  font: 700 10.5px/1.4 "DM Sans", sans-serif;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #746a91;
+  margin: 0;
+}
+.complete-look-loading .outfit-loader-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 920px;
+  box-sizing: border-box;
+}
+.complete-look-loading .outfit-loader-card {
+  flex: 1 1 0;
+  min-width: 130px;
+  max-width: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0.65;
+  transform: scale(0.97);
+}
+.complete-look-loading .outfit-loader-card.active {
+  opacity: 1;
+  transform: scale(1) translateY(-4px);
+}
+.complete-look-loading .outfit-loader-card.completed {
+  opacity: 0.9;
+  transform: scale(1);
+}
+.complete-look-loading .outfit-loader-card-box {
+  width: 100%;
+  aspect-ratio: 225 / 240;
+  background: #ffffff;
+  border: 1.5px solid #ebe5f8;
+  border-radius: 22px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(45, 27, 105, 0.05);
+  position: relative;
+  transition: all 0.3s ease;
+}
+.complete-look-loading .outfit-loader-card.active .outfit-loader-card-box {
+  border-color: #a855f7;
+  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.35), 0 14px 34px rgba(108, 99, 255, 0.18);
+  animation: outfit-box-glow 2.4s ease-in-out infinite;
+}
+.complete-look-loading .outfit-loader-card.completed .outfit-loader-card-box {
+  border-color: #c4b5fd;
+}
+.complete-look-loading .outfit-loader-card-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  transition: transform 0.3s ease;
+}
+.complete-look-loading .outfit-loader-card.active .outfit-loader-card-box img {
+  transform: scale(1.03);
+}
+.complete-look-loading .outfit-loader-chevron {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #b9a9ec;
+  margin-bottom: 38px;
+}
+.complete-look-loading .outfit-loader-chevron svg {
+  width: 18px;
+  height: 18px;
+}
+.complete-look-loading .outfit-loader-card-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  margin-top: 10px;
+  padding: 0 4px;
+  box-sizing: border-box;
+}
+.complete-look-loading .outfit-loader-card-num {
+  flex: 0 0 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #ede9fe;
+  color: #6c3ff2;
+  font: 800 11px/22px "Manrope", sans-serif;
+  text-align: center;
+  transition: all 0.25s ease;
+}
+.complete-look-loading .outfit-loader-card.active .outfit-loader-card-num {
+  background: linear-gradient(135deg, #6c3ff2, #ec4899);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(108, 99, 255, 0.4);
+}
+.complete-look-loading .outfit-loader-card.completed .outfit-loader-card-num {
+  background: #10b981;
+  color: #ffffff;
+}
+.complete-look-loading .outfit-loader-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.complete-look-loading .outfit-loader-card-heading {
+  font: 800 12.5px/1.25 "Manrope", sans-serif;
+  color: #1f1938;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.complete-look-loading .outfit-loader-card-desc {
+  font: 500 11px/1.3 "DM Sans", sans-serif;
+  color: #746a91;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.complete-look-loading .outfit-loader-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: min(760px, 96%);
+  background: #ffffff;
+  border: 1px solid #e9e3f7;
+  border-radius: 999px;
+  padding: 8px 18px;
+  box-shadow: 0 4px 16px rgba(45, 27, 105, 0.04);
+  margin-top: 4px;
+  box-sizing: border-box;
+}
+.complete-look-loading .outfit-loader-pill-tag {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: #6c3ff2;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.complete-look-loading .outfit-loader-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.complete-look-loading .outfit-loader-dots .dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #ded5f8;
+  transition: all 0.3s ease;
+}
+.complete-look-loading .outfit-loader-dots .dot.active {
+  width: 18px;
+  background: linear-gradient(135deg, #6c3ff2, #ec4899);
+  box-shadow: 0 2px 6px rgba(236, 72, 153, 0.35);
+}
+.complete-look-loading .outfit-loader-dots .dot.completed {
+  background: #a78bfa;
+}
+.complete-look-loading .outfit-loader-pill-msg {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: #6c5e8d;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 768px) {
+  .complete-look-loading .outfit-loader-steps {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .complete-look-loading .outfit-loader-chevron {
+    display: none;
+  }
+  .complete-look-loading .outfit-loader-card {
+    flex: 1 1 calc(50% - 12px);
+    max-width: none;
+    min-width: 120px;
+  }
+  .complete-look-loading .outfit-loader-pill {
+    flex-direction: column;
+    gap: 8px;
+    border-radius: 16px;
+    padding: 10px 14px;
+    text-align: center;
+  }
+}
+
 /* Gender Badge in Hero */
 .complete-look-gender-tag {
   background: #f0edff;

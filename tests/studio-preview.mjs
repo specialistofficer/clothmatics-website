@@ -2,7 +2,7 @@ import {createGhostStudio} from '../ghost-studio.mjs';
 import {hangerLoaderMarkup,updateHangerLoader,confirmDelete3D} from '../garment-progress.mjs';
 import {renderGarmentEvidence,readGarmentEvidence} from '../garment-review.mjs';
 import {compileUniversalManifest} from '../ghost-contract.mjs';
-import {attachPhotoEvidence} from '../garment-appearance.mjs';
+import {attachPhotoEvidence,normalizeVisualProfile} from '../garment-appearance.mjs';
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const canvas=document.createElement('canvas');canvas.width=500;canvas.height=580;const ctx=canvas.getContext('2d');ctx.fillStyle='#faf9fe';ctx.fillRect(0,0,500,580);ctx.fillStyle='#234f54';
 ctx.beginPath();ctx.moveTo(155,60);ctx.lineTo(345,60);ctx.lineTo(390,515);ctx.lineTo(290,515);ctx.lineTo(250,240);ctx.lineTo(210,515);ctx.lineTo(110,515);ctx.closePath();ctx.fill();ctx.strokeStyle='#11383e';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#173f44';ctx.fillRect(155,60,190,24);ctx.strokeStyle='#e7debf';ctx.beginPath();ctx.moveTo(250,80);ctx.lineTo(240,133);ctx.moveTo(250,80);ctx.lineTo(260,137);ctx.stroke();
@@ -21,7 +21,7 @@ const until=async fn=>{for(let i=0;i<100;i++){if(fn())return;await new Promise(r
 document.getElementById('run').onclick=async()=>{
   const messages=[];const check=(value,message)=>{if(!value)throw Error(message);messages.push('PASS '+message);};
   try{
-    const data={...evidence,visualProfile:{colors:[{role:'base',name:'teal',point:[200,400],confidence:'high'}]}};
+    const data={...evidence,visualProfile:normalizeVisualProfile({colors:[{role:'base',name:'teal',point:[200,400],confidence:'high'}]})};
     await attachPhotoEvidence(png,[data]);check(data.visualProfile.colors[0].hex==='#234F54','browser samples source RGB, not supplied text');
     check(data.visualProfile.sourceFingerprint.length===64,'source fingerprint is recorded');
     const review=document.querySelector('#review');review.querySelector('#upload-color-detail').value='Edited teal';readGarmentEvidence(review,data);check(data.colorDetail==='Edited teal','review edits persist to metadata');

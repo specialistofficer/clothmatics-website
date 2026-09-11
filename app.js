@@ -39,11 +39,11 @@ import { analyzeGarment, analyzeStyleCheck, checkGarmentImageBlur, cropGarmentIm
 
 import {activePremium,extractSingleProduction,recoverSingleProduction,extractRegionsProduction} from "./production-extraction.mjs";
 
-import {createGhostStudio} from "./ghost-ui.mjs";
+import {createGhostStudio} from "./ghost-ui.mjs?v=20260912-outfit-loader-v3";
 import {ghostImageForMode,ghostSavePatch,ghostDeletePatch,generateGhostFromPhoto} from "./ghost-mannequin.mjs";
-import {hangerLoaderMarkup,updateHangerLoader,confirmDelete3D} from './garment-progress.mjs';
+import {hangerLoaderMarkup,updateHangerLoader,confirmDelete3D} from './garment-progress.mjs?v=20260912-outfit-loader-v3';
 import {renderGarmentEvidence,readGarmentEvidence} from './garment-review.mjs';
-import {createCompleteLookController} from './complete-look.js';
+import {createCompleteLookController} from './complete-look.js?v=20260912-outfit-loader-v3';
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
