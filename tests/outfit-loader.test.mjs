@@ -144,3 +144,81 @@ test('updateHangerLoader progresses across steps 1 through 4 with DOM updates', 
   assert.equal(root._cards[3].classList.contains('active'), true);
   assert.equal(root.dataset.phase, 'save');
 });
+
+test('createCompleteLookController open() initializes and opens dialog without ReferenceError', async () => {
+  // Setup minimal DOM mocks for Node environment
+  globalThis.document = {
+    _elements: {
+      'complete-look-dialog': {
+        open: false,
+        showModal() { this.open = true; },
+        close() { this.open = false; },
+        addEventListener() {}
+      },
+      'complete-look-content': {
+        innerHTML: '',
+        querySelector() { return null; },
+        querySelectorAll() { return []; }
+      },
+      'close-complete-look': {
+        addEventListener() {}
+      },
+      'garment-dialog': {
+        open: false,
+        close() { this.open = false; }
+      }
+    },
+    getElementById(id) {
+      return this._elements[id] || null;
+    },
+    createElement(tag) {
+      return {
+        tagName: tag,
+        textContent: '',
+        get innerHTML() { return this.textContent; },
+        set innerHTML(val) { this.textContent = val; }
+      };
+    }
+  };
+
+  const { createCompleteLookController } = await import('../complete-look.js');
+
+  const dummyState = {
+    user: { uid: 'u1' },
+    wardrobe: [
+      {
+        id: 'garment-101',
+        title: 'Dark Wash Denim Jeans',
+        category: 'Pants',
+        subCategory: 'Jeans',
+        primaryColor: 'Blue',
+        image: 'https://clothmatics.pages.dev/assets/clothmatics-logo.png'
+      }
+    ],
+    profile: {
+      gender: 'men',
+      shoppingProfile: {
+        sizes: { bottom: '32' }
+      }
+    }
+  };
+
+  const controller = createCompleteLookController({
+    getState: () => dummyState,
+    onToast: () => {}
+  });
+
+  // Calling open must not throw ReferenceError for searchStep or budgetOption
+  assert.doesNotThrow(() => {
+    controller.open('garment-101');
+  });
+
+  const dialog = document.getElementById('complete-look-dialog');
+  assert.equal(dialog.open, true, 'Dialog should be opened via showModal');
+
+  const content = document.getElementById('complete-look-content');
+  assert(content.innerHTML.length > 50, 'Content must be rendered');
+  assert(content.innerHTML.includes('Dark Wash Denim Jeans'), 'Must include active garment title');
+  assert(content.innerHTML.includes('Generate Complete Outfit'), 'Must include generate outfit button');
+});
+

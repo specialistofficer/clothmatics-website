@@ -15,11 +15,11 @@ import {
   getCategoryFallbackImage,
   getUserProfileSizes,
   getUserProfilePreferences
-} from "./complete-look-helpers.js?v=20260912-outfit-loader-v3";
+} from "./complete-look-helpers.js?v=20260912-outfit-loader-v4";
 import {
   outfitBuildLoaderMarkup,
   updateHangerLoader
-} from "./garment-progress.mjs?v=20260912-outfit-loader-v3";
+} from "./garment-progress.mjs?v=20260912-outfit-loader-v4";
 
 function safeUrl(value = "") {
   try {
@@ -52,6 +52,7 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
   let sampleNotice = "";
   let hasSearched = false;
   let searchError = "";
+  let searchStep = 1;
 
   const dialog = document.getElementById("complete-look-dialog");
   const container = document.getElementById("complete-look-content");
@@ -114,7 +115,7 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
     return state.wardrobe || [];
   }
 
-  function open(itemId) {
+  function open(itemId, budgetOption = null) {
     const wardrobe = getWardrobe();
     activeItem = wardrobe.find((item) => item.id === itemId);
 
