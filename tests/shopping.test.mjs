@@ -211,6 +211,104 @@ test("handleCompleteLook returns valid outfit plan and filtered products", async
   assert(result.intent.searchTerm.includes("men"));
   assert.equal(typeof result.total, "number");
   assert.equal(Array.isArray(result.products), true);
+
+  // Verify multi-piece outfit coordination
+  assert(result.outfit != null, "outfit object must be returned");
+  assert(Array.isArray(result.outfit.categories), "outfit.categories must be an array");
+  assert(result.outfit.categories.length >= 3, "outfit must contain at least 3 complementary categories");
+
+  // Verify strict limit of max 3 products per category
+  for (const cat of result.outfit.categories) {
+    assert(cat.products.length <= 3, `Category ${cat.id} has ${cat.products.length} products, must be <= 3`);
+    for (const prod of cat.products) {
+      assert.equal(prod.category, cat.id, `Product ${prod.id} in ${cat.id} must match category`);
+      assert(prod.stylingReason.length > 5, "Product must carry piece-specific styling rationale");
+    }
+  }
+});
+
+test("different pants receive distinct, style-matched recommendations (no repeated static shirt)", () => {
+  const profile = { gender: "men" };
+
+  const cargoPant = {
+    title: "Black Relaxed Fit Utility Cargo Pants",
+    category: "Bottoms",
+    subCategory: "Cargos",
+    primaryColor: "Black"
+  };
+  const chinoPant = {
+    title: "Light Blue Cotton Stretch Chinos",
+    category: "Bottoms",
+    subCategory: "Chinos",
+    primaryColor: "Light Blue"
+  };
+  const formalTrouser = {
+    title: "Grey Slim Fit Formal Trousers",
+    category: "Bottoms",
+    subCategory: "Trousers",
+    primaryColor: "Grey"
+  };
+  const denimJean = {
+    title: "Dark Indigo Straight Fit Denim Jeans",
+    category: "Bottoms",
+    subCategory: "Jeans",
+    primaryColor: "Blue"
+  };
+
+  const planCargo = getFallbackStylingPlan({ item: cargoPant, profile, targetCategory: "tops" });
+  const planChino = getFallbackStylingPlan({ item: chinoPant, profile, targetCategory: "tops" });
+  const planTrouser = getFallbackStylingPlan({ item: formalTrouser, profile, targetCategory: "tops" });
+  const planJean = getFallbackStylingPlan({ item: denimJean, profile, targetCategory: "tops" });
+
+  // 1. Cargo pants must receive streetwear tops
+  assert(planCargo.searchTerm.includes("graphic") || planCargo.searchTerm.includes("oversized"));
+  assert(planCargo.outfitTitle.toLowerCase().includes("streetwear"));
+
+  // 2. Chinos must receive smart-casual polo or linen tops
+  assert(planChino.searchTerm.includes("polo"));
+  assert(planChino.outfitTitle.toLowerCase().includes("smart-casual"));
+
+  // 3. Formal trousers must receive pure cotton oxford shirt
+  assert(planTrouser.searchTerm.includes("oxford"));
+  assert(planTrouser.outfitTitle.toLowerCase().includes("tailored") || planTrouser.outfitTitle.toLowerCase().includes("professional"));
+
+  // 4. Jeans must receive rugged flannel or casual tops
+  assert(planJean.searchTerm.includes("flannel") || planJean.searchTerm.includes("checked"));
+  assert(planJean.outfitTitle.toLowerCase().includes("rugged"));
+
+  // 5. Crucially: ALL search terms must be different!
+  assert.notEqual(planCargo.searchTerm, planChino.searchTerm);
+  assert.notEqual(planCargo.searchTerm, planTrouser.searchTerm);
+  assert.notEqual(planChino.searchTerm, planTrouser.searchTerm);
+  assert.notEqual(planChino.searchTerm, planJean.searchTerm);
+});
+
+test("each outfit category product carries its own piece-specific styling rationale", async () => {
+  const result = await handleCompleteLook({
+    item: {
+      title: "Black Relaxed Fit Utility Cargo Pants",
+      category: "Bottoms",
+      subCategory: "Cargos",
+      primaryColor: "Black"
+    },
+    profile: { gender: "men" },
+    env: {}
+  });
+
+  assert.equal(result.ok, true);
+  const categories = result.outfit.categories;
+
+  const topCategory = categories.find(c => c.id === "tops");
+  const shoeCategory = categories.find(c => c.id === "shoes");
+  const accCategory = categories.find(c => c.id === "accessories");
+
+  assert(topCategory && topCategory.products.length > 0);
+  assert(shoeCategory && shoeCategory.products.length > 0);
+  assert(accCategory && accCategory.products.length > 0);
+
+  // Verify the shoe product does NOT receive the top's styling description
+  assert.notEqual(topCategory.products[0].stylingReason, shoeCategory.products[0].stylingReason);
+  assert.notEqual(shoeCategory.products[0].stylingReason, accCategory.products[0].stylingReason);
 });
 
 test("resolveBuyLink always returns non-empty, valid store destinations (no 404s)", () => {
@@ -230,4 +328,5 @@ test("resolveBuyLink always returns non-empty, valid store destinations (no 404s
   };
   assert(resolveBuyLink(catalogProduct).includes("prds=catalogid:123456"));
 });
+
 

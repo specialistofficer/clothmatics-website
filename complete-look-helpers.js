@@ -99,12 +99,53 @@ export function getComplementaryColor(color = "") {
   return "white";
 }
 
+export function detectGarmentStyle(item = {}) {
+  const text = `${item.title || ""} ${item.category || ""} ${item.subCategory || ""} ${item.fit || ""} ${item.material || ""}`.toLowerCase();
+  if (/cargo|jogger|baggy|oversize|parachute|street|skate|utility|combat|hoodie|graphic/i.test(text)) {
+    return "streetwear";
+  }
+  if (/chino|linen|polo|knit|khaki|smart casual/i.test(text)) {
+    return "smart_casual";
+  }
+  if (/formal|oxford|dress|suit|blazer|tuxedo|office|tailored|pleated/i.test(text)) {
+    return "formal";
+  }
+  if (/jean|denim|rugged|flannel|workwear/i.test(text)) {
+    return "rugged";
+  }
+  if (/dress|gown|saree|lehenga|cocktail|evening|party/i.test(text)) {
+    return "occasion";
+  }
+  if (/kurta|kurti|ethnic|nehru|sherwani|anarkali/i.test(text)) {
+    return "ethnic";
+  }
+  return "smart_casual";
+}
+
 export function buildSmartShoppingQuery(item = {}, tabId = "", profile = {}) {
   const gender = getProfileGender(profile, item);
   const categories = getAnchorCategories(item);
   const matchedTab = categories.find((c) => c.id === tabId) || categories[0];
-
+  const style = detectGarmentStyle(item);
   const compColor = getComplementaryColor(item.primaryColor);
+
+  // Style-specific search queries tailored to anchor garment
+  if (style === "streetwear" && matchedTab.id === "tops") {
+    return `${gender} oversized graphic t-shirt`;
+  }
+  if (style === "streetwear" && matchedTab.id === "shoes") {
+    return `${gender} chunky skate sneakers`;
+  }
+  if (style === "smart_casual" && matchedTab.id === "tops") {
+    return `${gender} ${compColor} knitted polo shirt`;
+  }
+  if (style === "formal" && matchedTab.id === "tops") {
+    return `${gender} ${compColor} pure cotton oxford shirt`;
+  }
+  if (style === "rugged" && matchedTab.id === "tops") {
+    return `${gender} heavyweight crewneck t-shirt`;
+  }
+
   const parts = [gender, compColor, matchedTab.searchTerms];
   return parts.filter(Boolean).join(" ").trim();
 }

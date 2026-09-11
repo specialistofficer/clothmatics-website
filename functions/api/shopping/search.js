@@ -191,7 +191,10 @@ export function normalizeProduct(raw = {}, index = 0) {
     rating,
     reviews,
     delivery,
-    tag
+    tag,
+    category: clean(raw.category || "", 50),
+    gender: clean(raw.gender || "", 30),
+    style: clean(raw.style || "", 50)
   };
 }
 

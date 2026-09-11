@@ -1,6 +1,7 @@
 /**
  * ClothMatics — Shop to Complete the Look Frontend Controller
  * Connects wardrobe garments to Gemini AI Stylist & Shopping Engine
+ * Delivers a complete coordinated multi-piece outfit (Tops, Shoes, Layers, Accessories)
  */
 
 import {
@@ -30,7 +31,7 @@ function escapeHtml(value = "") {
 
 export function createCompleteLookController({ getState, onToast = () => {} }) {
   let activeItem = null;
-  let activeTab = "tops";
+  let activeTab = "all"; // "all" for complete outfit, or category id ("tops", "shoes", "layering", "accessories")
   let activeBudget = "1000_2000";
   let customMin = "";
   let customMax = "";
@@ -38,6 +39,7 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
   let currentQuery = "";
   let isSearching = false;
   let searchResults = [];
+  let outfitData = null;
   let stylingIntent = null;
   let isSampleResult = false;
   let sampleNotice = "";
@@ -88,8 +90,7 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
       garmentDialog.close();
     }
 
-    const categories = getAnchorCategories(activeItem);
-    activeTab = categories[0]?.id || "tops";
+    activeTab = "all";
     activeBudget = "1000_2000";
     customMin = "";
     customMax = "";
@@ -98,13 +99,15 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
     isSearching = false;
     searchError = "";
     searchResults = [];
+    outfitData = null;
     stylingIntent = null;
 
     // Check if user has saved budget in profile
     const profile = getProfile();
     const savedBudgets = profile.shoppingProfile?.categoryBudgets;
     if (savedBudgets) {
-      const catKey = activeTab;
+      const categories = getAnchorCategories(activeItem);
+      const catKey = categories[0]?.id || "tops";
       if (savedBudgets[catKey]?.min != null || savedBudgets[catKey]?.max != null) {
         const min = savedBudgets[catKey].min;
         const max = savedBudgets[catKey].max;
@@ -119,14 +122,13 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
       }
     }
 
-    currentQuery = buildSmartShoppingQuery(activeItem, activeTab, profile);
+    currentQuery = "";
 
     render();
 
     if (dialog && !dialog.open) {
       dialog.showModal();
     }
-    // Note: We DO NOT auto-search on open so user can review/set their choices first!
   }
 
   async function executeSearch() {
@@ -146,8 +148,8 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
     }
 
     const profile = getProfile();
-    const defaultQuery = buildSmartShoppingQuery(activeItem, activeTab, profile);
-    const customQuery = currentQuery && currentQuery.trim() !== defaultQuery ? currentQuery.trim() : "";
+    const targetCategoryParam = activeTab === "all" ? "" : activeTab;
+    const customQuery = currentQuery && currentQuery.trim() ? currentQuery.trim() : "";
 
     try {
       const response = await fetch("/api/shopping/complete-look", {
@@ -158,7 +160,7 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
           profile,
           budget: { min, max },
           allowAboveBudget,
-          targetCategory: activeTab,
+          targetCategory: targetCategoryParam,
           customQuery,
           gl: "in",
           hl: "en"
@@ -168,6 +170,7 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
       const data = await response.json();
 
       if (data.ok) {
+        outfitData = data.outfit || null;
         searchResults = data.products || [];
         stylingIntent = data.intent || null;
         isSampleResult = Boolean(data.isSample);
@@ -177,12 +180,14 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
       } else {
         searchError = data.error || "Unable to find matching products. Please try again.";
         searchResults = [];
+        outfitData = null;
         stylingIntent = null;
         hasSearched = true;
       }
     } catch (err) {
       searchError = "Failed to connect to styling search. Check your internet connection.";
       searchResults = [];
+      outfitData = null;
       stylingIntent = null;
       hasSearched = true;
     } finally {
@@ -229,20 +234,29 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
     `;
 
     // 2. Category selection tabs
+    const totalOutfitCount = searchResults.length;
     const categoryTabsHtml = `
       <div class="complete-look-section-head">
         <div>
-          <span class="complete-look-step">1 · SELECT PIECE TO SHOP</span>
-          <h3 class="complete-look-section-title">Complete your look with</h3>
+          <span class="complete-look-step">1 · OUTFIT COORDINATES</span>
+          <h3 class="complete-look-section-title">Select coordinated pieces</h3>
         </div>
       </div>
       <div class="complete-look-category-tabs" role="tablist">
-        ${categories.map((cat) => `
-          <button type="button" class="complete-look-tab ${cat.id === activeTab ? "active" : ""}" data-tab="${escapeHtml(cat.id)}" role="tab" aria-selected="${cat.id === activeTab}">
-            <span>${cat.icon || "✨"}</span>
-            <span>${escapeHtml(cat.label)}</span>
-          </button>
-        `).join("")}
+        <button type="button" class="complete-look-tab ${activeTab === "all" ? "active" : ""}" data-tab="all" role="tab" aria-selected="${activeTab === "all"}">
+          <span>🌟</span>
+          <span>Complete Outfit ${hasSearched && totalOutfitCount ? `(${totalOutfitCount})` : ""}</span>
+        </button>
+        ${categories.map((cat) => {
+          const catCount = outfitData?.categories?.find((c) => c.id === cat.id)?.products?.length ?? "";
+          const countBadge = hasSearched && catCount ? `(${catCount})` : "";
+          return `
+            <button type="button" class="complete-look-tab ${cat.id === activeTab ? "active" : ""}" data-tab="${escapeHtml(cat.id)}" role="tab" aria-selected="${cat.id === activeTab}">
+              <span>${cat.icon || "✨"}</span>
+              <span>${escapeHtml(cat.label)} ${countBadge}</span>
+            </button>
+          `;
+        }).join("")}
       </div>
     `;
 
@@ -271,10 +285,10 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
         <div class="complete-look-search-row">
           <div class="complete-look-search-input-wrap">
             <span class="complete-look-search-icon">⌕</span>
-            <input class="complete-look-search-input" id="complete-look-search-input" value="${escapeHtml(currentQuery)}" placeholder="Search outfit matches (e.g. white linen shirt)...">
+            <input class="complete-look-search-input" id="complete-look-search-input" value="${escapeHtml(currentQuery)}" placeholder="Search specific style or item (e.g. navy knitted polo)...">
           </div>
           <button class="button button-primary complete-look-search-submit" id="complete-look-search-btn" type="button">
-            ${isSearching ? "Searching…" : "Search"}
+            ${isSearching ? "Styling…" : "Search"}
           </button>
         </div>
 
@@ -295,16 +309,15 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
       </div>
     `;
 
-
-    // 5. Results or states
+    // 4. Results or states
     let resultsBodyHtml = "";
 
     if (isSearching) {
       resultsBodyHtml = `
         <div class="complete-look-loading">
           <div class="spinner"></div>
-          <p>Styling trending outfit matches with AI…</p>
-          <span class="complete-look-loading-sub">Curating complementary silhouettes and colors for your look</span>
+          <p>Styling complete coordinated outfit with AI…</p>
+          <span class="complete-look-loading-sub">Curating complementary silhouettes, footwear, layers, and accessories</span>
         </div>
       `;
     } else if (searchError) {
@@ -320,14 +333,13 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
       `;
     } else if (!hasSearched) {
       // User has opened modal, set choices, but not clicked search yet
-      const activeCatObj = categories.find((c) => c.id === activeTab) || categories[0];
       resultsBodyHtml = `
         <div class="complete-look-ready">
           <div class="complete-look-ready-icon">✨</div>
-          <h3>Ready to Complete Your Outfit</h3>
-          <p>We'll match trending <b>${escapeHtml(activeCatObj?.label || "pieces")}</b> that pair naturally with your ${escapeHtml(activeItem.title || "garment")}.</p>
+          <h3>Ready to Style Your Complete Outfit</h3>
+          <p>Our AI Stylist will generate a complete, coordinated 4-piece look (Tops, Footwear, Layering, and Accessories) tailored to your ${escapeHtml(activeItem.title || "garment")}.</p>
           <button type="button" class="button button-primary complete-look-start-btn" id="complete-look-start-search-btn">
-            ✨ Find Complete Outfit Matches
+            ✨ Generate Complete Outfit
           </button>
         </div>
       `;
@@ -343,26 +355,74 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
         </div>
       `;
     } else {
-      const stylistBanner = stylingIntent?.stylingReason ? `
+      // Display AI Stylist Vision Banner
+      const outfitTitle = outfitData?.title || stylingIntent?.outfitTitle || "Curated Coordinated Outfit";
+      const stylistAdvice = outfitData?.stylingAdvice || stylingIntent?.overallStylingAdvice || stylingIntent?.stylingReason || "";
+
+      const stylistBanner = `
         <div class="complete-look-stylist-banner">
-          <span class="complete-look-stylist-badge">✨ AI Stylist Recommendation</span>
-          <p class="complete-look-stylist-reason">${escapeHtml(stylingIntent.stylingReason)}</p>
+          <div class="complete-look-stylist-head">
+            <span class="complete-look-stylist-badge">✨ AI Stylist Vision</span>
+          </div>
+          <h3 class="complete-look-outfit-title">${escapeHtml(outfitTitle)}</h3>
+          <p class="complete-look-stylist-reason">${escapeHtml(stylistAdvice)}</p>
         </div>
-      ` : "";
+      `;
+
+      let sectionsHtml = "";
+
+      if (outfitData && Array.isArray(outfitData.categories) && outfitData.categories.length > 0) {
+        // Filter categories depending on activeTab
+        const displayedCats = activeTab === "all"
+          ? outfitData.categories.filter((c) => c.products && c.products.length > 0)
+          : outfitData.categories.filter((c) => c.id === activeTab && c.products && c.products.length > 0);
+
+        if (displayedCats.length > 0) {
+          sectionsHtml = displayedCats.map((cat) => `
+            <section class="complete-look-category-section" data-cat-id="${escapeHtml(cat.id)}">
+              <div class="complete-look-category-header">
+                <div class="complete-look-category-title-group">
+                  <span class="complete-look-category-icon">${cat.icon || "✨"}</span>
+                  <div>
+                    <h4 class="complete-look-category-title">${escapeHtml(cat.label)}</h4>
+                    <p class="complete-look-category-reason">${escapeHtml(cat.stylingReason || "")}</p>
+                  </div>
+                </div>
+                <span class="complete-look-category-pill">${cat.products.length} Best Picks</span>
+              </div>
+              <div class="complete-look-grid">
+                ${cat.products.map((product, idx) => renderProductCard(product, idx, activeItem, cat)).join("")}
+              </div>
+            </section>
+          `).join("");
+        } else {
+          // If active tab has 0 products
+          sectionsHtml = `
+            <div class="complete-look-empty">
+              <div class="complete-look-empty-icon">🔍</div>
+              <h3>No items in this category</h3>
+              <p>Try switching back to "Complete Outfit" to see all curated pieces.</p>
+            </div>
+          `;
+        }
+      } else {
+        // Fallback flat grid if outfitData categories were absent
+        sectionsHtml = `
+          <div class="complete-look-grid">
+            ${searchResults.map((product, idx) => renderProductCard(product, idx, activeItem, null)).join("")}
+          </div>
+        `;
+      }
 
       resultsBodyHtml = `
         ${stylistBanner}
-        <div class="complete-look-results-meta">
-          <h3 class="complete-look-results-title">Curated Matches</h3>
-          <span class="complete-look-results-count">${searchResults.length} pieces found</span>
-        </div>
-        <div class="complete-look-grid">
-          ${searchResults.map((product, idx) => renderProductCard(product, idx, activeItem, stylingIntent)).join("")}
+        <div class="complete-look-sections-wrap">
+          ${sectionsHtml}
         </div>
       `;
     }
 
-    // 6. Disclosure
+    // 5. Disclosure
     const disclosureHtml = `
       <div class="complete-look-disclosure">
         ClothMatics AI Styling Assistant: Products are curated to complement your wardrobe piece. Some links may be retailer links.
@@ -380,7 +440,7 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
     attachEvents();
   }
 
-  function renderProductCard(product, index, anchorItem, intent) {
+  function renderProductCard(product, index, anchorItem, categoryObj) {
     const { isBestMatch, matchPercent } = calculateMatchDetails(product, index);
 
     const ratingHtml = product.rating ? `
@@ -403,13 +463,13 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
     ` : "";
 
     const anchorName = [anchorItem.primaryColor, anchorItem.subCategory || anchorItem.category || "piece"].filter(Boolean).join(" ");
-    const stylingReason = intent?.stylingReason || `Curated to pair with your ${anchorName} for a balanced, modern look.`;
+    const stylingReason = product.stylingReason || categoryObj?.stylingReason || `Curated to pair with your ${anchorName} for a balanced, modern look.`;
 
     const buyLink = safeUrl(resolveBuyLink(product)) || "#";
     const retailerName = product.source || "Retailer";
 
     return `
-      <article class="complete-look-card" data-product-id="${escapeHtml(product.id)}">
+      <article class="complete-look-card" data-product-id="${escapeHtml(product.id || product.product_id || "")}">
         <div class="complete-look-card-img-wrap">
           <span class="complete-look-badge-retailer">${escapeHtml(retailerName)}</span>
           <span class="complete-look-badge-match ${isBestMatch ? "complete-look-badge-best" : ""}">
@@ -440,12 +500,18 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
         const tabId = tabBtn.dataset.tab;
         if (!tabId || tabId === activeTab) return;
         activeTab = tabId;
-        const profile = getProfile();
-        currentQuery = buildSmartShoppingQuery(activeItem, activeTab, profile);
-        if (hasSearched) {
-          executeSearch();
-        } else {
+
+        if (hasSearched && outfitData) {
+          // If we already have the full outfit loaded, filter client-side smoothly!
           render();
+        } else {
+          const profile = getProfile();
+          currentQuery = tabId === "all" ? "" : buildSmartShoppingQuery(activeItem, tabId, profile);
+          if (hasSearched) {
+            executeSearch();
+          } else {
+            render();
+          }
         }
       });
     });
