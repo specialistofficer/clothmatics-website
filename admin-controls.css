@@ -140,3 +140,49 @@ html,body{max-width:100%;overflow-x:hidden}
   .header-actions{align-items:stretch;flex-direction:column}
   .header-actions button{width:100%}
 }
+
+/* Shopping API Monitoring Card */
+.shopping-monitor-card{margin-bottom:20px;border-color:#d9d3ff}
+.shopping-status-badges{display:flex;align-items:center;gap:8px}
+.shopping-badge{padding:6px 12px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap}
+.shopping-badge.active{color:#15803d;background:#f0fdf4;border:1px solid #bbf7d0}
+.shopping-badge.fallback{color:#6c3ff2;background:#f5f3ff;border:1px solid #ddd6fe}
+.shopping-badge.disabled{color:#b91c1c;background:#fef2f2;border:1px solid #fecaca}
+
+.shopping-provider-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:16px}
+.shopping-provider-card{padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:#faf9ff;display:flex;flex-direction:column;gap:10px}
+.provider-card-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.provider-pill{font:800 13px Manrope,sans-serif;color:var(--ink)}
+.provider-card-head strong{font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px}
+.badge-active{color:#15803d;background:#dcfce7}
+.badge-fallback{color:#6c3ff2;background:#ede9fe}
+.badge-inactive{color:#64748b;background:#f1f5f9}
+.badge-pending{color:#d97706;background:#fef3c7}
+.provider-stats{display:flex;flex-direction:column;gap:4px;font-size:11px}
+.provider-stats p{display:flex;justify-content:space-between;margin:0;color:var(--muted)}
+.provider-stats b{color:var(--ink);font-weight:700}
+
+.shopping-diagnostics-bar{margin-top:18px;padding:16px;border-radius:14px;background:#fff;border:1px solid #e0dbf8}
+.diagnostics-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.diagnostics-header h4{margin:0 0 4px;font:800 15px Manrope,sans-serif;color:var(--ink)}
+.diagnostics-header p{margin:0;color:var(--muted);font-size:11px}
+.diagnostics-form{display:flex;gap:8px;flex-wrap:wrap}
+.diagnostics-form input{flex:1 1 240px;padding:10px 14px;border:1px solid var(--line);border-radius:10px;font-size:12px;background:#fafafa}
+.diagnostics-form select{padding:10px 14px;border:1px solid var(--line);border-radius:10px;font-size:12px;background:#fff;font-weight:600}
+.diagnostics-form button{padding:10px 18px;font-size:12px}
+.shopping-test-result{margin-top:14px;padding:14px;border-radius:12px;background:#f8f7ff;border:1px solid #e9e5ff}
+.diag-meta-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.diag-meta-grid article{padding:10px 12px;border-radius:10px;background:#fff;border:1px solid #eeeaff}
+.diag-meta-grid span{display:block;font-size:9px;font-weight:800;letter-spacing:0.6px;color:var(--purple);margin-bottom:4px}
+.diag-meta-grid b{font-size:15px;font-weight:800;color:var(--ink)}
+.diag-res-notice{margin:10px 0 0;font-size:11px;color:var(--muted);font-style:italic}
+.diag-preview-card{margin-top:12px;padding:10px;border-radius:10px;background:#fff;border:1px solid #ece7ff;display:flex;align-items:center;gap:12px}
+.diag-preview-card img{width:50px;height:50px;object-fit:cover;border-radius:8px}
+.diag-preview-card div{flex:1}
+.diag-preview-card b{font-size:12px;display:block;line-height:1.3}
+.diag-preview-card small{color:var(--muted);font-size:11px}
+
+@media(max-width:760px){
+  .shopping-provider-grid{grid-template-columns:1fr}
+  .diag-meta-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}

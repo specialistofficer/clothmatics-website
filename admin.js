@@ -41,6 +41,8 @@ function installAdminEnhancements(){
   $("#delete-all-errors")?.addEventListener("click",deleteAllClientErrors);
   ["push-title","push-body","push-image"].forEach(id=>$("#"+id)?.addEventListener("input",renderPushPreview));
   $$("input[name='campaign-kind']").forEach((input)=>input.addEventListener("change",()=>$("#outfit-campaign-fields").classList.toggle("hidden",input.value!=="outfit"||!input.checked)));
+  $("#shopping-refresh-status-btn")?.addEventListener("click", loadShoppingStatus);
+  $("#shopping-test-run-btn")?.addEventListener("click", testShoppingApiPing);
 }
 
 function renderShareMetrics(links,attribution){const cards=links.length,clicks=links.reduce((sum,x)=>sum+Number(x.clickCount||x.clicks||0),0),installs=attribution.filter(x=>x.activated===true||x.event==="activated_install").length,rate=cards?Math.round(clicks/cards*100):0;$("#share-metrics").innerHTML=`<p><b>${cards}</b><span>cards shared</span></p><p><b>${clicks}</b><span>clicks</span></p><p><b>${rate}%</b><span>click rate</span></p><p><b>${installs}</b><span>activated installs</span></p>`}
@@ -172,6 +174,7 @@ function buildDashboard() {
   renderShareMetrics(d.shareLinks||[],d.shareAttribution||[]);
   renderAutomations(d.notificationAutomations||[]);
   renderClientErrors();
+  loadShoppingStatus();
 }
 
 function renderDeletionRequests(requests = [], users = []) {
@@ -487,6 +490,136 @@ function renderServices(logs, responses = []) {
     const latest = entries.length ? Math.max(...entries.map(activityTime)) : 0;
     return `<article class="model-performance"><header><div><b>${escapeHtml(name)}</b><span>${escapeHtml(features)}</span></div><strong>${entries.length} calls</strong></header><div><p><b>${escapeHtml(rate)}</b><span>success</span></p><p><b>${failures}</b><span>failures</span></p><p><b>${escapeHtml(average)}</b><span>average response</span></p><p><b>${escapeHtml(latest ? formatRelative(latest) : "Never")}</b><span>last used</span></p></div></article>`;
   }).join("") || '<p class="muted">No model-specific logs yet. New logs will appear here when they include a model or service name.</p>';
+}
+
+async function loadShoppingStatus() {
+  const badge = $("#shopping-active-badge");
+  if (badge) badge.textContent = "Checking providers…";
+  try {
+    const res = await fetch("/api/shopping/status");
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || "Status check failed");
+
+    const serper = data.providers?.serper || {};
+    const serpapi = data.providers?.serpapi || {};
+
+    // Serper Status Card
+    if ($("#serper-card-badge")) {
+      $("#serper-card-badge").textContent = serper.configured ? "Configured" : "Not Set";
+      $("#serper-card-badge").className = serper.configured ? "badge-active" : "badge-inactive";
+      $("#serper-live-status").textContent = serper.configured ? "Ready" : "Inactive";
+      $("#serper-stack-role").textContent = serper.role || "Fallback";
+      $("#serper-env-status").textContent = serper.configured ? "SERPER_API_KEY Active" : "Key Missing";
+    }
+
+    // SerpApi Status Card
+    if ($("#serpapi-card-badge")) {
+      $("#serpapi-card-badge").textContent = serpapi.configured ? "Configured" : "Not Set";
+      $("#serpapi-card-badge").className = serpapi.configured ? "badge-active" : "badge-inactive";
+      $("#serpapi-live-status").textContent = serpapi.configured ? "Ready" : "Inactive";
+      $("#serpapi-stack-role").textContent = serpapi.role || "Primary";
+      $("#serpapi-env-status").textContent = serpapi.configured ? "SERPAPI_API_KEY Active" : "Key Missing";
+    }
+
+    // Strategy
+    if ($("#routing-strategy-text")) {
+      $("#routing-strategy-text").textContent = data.activeStrategy || "Automatic Fallback";
+      $("#routing-pref-text").textContent = (data.preferredProvider || "auto").toUpperCase();
+    }
+
+    // Top Badge
+    if (badge) {
+      if (serper.configured && serpapi.configured) {
+        badge.textContent = "Dual Active: SerpApi + Serper.dev Fallback";
+        badge.className = "shopping-badge active";
+      } else if (serper.configured) {
+        badge.textContent = "Live: Serper.dev (server.dev) Active";
+        badge.className = "shopping-badge active";
+      } else if (serpapi.configured) {
+        badge.textContent = "Live: SerpApi Active";
+        badge.className = "shopping-badge active";
+      } else {
+        badge.textContent = "Sample Mode (No API keys configured)";
+        badge.className = "shopping-badge disabled";
+      }
+    }
+  } catch (err) {
+    if (badge) {
+      badge.textContent = "Status Check Unavailable";
+      badge.className = "shopping-badge disabled";
+    }
+  }
+}
+
+async function testShoppingApiPing() {
+  const queryInput = $("#shopping-test-query");
+  const providerSelect = $("#shopping-test-provider");
+  const btn = $("#shopping-test-run-btn");
+  const output = $("#shopping-test-result");
+
+  const q = queryInput?.value.trim() || "white sneakers";
+  const provider = providerSelect?.value || "auto";
+
+  if (!q) return alert("Enter a search query to test.");
+
+  btn.disabled = true;
+  btn.textContent = "Pinging…";
+  output?.classList.remove("hidden");
+
+  $("#diag-res-provider").textContent = "Requesting…";
+  $("#diag-res-latency").textContent = "—";
+  $("#diag-res-count").textContent = "—";
+  $("#diag-res-source").textContent = "—";
+  $("#diag-res-notice").textContent = "";
+  $("#diag-preview-card")?.classList.add("hidden");
+
+  const startTime = performance.now();
+  try {
+    const url = `/api/shopping/search?q=${encodeURIComponent(q)}${provider !== "auto" ? `&provider=${encodeURIComponent(provider)}` : ""}`;
+    const res = await fetch(url);
+    const latency = Math.round(performance.now() - startTime);
+    const data = await res.json();
+
+    $("#diag-res-latency").textContent = `${latency} ms`;
+
+    if (!res.ok || !data.ok) {
+      $("#diag-res-provider").textContent = "Error";
+      $("#diag-res-notice").textContent = data.error || `HTTP ${res.status} error occurred`;
+      return;
+    }
+
+    const provName = data.provider === "serper"
+      ? "⚡ Serper.dev (server.dev)"
+      : data.provider === "serpapi"
+        ? "🔍 SerpApi"
+        : "📦 Sample Preview";
+
+    $("#diag-res-provider").textContent = provName;
+    $("#diag-res-count").textContent = `${data.total || 0} products`;
+    $("#diag-res-source").textContent = data.isSample ? "Curated Sample" : "Live Search API";
+    $("#diag-res-notice").textContent = data.notice || (data.isSample ? "Returned sample preview data." : "Live shopping search successful.");
+
+    const first = (data.products && data.products[0]) ? data.products[0] : null;
+    if (first && $("#diag-preview-card")) {
+      const previewCard = $("#diag-preview-card");
+      previewCard.classList.remove("hidden");
+      previewCard.innerHTML = `
+        ${first.thumbnail ? `<img src="${escapeHtml(first.thumbnail)}" alt="Product thumbnail" />` : ""}
+        <div>
+          <b>${escapeHtml(first.title)}</b>
+          <small>${escapeHtml(first.source || "Merchant")} · ${escapeHtml(first.price)}</small>
+        </div>
+      `;
+    }
+  } catch (err) {
+    const latency = Math.round(performance.now() - startTime);
+    $("#diag-res-latency").textContent = `${latency} ms`;
+    $("#diag-res-provider").textContent = "Failed";
+    $("#diag-res-notice").textContent = `Request failed: ${err.message}`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Ping Shopping API";
+  }
 }
 
 function openUserDetail(userId) {

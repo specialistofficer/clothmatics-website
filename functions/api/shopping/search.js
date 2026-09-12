@@ -269,7 +269,13 @@ export async function fetchSerperShopping({ query, gl = "in", hl = "en", apiKey 
  * 2. If SerpApi fails or quota runs out, automatically falls back to Serper.dev.
  * 3. If only Serper key is present, queries Serper.dev directly.
  */
-export async function fetchShoppingWithFallback({ query, gl = "in", hl = "en", env = {} }) {
+export async function fetchShoppingWithFallback({
+  query,
+  gl = "in",
+  hl = "en",
+  env = {},
+  providerPreference = ""
+}) {
   const serpApiKey = String(env.SERPAPI_API_KEY || env.SERPAPI_KEY || "").trim();
   const serperApiKey = String(
     env.SERPER_API_KEY ||
@@ -279,7 +285,11 @@ export async function fetchShoppingWithFallback({ query, gl = "in", hl = "en", e
     env.SERPER_DEV_API_KEY ||
     ""
   ).trim();
-  const preferredProvider = String(env.SHOPPING_PROVIDER || "").toLowerCase().trim();
+  const preferredProvider = String(
+    providerPreference ||
+    env.SHOPPING_PROVIDER ||
+    ""
+  ).toLowerCase().trim();
 
   let primaryError = null;
   let fallbackError = null;
@@ -359,7 +369,16 @@ export async function fetchShoppingWithFallback({ query, gl = "in", hl = "en", e
   };
 }
 
-export async function handleShoppingSearch({ q, minPrice, maxPrice, allowAboveBudget, gl = "in", hl = "en", env = {} }) {
+export async function handleShoppingSearch({
+  q,
+  minPrice,
+  maxPrice,
+  allowAboveBudget,
+  gl = "in",
+  hl = "en",
+  env = {},
+  providerPreference = ""
+}) {
   const cleanedQuery = clean(q, 200);
   if (!cleanedQuery) {
     return { ok: false, error: "A search query (q) is required.", status: 400 };
@@ -369,7 +388,8 @@ export async function handleShoppingSearch({ q, minPrice, maxPrice, allowAboveBu
     query: cleanedQuery,
     gl,
     hl,
-    env
+    env,
+    providerPreference
   });
 
   let rawResults = [];
@@ -408,13 +428,23 @@ export async function onRequestGet(context) {
   const { request, env } = context;
   const url = new URL(request.url);
   const q = url.searchParams.get("q") || "";
+  const provider = url.searchParams.get("provider") || "";
   const minPrice = url.searchParams.get("minPrice") || url.searchParams.get("min_price");
   const maxPrice = url.searchParams.get("maxPrice") || url.searchParams.get("max_price");
   const allowAboveBudget = url.searchParams.get("allowAboveBudget") === "true";
   const gl = url.searchParams.get("gl") || "in";
   const hl = url.searchParams.get("hl") || "en";
 
-  const result = await handleShoppingSearch({ q, minPrice, maxPrice, allowAboveBudget, gl, hl, env });
+  const result = await handleShoppingSearch({
+    q,
+    minPrice,
+    maxPrice,
+    allowAboveBudget,
+    gl,
+    hl,
+    env,
+    providerPreference: provider
+  });
   return json(result, result.status || 200);
 }
 
@@ -428,12 +458,22 @@ export async function onRequestPost(context) {
   }
 
   const q = body.q || body.query || "";
+  const provider = body.provider || "";
   const minPrice = body.minPrice ?? body.min_price;
   const maxPrice = body.maxPrice ?? body.max_price;
   const allowAboveBudget = body.allowAboveBudget === true;
   const gl = body.gl || "in";
   const hl = body.hl || "en";
 
-  const result = await handleShoppingSearch({ q, minPrice, maxPrice, allowAboveBudget, gl, hl, env });
+  const result = await handleShoppingSearch({
+    q,
+    minPrice,
+    maxPrice,
+    allowAboveBudget,
+    gl,
+    hl,
+    env,
+    providerPreference: provider
+  });
   return json(result, result.status || 200);
 }

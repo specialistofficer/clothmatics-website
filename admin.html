@@ -102,6 +102,87 @@
           <section id="services" class="admin-section">
             <div class="section-title"><div><span>INFRASTRUCTURE</span><h2>AI and service usage</h2></div></div>
             <article class="admin-card ai-control-card" aria-labelledby="ai-control-title"><div class="ai-control-heading"><div><span>SERVER-ENFORCED SAFETY</span><h3 id="ai-control-title">Global AI controls</h3><p>A user-specific daily limit overrides the global value. Zero blocks AI calls for that user or globally.</p></div><strong id="ai-control-status">Loading…</strong></div><div class="ai-control-fields"><label>Default calls per user per day<input id="global-ai-limit" type="number" min="0" max="10000" step="1" value="5"></label><label>Message shown while AI is disabled<input id="global-ai-message" maxlength="240" value="AI features are temporarily unavailable. Please try again later."></label></div><div class="ai-control-actions"><button id="save-enable-ai" type="button" class="primary-admin-button">Save and enable AI</button><button id="kill-all-ai" type="button" class="danger-admin-button">Disable all app AI</button></div><p id="ai-control-message" role="status"></p></article>
+
+            <article class="admin-card shopping-monitor-card" id="shopping-monitor-card">
+              <div class="card-heading">
+                <div>
+                  <span>SEARCH &amp; SHOPPING PROVIDERS</span>
+                  <h2>Shopping API monitoring &amp; live diagnostics</h2>
+                  <p class="service-description">Real-time configuration, failover status, and interactive diagnostics for Serper.dev (server.dev) and SerpApi.</p>
+                </div>
+                <div class="shopping-status-badges">
+                  <span id="shopping-active-badge" class="shopping-badge fallback">Detecting status…</span>
+                </div>
+              </div>
+
+              <div class="shopping-provider-grid">
+                <div class="shopping-provider-card" id="card-serper">
+                  <div class="provider-card-head">
+                    <span class="provider-pill">Serper.dev (server.dev)</span>
+                    <strong id="serper-card-badge" class="badge-pending">Checking…</strong>
+                  </div>
+                  <div class="provider-stats">
+                    <p><span>API Status:</span> <b id="serper-live-status">—</b></p>
+                    <p><span>Role in Stack:</span> <b id="serper-stack-role">—</b></p>
+                    <p><span>Environment Key:</span> <b id="serper-env-status">—</b></p>
+                  </div>
+                </div>
+
+                <div class="shopping-provider-card" id="card-serpapi">
+                  <div class="provider-card-head">
+                    <span class="provider-pill">SerpApi</span>
+                    <strong id="serpapi-card-badge" class="badge-pending">Checking…</strong>
+                  </div>
+                  <div class="provider-stats">
+                    <p><span>API Status:</span> <b id="serpapi-live-status">—</b></p>
+                    <p><span>Role in Stack:</span> <b id="serpapi-stack-role">—</b></p>
+                    <p><span>Environment Key:</span> <b id="serpapi-env-status">—</b></p>
+                  </div>
+                </div>
+
+                <div class="shopping-provider-card" id="card-gemini-style">
+                  <div class="provider-card-head">
+                    <span class="provider-pill">Routing Strategy</span>
+                    <strong id="routing-card-badge" class="badge-active">Automatic</strong>
+                  </div>
+                  <div class="provider-stats">
+                    <p><span>Strategy:</span> <b id="routing-strategy-text">—</b></p>
+                    <p><span>Preferred:</span> <b id="routing-pref-text">Auto</b></p>
+                    <p><span>Failover:</span> <b>Active</b></p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="shopping-diagnostics-bar">
+                <div class="diagnostics-header">
+                  <div>
+                    <h4>Live API Diagnostic Ping</h4>
+                    <p>Test live query response, measure latency, and verify which provider serves products.</p>
+                  </div>
+                  <button id="shopping-refresh-status-btn" type="button" class="secondary-admin-button">Check Config Status</button>
+                </div>
+                <div class="diagnostics-form">
+                  <input id="shopping-test-query" type="text" value="white sneakers" placeholder="Search query (e.g. black blazer, linen shirt)" />
+                  <select id="shopping-test-provider">
+                    <option value="auto">Auto (Live Fallback Route)</option>
+                    <option value="serper">Force Serper.dev (server.dev)</option>
+                    <option value="serpapi">Force SerpApi</option>
+                  </select>
+                  <button id="shopping-test-run-btn" type="button" class="primary-admin-button">Ping Shopping API</button>
+                </div>
+                <div id="shopping-test-result" class="shopping-test-result hidden">
+                  <div class="diag-meta-grid">
+                    <article><span>RESPONDING PROVIDER</span><b id="diag-res-provider">—</b></article>
+                    <article><span>LATENCY</span><b id="diag-res-latency">—</b></article>
+                    <article><span>PRODUCTS RETURNED</span><b id="diag-res-count">—</b></article>
+                    <article><span>DATA SOURCE</span><b id="diag-res-source">—</b></article>
+                  </div>
+                  <p id="diag-res-notice" class="diag-res-notice"></p>
+                  <div id="diag-preview-card" class="diag-preview-card hidden"></div>
+                </div>
+              </div>
+            </article>
+
             <div class="service-grid"><article class="admin-card"><h3>AI providers and services</h3><p class="service-description">Requests grouped by provider or processing service.</p><div id="provider-bars" class="bar-list compact"></div><h4 class="service-subheading">AI features used</h4><div id="feature-bars" class="bar-list compact"></div></article><article class="admin-card model-card"><h3>Model-level performance</h3><p class="service-description">Calls, reliability, response time, features, and latest use for each recorded model.</p><div id="model-list" class="model-list"></div></article></div>
           </section>
           <section id="coupons" class="admin-section">

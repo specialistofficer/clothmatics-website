@@ -940,6 +940,88 @@ test("handleCompleteLook returns diverse suggestions for tops when primary garme
   assert(uniqueSubtypes.size > 1, "Top recommendations must offer diverse silhouettes, not 3 identical styles");
 });
 
+test("fetchShoppingWithFallback prioritizes Serper when providerPreference is set to serper", async () => {
+  const originalFetch = globalThis.fetch;
+  const attemptedUrls = [];
+
+  globalThis.fetch = async (url) => {
+    const urlStr = String(url);
+    attemptedUrls.push(urlStr);
+    if (urlStr.includes("serper.dev")) {
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          shopping: [
+            { title: "Direct Serper Result", price: "₹999", productId: "direct-1", imageUrl: "https://img.com/d1.jpg" }
+          ]
+        })
+      };
+    }
+    return { ok: false, status: 500 };
+  };
+
+  try {
+    const res = await fetchShoppingWithFallback({
+      query: "white linen shirt",
+      providerPreference: "serper",
+      env: {
+        SERPAPI_API_KEY: "serpapi-key",
+        SERPER_API_KEY: "serper-key"
+      }
+    });
+
+    assert.equal(res.provider, "serper");
+    assert.equal(res.items[0].title, "Direct Serper Result");
+    // With providerPreference: "serper", SerpApi should not have been called first
+    assert(attemptedUrls[0].includes("serper.dev"));
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("shopping status endpoint accurately reports provider configuration and strategy", async () => {
+  const { onRequestGet } = await import("../functions/api/shopping/status.js");
+
+  // Case 1: Dual Active
+  const dualRes = await onRequestGet({
+    env: {
+      SERPAPI_API_KEY: "secret-serpapi",
+      SERPER_API_KEY: "secret-serper",
+      GEMINI_API_KEY: "secret-gemini"
+    }
+  });
+  const dualData = await dualRes.json();
+  assert.equal(dualData.ok, true);
+  assert.equal(dualData.providers.serpapi.configured, true);
+  assert.equal(dualData.providers.serpapi.role, "Primary");
+  assert.equal(dualData.providers.serper.configured, true);
+  assert.equal(dualData.providers.serper.role, "Fallback");
+  assert.equal(dualData.providers.gemini.configured, true);
+  assert(dualData.activeStrategy.includes("Dual Provider"));
+
+  // Case 2: Only Serper configured
+  const serperOnlyRes = await onRequestGet({
+    env: {
+      SERPER_API_KEY: "secret-serper"
+    }
+  });
+  const serperOnlyData = await serperOnlyRes.json();
+  assert.equal(serperOnlyData.providers.serper.configured, true);
+  assert.equal(serperOnlyData.providers.serper.role, "Primary");
+  assert.equal(serperOnlyData.providers.serpapi.configured, false);
+  assert.equal(serperOnlyData.providers.serpapi.role, "Inactive");
+  assert(serperOnlyData.activeStrategy.includes("Serper.dev"));
+
+  // Case 3: No keys configured (sample mode)
+  const emptyRes = await onRequestGet({ env: {} });
+  const emptyData = await emptyRes.json();
+  assert.equal(emptyData.providers.serper.configured, false);
+  assert.equal(emptyData.providers.serpapi.configured, false);
+  assert(emptyData.activeStrategy.includes("Sample Data"));
+});
+
+
 
 
 
