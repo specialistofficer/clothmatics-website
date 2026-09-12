@@ -48,7 +48,11 @@ export function outfitBuildLoaderMarkup({
     const isLast = idx === OUTFIT_BUILD_STEPS.length - 1;
     const activeClass = s.step === initialStep ? " active" : (s.step < initialStep ? " completed" : "");
     const card = `
-      <div class="outfit-loader-card${activeClass}" data-step="${s.step}">
+      <div class="outfit-loader-card outfit-stage-slide${activeClass}" data-step="${s.step}">
+        <div class="outfit-stage-badge">
+          <span class="outfit-stage-pill">Step ${s.num} of 4</span>
+          <span class="outfit-stage-label">${s.title}</span>
+        </div>
         <div class="outfit-loader-card-box">
           <img src="${s.image}" alt="${s.alt}" width="225" height="240" loading="eager" />
         </div>
@@ -72,8 +76,10 @@ export function outfitBuildLoaderMarkup({
         <p class="outfit-loader-subtitle">${subtitle}</p>
       </div>
 
-      <div class="outfit-loader-steps" role="progressbar" aria-label="${title} sequence" aria-valuemin="1" aria-valuemax="4" aria-valuenow="${initialStep}">
-        ${cardsHtml}
+      <div class="outfit-loader-showcase">
+        <div class="outfit-loader-steps" role="progressbar" aria-label="${title} sequence" aria-valuemin="1" aria-valuemax="4" aria-valuenow="${initialStep}">
+          ${cardsHtml}
+        </div>
       </div>
 
       <div class="outfit-loader-pill">

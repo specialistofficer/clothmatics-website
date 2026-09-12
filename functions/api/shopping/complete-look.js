@@ -30,12 +30,35 @@ export async function onRequestOptions() {
 }
 
 export function hasValidImage(product = {}) {
-  const thumb = String(product.thumbnail || product.image || "").trim();
+  const thumb = String(product?.thumbnail || product?.image || "").trim();
   if (!thumb) return false;
-  if (!thumb.startsWith("https://") && !thumb.startsWith("http://")) return false;
+  if (!thumb.startsWith("https://") && !thumb.startsWith("http://") && !thumb.startsWith("data:image/")) return false;
   if (thumb.includes("clothmatics-logo.png")) return false;
   if (thumb.length < 16) return false;
   return true;
+}
+
+export function getCategoryFallbackImage(category = "", gender = "men") {
+  const isFemale = String(gender).toLowerCase().includes("fem") || String(gender).toLowerCase().includes("wom");
+  const cat = String(category).toLowerCase();
+
+  if (isFemale) {
+    if (cat === "tops") return "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=500&q=80";
+    if (cat === "bottoms") return "https://images.unsplash.com/photo-1551854838-212c50b4c184?w=500&q=80";
+    if (cat === "shoes") return "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=500&q=80";
+    if (cat === "layering") return "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=500&q=80";
+    if (cat === "accessories" || cat === "bags") return "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=500&q=80";
+    if (cat === "jewelry") return "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&q=80";
+    return "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=500&q=80";
+  }
+
+  // Men
+  if (cat === "tops") return "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500&q=80";
+  if (cat === "bottoms") return "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=500&q=80";
+  if (cat === "shoes") return "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=500&q=80";
+  if (cat === "layering") return "https://images.unsplash.com/photo-1544441893-675973e31985?w=500&q=80";
+  if (cat === "accessories") return "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=500&q=80";
+  return "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500&q=80";
 }
 
 export const DIVERSE_SAMPLE_PRODUCTS = [
@@ -948,6 +971,133 @@ export function deduplicateAndRankProducts(products = [], { userSizes = {}, user
   });
 
   return deduplicated;
+}
+
+export function detectProductSubtype(product = {}, category = "") {
+  const title = String(product?.title || "").toLowerCase();
+  const cat = String(category || product?.category || "").toLowerCase();
+
+  if (cat === "accessories" || cat === "bags" || cat === "jewelry") {
+    if (/watch|chronograph|dial|horolog/i.test(title)) return "watch";
+    if (/belt|buckle/i.test(title)) return "belt";
+    if (/sunglass|glass|shades|eyewear|aviator|wayfarer/i.test(title)) return "eyewear";
+    if (/bag|backpack|tote|messenger|crossbody|duffle|briefcase|clutch/i.test(title)) return "bag";
+    if (/wallet|card holder|cardholder|money clip/i.test(title)) return "wallet";
+    if (/bracelet|cuff|necklace|chain|ring|earring|pendant/i.test(title)) return "jewelry";
+    if (/cap|hat|beanie|fedora/i.test(title)) return "headwear";
+    if (/scarf|muffler|bandana|stole/i.test(title)) return "scarf";
+    return "accessory_item";
+  }
+
+  if (cat === "shoes") {
+    if (/sneaker|trainer|runner|skate/i.test(title)) return "sneaker";
+    if (/loafer|penny|moccasin|boat shoe/i.test(title)) return "loafer";
+    if (/boot|chelsea|chukka|ankle boot/i.test(title)) return "boot";
+    if (/derby|oxford|brogue|monk|formal shoe/i.test(title)) return "formal_shoe";
+    if (/sandal|slide|slip-on|espadrille|clog|flip flop/i.test(title)) return "slipon";
+    if (/heel|pump|stiletto|wedge/i.test(title)) return "heels";
+    if (/flat|ballerina/i.test(title)) return "flats";
+    return "shoes_item";
+  }
+
+  if (cat === "tops") {
+    if (/polo/i.test(title)) return "polo";
+    if (/t-shirt|tee\b|graphic tee|crew neck tee/i.test(title)) return "tshirt";
+    if (/shirt|oxford|button-down|flannel|linen shirt|dress shirt/i.test(title)) return "shirt";
+    if (/overshirt|shacket/i.test(title)) return "overshirt";
+    if (/sweater|knit|pullover|cardigan|jumper/i.test(title)) return "knitwear";
+    if (/hoodie|sweatshirt/i.test(title)) return "sweatshirt";
+    if (/blouse|top\b|tunic/i.test(title)) return "blouse";
+    return "tops_item";
+  }
+
+  if (cat === "bottoms") {
+    if (/jean|denim/i.test(title)) return "jeans";
+    if (/chino|trouser|pant|slack|dress pant/i.test(title)) return "trouser";
+    if (/cargo/i.test(title)) return "cargo";
+    if (/short/i.test(title)) return "shorts";
+    if (/jogger|sweatpant|track pant/i.test(title)) return "jogger";
+    if (/skirt/i.test(title)) return "skirt";
+    return "bottoms_item";
+  }
+
+  if (cat === "layering") {
+    if (/blazer|suit jacket/i.test(title)) return "blazer";
+    if (/bomber/i.test(title)) return "bomber";
+    if (/denim jacket|trucker/i.test(title)) return "denim_jacket";
+    if (/leather jacket|biker/i.test(title)) return "leather_jacket";
+    if (/cardigan|sweater|pullover/i.test(title)) return "knit_layer";
+    if (/overcoat|trench|coat|parka/i.test(title)) return "coat";
+    if (/overshirt|shacket/i.test(title)) return "overshirt";
+    if (/windbreaker|vest|gilet/i.test(title)) return "vest";
+    return "layering_item";
+  }
+
+  return "general_item";
+}
+
+export function pickDiverseProductSet(products = [], category = "", limit = 3) {
+  if (!Array.isArray(products) || products.length === 0) return [];
+  if (products.length <= 1) return products.slice(0, limit);
+
+  const selected = [];
+  const seenSubtypes = new Set();
+  const seenBrands = new Set();
+
+  // Pass 1: Strict diversity - Pick distinct subtype AND distinct brand/retailer
+  for (const prod of products) {
+    if (selected.length >= limit) break;
+    const subtype = detectProductSubtype(prod, category);
+    const brand = String(prod.source || prod.brand || "").toLowerCase().trim();
+
+    if (!seenSubtypes.has(subtype) && (!brand || !seenBrands.has(brand))) {
+      selected.push(prod);
+      seenSubtypes.add(subtype);
+      if (brand) seenBrands.add(brand);
+    }
+  }
+
+  // Pass 2: Distinct subtype, allow brand repeat if necessary
+  if (selected.length < limit) {
+    for (const prod of products) {
+      if (selected.length >= limit) break;
+      const id = prod.id || prod.product_id;
+      if (selected.some((p) => (p.id || p.product_id) === id)) continue;
+      const subtype = detectProductSubtype(prod, category);
+
+      if (!seenSubtypes.has(subtype)) {
+        selected.push(prod);
+        seenSubtypes.add(subtype);
+      }
+    }
+  }
+
+  // Pass 3: Distinct brand, allow subtype repeat if variety was limited
+  if (selected.length < limit) {
+    for (const prod of products) {
+      if (selected.length >= limit) break;
+      const id = prod.id || prod.product_id;
+      if (selected.some((p) => (p.id || p.product_id) === id)) continue;
+      const brand = String(prod.source || prod.brand || "").toLowerCase().trim();
+
+      if (!brand || !seenBrands.has(brand)) {
+        selected.push(prod);
+        if (brand) seenBrands.add(brand);
+      }
+    }
+  }
+
+  // Pass 4: Fill remaining slots with remaining valid products
+  if (selected.length < limit) {
+    for (const prod of products) {
+      if (selected.length >= limit) break;
+      const id = prod.id || prod.product_id;
+      if (selected.some((p) => (p.id || p.product_id) === id)) continue;
+      selected.push(prod);
+    }
+  }
+
+  return selected;
 }
 
 export function createItemStylingReason(product = {}, piece = {}, anchorItem = {}, profile = {}) {
@@ -1973,14 +2123,21 @@ export async function handleCompleteLook({
       });
     }
 
-    // STRICT CAPPING: Maximum 3 products per category with item-specific styling rationale!
-    const capped = deduplicated.slice(0, 3).map((prod) => ({
-      ...prod,
-      stylingReason: createItemStylingReason(prod, piece, item, profile),
-      category: piece.category,
-      categoryLabel: piece.categoryLabel,
-      icon: piece.icon
-    }));
+    // STRICT CAPPING: Maximum 3 diverse products per category with item-specific styling rationale & guaranteed images!
+    const diversePicks = pickDiverseProductSet(deduplicated, piece.category, 3);
+    const capped = diversePicks.map((prod) => {
+      const fallbackImg = getCategoryFallbackImage(piece.category, gender);
+      const thumb = hasValidImage(prod) ? prod.thumbnail : fallbackImg;
+      return {
+        ...prod,
+        thumbnail: thumb,
+        image: thumb,
+        stylingReason: createItemStylingReason(prod, piece, item, profile),
+        category: piece.category,
+        categoryLabel: piece.categoryLabel,
+        icon: piece.icon
+      };
+    });
 
     outfitCategories.push({
       id: piece.category,

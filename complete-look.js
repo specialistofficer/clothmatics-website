@@ -15,11 +15,11 @@ import {
   getCategoryFallbackImage,
   getUserProfileSizes,
   getUserProfilePreferences
-} from "./complete-look-helpers.js?v=20260912-outfit-loader-v4";
+} from "./complete-look-helpers.js?v=20260912-outfit-loader-v5";
 import {
   outfitBuildLoaderMarkup,
   updateHangerLoader
-} from "./garment-progress.mjs?v=20260912-outfit-loader-v4";
+} from "./garment-progress.mjs?v=20260912-outfit-loader-v5";
 
 function safeUrl(value = "") {
   try {
@@ -204,7 +204,7 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
         clearInterval(searchTimer);
         return;
       }
-      searchStep = Math.min(4, searchStep + 1);
+      searchStep = (searchStep % 4) + 1;
       const loader = container ? container.querySelector(".outfit-build-loader") : null;
       if (loader) {
         const stepMessages = [
@@ -215,7 +215,7 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
         ];
         updateHangerLoader(loader, stepMessages[searchStep - 1], true, searchStep);
       }
-    }, 2400);
+    }, 1600);
 
     const { min, max } = getActiveBudgetRange(activeBudget, customMin, customMax);
 
@@ -569,7 +569,8 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
     const retailerName = product.source || "Retailer";
     const categoryKey = product.category || categoryObj?.id || "tops";
     const fallbackImage = getCategoryFallbackImage(categoryKey, gender);
-    const imageSrc = safeUrl(product.thumbnail) || fallbackImage;
+    const rawThumb = String(product.thumbnail || product.image || "").trim();
+    const imageSrc = (rawThumb && rawThumb.length > 15 && !rawThumb.includes("clothmatics-logo.png")) ? (safeUrl(rawThumb) || fallbackImage) : fallbackImage;
 
     const sizeBadgeHtml = product.userSizeMatch && product.extractedSize ? `
       <span class="complete-look-badge-sizetag match">Size ${escapeHtml(product.extractedSize)} · Your size</span>

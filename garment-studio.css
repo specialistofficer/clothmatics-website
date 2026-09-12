@@ -106,54 +106,127 @@ html:has(dialog[open]),body:has(dialog[open]){overflow:hidden}
   margin: 0;
 }
 
-.outfit-loader-steps {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
+.outfit-loader-showcase {
   width: 100%;
-  max-width: 920px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 6px 0;
+  position: relative;
+}
+
+.outfit-loader-steps {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  min-height: 330px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   box-sizing: border-box;
 }
 
 .outfit-loader-card {
-  flex: 1 1 0;
-  min-width: 130px;
-  max-width: 200px;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) scale(0.92);
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transition: opacity 0.4s ease, transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.4s;
+  width: min(280px, 94%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  opacity: 0.65;
-  transform: scale(0.97);
 }
 .outfit-loader-card.active {
+  position: relative;
+  top: auto;
+  left: auto;
+  transform: translateX(0) scale(1);
   opacity: 1;
-  transform: scale(1) translateY(-4px);
+  pointer-events: auto;
+  visibility: visible;
+  animation: outfit-stage-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 .outfit-loader-card.completed {
-  opacity: 0.9;
-  transform: scale(1);
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) scale(0.92);
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+@keyframes outfit-stage-enter {
+  0% {
+    opacity: 0;
+    transform: scale(0.90) translateY(16px);
+    filter: blur(4px);
+  }
+  65% {
+    opacity: 1;
+    transform: scale(1.02) translateY(-2px);
+    filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0px);
+  }
+}
+
+.outfit-stage-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  background: rgba(237, 233, 254, 0.85);
+  border: 1px solid #ddd6fe;
+  border-radius: 999px;
+  padding: 5px 14px;
+  box-shadow: 0 2px 8px rgba(108, 63, 242, 0.08);
+}
+.outfit-stage-pill {
+  font: 800 10.5px/1 "DM Sans", sans-serif;
+  color: #6c3ff2;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+.outfit-stage-label {
+  font: 700 11.5px/1 "Manrope", sans-serif;
+  color: #1f1938;
 }
 
 .outfit-loader-card-box {
   width: 100%;
+  max-width: 250px;
   aspect-ratio: 225 / 240;
   background: #ffffff;
   border: 1.5px solid #ebe5f8;
-  border-radius: 22px;
+  border-radius: 24px;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 24px rgba(45, 27, 105, 0.05);
+  box-shadow: 0 12px 32px rgba(45, 27, 105, 0.08);
   position: relative;
-  transition: all 0.3s ease;
+  transition: all 0.35s ease;
 }
 .outfit-loader-card.active .outfit-loader-card-box {
   border-color: #a855f7;
-  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.35), 0 14px 34px rgba(108, 99, 255, 0.18);
-  animation: outfit-box-glow 2.4s ease-in-out infinite;
+  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.35), 0 16px 42px rgba(108, 63, 242, 0.2);
+  animation: outfit-stage-glow 2.5s ease-in-out infinite alternate;
+}
+@keyframes outfit-stage-glow {
+  0% {
+    box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.3), 0 12px 28px rgba(108, 63, 242, 0.16);
+  }
+  100% {
+    box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.35), 0 20px 48px rgba(108, 63, 242, 0.28);
+  }
 }
 .outfit-loader-card.completed .outfit-loader-card-box {
   border-color: #c4b5fd;
@@ -166,71 +239,50 @@ html:has(dialog[open]),body:has(dialog[open]){overflow:hidden}
   transition: transform 0.3s ease;
 }
 .outfit-loader-card.active .outfit-loader-card-box img {
-  transform: scale(1.03);
+  transform: scale(1.02);
 }
 
 .outfit-loader-chevron {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #b9a9ec;
-  margin-bottom: 38px;
-}
-.outfit-loader-chevron svg {
-  width: 18px;
-  height: 18px;
+  display: none !important;
 }
 
 .outfit-loader-card-info {
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   width: 100%;
-  margin-top: 10px;
-  padding: 0 4px;
+  margin-top: 12px;
+  padding: 0 8px;
   box-sizing: border-box;
 }
 .outfit-loader-card-num {
-  flex: 0 0 22px;
-  height: 22px;
+  flex: 0 0 24px;
+  height: 24px;
   border-radius: 50%;
-  background: #ede9fe;
-  color: #6c3ff2;
-  font: 800 11px/22px "Manrope", sans-serif;
-  text-align: center;
-  transition: all 0.25s ease;
-}
-.outfit-loader-card.active .outfit-loader-card-num {
   background: linear-gradient(135deg, #6c3ff2, #ec4899);
   color: #ffffff;
+  font: 800 11.5px/24px "Manrope", sans-serif;
+  text-align: center;
   box-shadow: 0 2px 8px rgba(108, 99, 255, 0.4);
 }
 .outfit-loader-card.completed .outfit-loader-card-num {
   background: #10b981;
-  color: #ffffff;
 }
 
 .outfit-loader-card-text {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-width: 0;
-  flex: 1;
+  text-align: left;
 }
 .outfit-loader-card-heading {
-  font: 800 12.5px/1.25 "Manrope", sans-serif;
+  font: 800 13.5px/1.3 "Manrope", sans-serif;
   color: #1f1938;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 .outfit-loader-card-desc {
-  font: 500 11px/1.3 "DM Sans", sans-serif;
+  font: 500 11.5px/1.35 "DM Sans", sans-serif;
   color: #746a91;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .outfit-loader-pill {

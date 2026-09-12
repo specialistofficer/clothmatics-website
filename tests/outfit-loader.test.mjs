@@ -53,9 +53,12 @@ test('outfitBuildLoaderMarkup renders complete 4-step cards, chevrons, and botto
   assert(html.includes('TURNING YOUR STYLE INTO SOMETHING GREAT…'), 'Contains subtitle');
   assert(!html.includes('data-active-step="1" hidden'), 'Container does not have hidden attribute when hidden is false');
 
+  assert(html.includes('class="outfit-loader-showcase"'), 'Contains single-stage showcase container');
   for (let i = 1; i <= 4; i++) {
     assert(html.includes('data-step=\"' + i + '\"'), 'Card for step ' + i + ' must exist');
     assert(html.includes('outfit-build-step-' + i + '.png'), 'Image for step ' + i + ' must exist');
+    assert(html.includes('outfit-stage-slide'), 'Must have stage slide class');
+    assert(html.includes('outfit-stage-badge'), 'Must have stage badge');
   }
 
   const chevronCount = (html.match(/class=\"outfit-loader-chevron\"/g) || []).length;

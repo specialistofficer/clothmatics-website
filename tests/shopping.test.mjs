@@ -17,6 +17,8 @@ import {
   extractProductSize,
   normalizeProductTitleForDeduplication,
   deduplicateAndRankProducts,
+  detectProductSubtype,
+  pickDiverseProductSet,
   createItemStylingReason
 } from "../functions/api/shopping/complete-look.js";
 import {
@@ -683,6 +685,70 @@ test("filterProductsStrict rejects products matching user avoidColors or hardExc
   assert(ids.includes("1"));
   assert(!ids.includes("2"), "Must exclude mustard yellow");
   assert(!ids.includes("3"), "Must exclude polyester hard exclusion");
+});
+
+test("detectProductSubtype correctly categorizes fashion pieces across categories", () => {
+  assert.equal(detectProductSubtype({ title: "Highlander Men Navy Knitted Polo T-Shirt" }, "tops"), "polo");
+  assert.equal(detectProductSubtype({ title: "Dennis Lingo Men White Oxford Cotton Shirt" }, "tops"), "shirt");
+  assert.equal(detectProductSubtype({ title: "Noberry Men Graphic Streetwear T-Shirt" }, "tops"), "tshirt");
+
+  assert.equal(detectProductSubtype({ title: "Fastrack Men Matte Black Tactical Sports Watch" }, "accessories"), "watch");
+  assert.equal(detectProductSubtype({ title: "Tommy Hilfiger Men Tan Brown Leather Belt" }, "accessories"), "belt");
+  assert.equal(detectProductSubtype({ title: "Ray-Ban Classic Aviator Sunglasses" }, "accessories"), "eyewear");
+  assert.equal(detectProductSubtype({ title: "Wildhorn Men Leather Crossbody Bag" }, "accessories"), "bag");
+
+  assert.equal(detectProductSubtype({ title: "Puma White Leather Sneakers" }, "shoes"), "sneaker");
+  assert.equal(detectProductSubtype({ title: "Red Tape Men Tan Brown Loafers" }, "shoes"), "loafer");
+  assert.equal(detectProductSubtype({ title: "Woodland Men Chelsea Boots" }, "shoes"), "boot");
+});
+
+test("pickDiverseProductSet prioritizes distinct subtypes and avoids homogeneous 3-of-a-kind output", () => {
+  const accessoryCandidates = [
+    { id: "w1", title: "Casio Vintage Digital Watch", source: "Amazon" },
+    { id: "w2", title: "Fossil Minimalist Leather Watch", source: "Myntra" },
+    { id: "w3", title: "Titan Smart Watch", source: "Tata Cliq" },
+    { id: "b1", title: "Tommy Hilfiger Men Tan Leather Belt", source: "Amazon" },
+    { id: "e1", title: "Ray-Ban Aviator Sunglasses", source: "AJIO" }
+  ];
+
+  const picked = pickDiverseProductSet(accessoryCandidates, "accessories", 3);
+  assert.equal(picked.length, 3);
+
+  const subtypes = picked.map(p => detectProductSubtype(p, "accessories"));
+  // Must NOT be 3 watches!
+  const watchCount = subtypes.filter(s => s === "watch").length;
+  assert(watchCount <= 1, "Must contain at most 1 watch in the top 3 curated accessories");
+  assert(subtypes.includes("belt"), "Must include a belt");
+  assert(subtypes.includes("eyewear"), "Must include eyewear");
+});
+
+test("handleCompleteLook returns diverse suggestions for tops when primary garment is pants", async () => {
+  const result = await handleCompleteLook({
+    item: {
+      category: "Bottoms",
+      subCategory: "Jeans",
+      title: "Slim Fit Indigo Denim Jeans",
+      primaryColor: "Blue"
+    },
+    profile: { gender: "men" },
+    env: {}
+  });
+
+  assert.equal(result.ok, true);
+  const topsCategory = result.outfit.categories.find(c => c.id === "tops");
+  assert(topsCategory != null, "Tops category must be present");
+  assert(topsCategory.products.length >= 2, "Must return at least 2 top recommendations");
+
+  // Check that all top products have valid thumbnails (never missing or broken)
+  for (const prod of topsCategory.products) {
+    assert(prod.thumbnail && prod.thumbnail.length > 15, "Product thumbnail must be valid non-empty string");
+    assert(hasValidImage(prod), "Must pass hasValidImage check");
+  }
+
+  // Check diversity: Not all products in tops should be of the same subtype
+  const topSubtypes = topsCategory.products.map(p => detectProductSubtype(p, "tops"));
+  const uniqueSubtypes = new Set(topSubtypes);
+  assert(uniqueSubtypes.size > 1, "Top recommendations must offer diverse silhouettes, not 3 identical styles");
 });
 
 
