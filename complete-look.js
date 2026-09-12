@@ -15,12 +15,12 @@ import {
   getCategoryFallbackImage,
   getUserProfileSizes,
   getUserProfilePreferences
-} from "./complete-look-helpers.js?v=20260912-outfit-loader-v9";
+} from "./complete-look-helpers.js?v=20260912-outfit-loader-v10";
 import {
   outfitBuildLoaderMarkup,
   outfitOrbitLoaderMarkup,
   updateHangerLoader
-} from "./garment-progress.mjs?v=20260912-outfit-loader-v9";
+} from "./garment-progress.mjs?v=20260912-outfit-loader-v10";
 
 function safeUrl(value = "") {
   try {
@@ -223,8 +223,14 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
         ];
         const msg = stepMessages[searchStep - 1];
         const statusEl = loader.querySelector('[data-hanger-message]');
-        if (statusEl) {
-          statusEl.textContent = msg;
+        if (statusEl && statusEl.textContent !== msg) {
+          statusEl.style.opacity = '0';
+          statusEl.style.transform = 'translateY(3px)';
+          setTimeout(() => {
+            statusEl.textContent = msg;
+            statusEl.style.opacity = '1';
+            statusEl.style.transform = 'translateY(0)';
+          }, 140);
         }
         updateHangerLoader(loader, msg, true, searchStep);
       }
@@ -313,11 +319,8 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
       activeItem.fit
     ].filter(Boolean).join(" · ");
 
-    // 0. Top moving revolving clothes orbit loader placed at the very top of the dialog
+    // 0. Top revolving clothes orbit loader placed at the top of the dialog
     const topLoaderHtml = isSearching ? `
-      <div class="complete-look-top-progress-wrap" aria-hidden="true">
-        <div class="complete-look-top-progress-indicator"></div>
-      </div>
       <div class="complete-look-top-loader">
         ${outfitOrbitLoaderMarkup({
           kicker: "CLOTHMATICS AI STYLIST",

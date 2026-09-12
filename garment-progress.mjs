@@ -183,10 +183,6 @@ export function outfitOrbitLoaderMarkup({
         </div>
       </div>
 
-      <div class="outfit-moving-progress-bar" aria-hidden="true">
-        <div class="outfit-moving-progress-runner"></div>
-      </div>
-
       <div class="outfit-orbit-status">
         <span class="outfit-orbit-status-dot" aria-hidden="true"></span>
         <span class="outfit-orbit-status-text" data-hanger-message>${statusMessage}</span>

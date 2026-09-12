@@ -313,9 +313,8 @@ test('outfitOrbitLoaderMarkup renders revolving orbit stage, center card, dashed
     assert(html.includes(path.basename(item.image)), 'Image for ' + item.id + ' must exist');
   }
 
-  assert(html.includes('class="outfit-moving-progress-bar"'), 'Contains moving progress bar');
-  assert(html.includes('class="outfit-moving-progress-runner"'), 'Contains moving runner');
-  assert(html.includes('data-hanger-message'), 'Provides status message element');
+  assert(!html.includes('class="outfit-moving-progress-bar"'), 'Bottom loader line must be removed from orbit loader');
+  assert(html.includes('data-hanger-message'), 'Provides rotating status message element');
   assert(html.includes('Matching wardrobe coordinates…'), 'Contains initial status message');
 });
 
