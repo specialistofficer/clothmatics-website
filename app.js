@@ -39,11 +39,11 @@ import { analyzeGarment, analyzeStyleCheck, checkGarmentImageBlur, cropGarmentIm
 
 import {activePremium,extractSingleProduction,recoverSingleProduction,extractRegionsProduction} from "./production-extraction.mjs";
 
-import {createGhostStudio} from "./ghost-ui.mjs?v=20260912-outfit-loader-v6";
+import {createGhostStudio} from "./ghost-ui.mjs?v=20260912-outfit-loader-v7";
 import {ghostImageForMode,ghostSavePatch,ghostDeletePatch,generateGhostFromPhoto} from "./ghost-mannequin.mjs";
-import {hangerLoaderMarkup,updateHangerLoader,confirmDelete3D} from './garment-progress.mjs?v=20260912-outfit-loader-v6';
+import {hangerLoaderMarkup,updateHangerLoader,confirmDelete3D} from './garment-progress.mjs?v=20260912-outfit-loader-v7';
 import {renderGarmentEvidence,readGarmentEvidence} from './garment-review.mjs';
-import {createCompleteLookController} from './complete-look.js?v=20260912-outfit-loader-v6';
+import {createCompleteLookController} from './complete-look.js?v=20260912-outfit-loader-v7';
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -263,36 +263,32 @@ async function configureAdminAccess(user) {
 
 function startDashboardLoader() {
   const steps = [
-    { percent: 25, img: "./assets/loader/outfit-build-step-1.png", msg: "Connecting to your wardrobe…" },
-    { percent: 50, img: "./assets/loader/outfit-build-step-2.png", msg: "Retrieving garments & outfits…" },
-    { percent: 75, img: "./assets/loader/outfit-build-step-3.png", msg: "Organizing closet & analytics…" },
-    { percent: 100, img: "./assets/loader/outfit-build-step-4.png", msg: "Wardrobe ready!" }
+    { img: "./assets/loader/outfit-build-step-1.png", msg: "Connecting to your wardrobe…" },
+    { img: "./assets/loader/outfit-build-step-2.png", msg: "Retrieving garments & outfits…" },
+    { img: "./assets/loader/outfit-build-step-3.png", msg: "Organizing closet & analytics…" },
+    { img: "./assets/loader/outfit-build-step-4.png", msg: "Wardrobe ready!" }
   ];
   let cur = 0;
   const imgEl = $("#dashboard-loader-img");
-  const fillEl = $("#dashboard-progress-fill");
   const msgEl = $("#dashboard-loader-msg");
 
   const applyStep = (idx) => {
     const s = steps[idx];
-    if (!s) return;
-    if (imgEl && !imgEl.src.endsWith(s.img.replace(/^\.\//, ""))) {
+    if (!s || !imgEl) return;
+    if (!imgEl.src.endsWith(s.img.replace(/^\.\//, ""))) {
       imgEl.src = s.img;
       imgEl.style.animation = "none";
       void imgEl.offsetHeight;
       imgEl.style.animation = "outfit-morph-enter 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)";
     }
-    if (fillEl) fillEl.style.width = `${s.percent}%`;
     if (msgEl) msgEl.textContent = s.msg;
   };
 
   applyStep(0);
   const interval = setInterval(() => {
-    if (cur < 2) {
-      cur++;
-      applyStep(cur);
-    }
-  }, 450);
+    cur = (cur + 1) % steps.length;
+    applyStep(cur);
+  }, 600);
 
   return {
     finish() {
@@ -1215,7 +1211,7 @@ function showOutfitDialog(source,label="COMPLETE OUTFIT"){
 function renderPurchaseOwnedOptions(){const select=$("#purchase-owned");if(!select)return;select.innerHTML='<option value="">Choose an item</option>'+state.wardrobe.filter((item)=>item.privateItem!==true&&item.stylingUsage!=="private_innerwear").map((item)=>`<option value="${escapeHtml(item.id)}">${escapeHtml(item.title||"Garment")} · ${escapeHtml(item.category||"Uncategorized")}</option>`).join("");renderPurchaseOwnedPreview(null);}
 function renderPurchaseOwnedPreview(item){const target=$("#purchase-owned-preview");if(!target)return;target.classList.toggle("hidden",!item);target.innerHTML=item?`<img src="${safeUrl(item.image)}" alt="${escapeHtml(item.title||"Closet item")}"><div><span>STARTING POINT</span><b>${escapeHtml(item.title||"Garment")}</b><small>${escapeHtml([item.primaryColor,item.category,item.material||item.fabric].filter(Boolean).join(" · "))}</small></div>`:"";}
 function useOwnedPurchaseExample(){const item=state.wardrobe.find((entry)=>entry.id===$("#purchase-owned").value);renderPurchaseOwnedPreview(item||null);if(!item)return;$("#purchase-title").value=item.title||"";$("#purchase-category").value=GARMENT_CATEGORIES.includes(item.category)?item.category:"";$("#purchase-color").value=item.primaryColor||"";$("#purchase-pattern").value=item.pattern||"";$("#purchase-material").value=item.material||item.fabric||"";$("#purchase-title").focus();}
-async function runPurchaseCheck(event){event.preventDefault();const button=event.currentTarget.querySelector('[type="submit"]'),owned=state.wardrobe.find((item)=>item.id===$("#purchase-owned").value);const candidate={title:$("#purchase-title").value.trim()||owned?.title||"",category:$("#purchase-category").value.trim()||owned?.category||"",primaryColor:$("#purchase-color").value.trim()||owned?.primaryColor||"",pattern:$("#purchase-pattern").value.trim()||owned?.pattern||"",material:$("#purchase-material").value.trim()||owned?.material||owned?.fabric||"",productUrl:$("#purchase-url").value.trim()},price=Number($("#purchase-price").value)||0;if(!candidate.title&&!candidate.category)return toast("Describe the item or choose an owned garment.");button.disabled=true;$("#purchase-result").innerHTML='<div class="result-placeholder" style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:24px 10px;"><div style="width:110px;height:110px;position:relative;display:flex;align-items:center;justify-content:center;"><img src="./assets/loader/outfit-build-step-2.png" alt="Comparing items" style="width:100%;height:100%;object-fit:contain;animation:outfit-morph-enter 0.5s ease-out;" /></div><div style="width:160px;height:6px;background:var(--line);border-radius:999px;overflow:hidden;"><div style="width:50%;height:100%;background:linear-gradient(90deg,var(--purple),var(--pink));border-radius:999px;"></div></div><b style="font-size:13px;color:var(--text, #1e1b4b);">Comparing with your wardrobe…</b></div>';try{renderPurchaseResult(deterministicPurchaseCheck(candidate,state.wardrobe,price))}catch(error){$("#purchase-result").innerHTML=`<div class="error-box"><b>Could not compare this purchase</b><p>${escapeHtml(error.message)}</p></div>`}finally{button.disabled=false}}
+async function runPurchaseCheck(event){event.preventDefault();const button=event.currentTarget.querySelector('[type="submit"]'),owned=state.wardrobe.find((item)=>item.id===$("#purchase-owned").value);const candidate={title:$("#purchase-title").value.trim()||owned?.title||"",category:$("#purchase-category").value.trim()||owned?.category||"",primaryColor:$("#purchase-color").value.trim()||owned?.primaryColor||"",pattern:$("#purchase-pattern").value.trim()||owned?.pattern||"",material:$("#purchase-material").value.trim()||owned?.material||owned?.fabric||"",productUrl:$("#purchase-url").value.trim()},price=Number($("#purchase-price").value)||0;if(!candidate.title&&!candidate.category)return toast("Describe the item or choose an owned garment.");button.disabled=true;$("#purchase-result").innerHTML='<div class="result-placeholder" style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:24px 10px;"><div style="width:110px;height:110px;position:relative;display:flex;align-items:center;justify-content:center;"><img src="./assets/loader/outfit-build-step-2.png" alt="Comparing items" style="width:100%;height:100%;object-fit:contain;animation:outfit-morph-enter 0.5s ease-out;" /></div><b style="font-size:13px;color:var(--text, #1e1b4b);">Comparing with your wardrobe…</b></div>';try{renderPurchaseResult(deterministicPurchaseCheck(candidate,state.wardrobe,price))}catch(error){$("#purchase-result").innerHTML=`<div class="error-box"><b>Could not compare this purchase</b><p>${escapeHtml(error.message)}</p></div>`}finally{button.disabled=false}}
 function renderPurchaseResult(result){const similar=(result.similarityMatches||[]).map(match=>state.wardrobe.find(x=>x.id===(match.wardrobeItemId||match.item?.id))).filter(Boolean);const looks=(result.outfitExamples||[]).map(x=>({...x,itemIds:x.itemIds||[]}));$("#purchase-result").innerHTML=`<div class="purchase-verdict"><span>WARDROBE MATCH</span><h3>${escapeHtml(pretty(result.verdict||"consider"))}</h3><p>${escapeHtml(result.summary||(result.reasons||[])[0]||"")}</p></div><div class="purchase-counts">${metricCards([[similar.length,"similar owned items"],[looks.length,"wardrobe combinations"],[result.compatiblePieceCount||new Set(looks.flatMap(x=>x.itemIds)).size,"compatible pieces"]])}</div>${similar.length?`<h4>Similar pieces you own</h4><div class="look-thumbs purchase-similar">${similar.map(item=>`<img src="${safeUrl(item.image)}" alt="${escapeHtml(item.title)}">`).join("")}</div>`:""}<h4>Ways to wear it</h4><div class="purchase-looks">${looks.slice(0,4).map((look,index)=>`<article><b>Outfit ${index+1}</b><div class="look-thumbs">${look.itemIds.map(id=>state.wardrobe.find(x=>x.id===id)).filter(Boolean).map(item=>`<img src="${safeUrl(item.image)}" alt="${escapeHtml(item.title)}">`).join("")}</div><p>${escapeHtml(look.explanation||"")}</p></article>`).join("")||emptyBlock("No complete combination found","Add more wardrobe categories through Camera.")}</div>`}
 
 async function shareGeneratedOutfit(){const outfit=state.stylistResult?.best;if(!outfit)return;try{const saved=await callCoreApi(state.user,"/v1/outfits/save",{outfit,source:state.stylistSource||"ai_stylist_web",occasion:state.stylistResult.occasion});state.outfits.unshift({id:saved.id,userId:state.user.uid,outfit,wardrobeItemIds:outfit.wardrobeItemIds,occasion:state.stylistResult.occasion});await shareOutfit("saved",saved.id)}catch(error){toast(`Could not share: ${error.message}`)}}
