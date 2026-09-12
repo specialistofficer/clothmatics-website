@@ -64,7 +64,7 @@ try:
     import venv
     if not ENV.exists():
         venv.EnvBuilder(with_pip=False, system_site_packages=True).create(ENV)
-    
+
     cand = str(ENV / 'bin' / 'python')
     if (ENV / 'bin' / 'python').exists():
         probe = subprocess.run([cand, '-c', 'import sys; print(sys.version)'], capture_output=True)

@@ -29,10 +29,22 @@ const sourceText=new TextDecoder().decode(python);
 const route=`const CODE=${JSON.stringify(sourceText)};\nexport function onRequestGet(){return new Response(CODE,{headers:{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});}\n`;
 await mkdir(join(target,'functions','api'),{recursive:true});
 await writeFile(join(target,'functions','api','kaggle-source.js'),route);
+await writeFile(join(root,'functions','api','kaggle-source.js'),route);
 console.log(`Pages Function /api/kaggle-source SHA256 ${createHash('sha256').update(python).digest('hex')}`);
-const appPath=join(target,'app.js');
-const app=await readFile(appPath,'utf8');
 const encoded=Buffer.from(python).toString('base64');
-await writeFile(appPath,`${app}\n/*__CLOTHMATICS_KAGGLE_SOURCE_BASE64_START__${encoded}__CLOTHMATICS_KAGGLE_SOURCE_BASE64_END__*/\n`);
+const sourceMarker=/\n?\/\*__CLOTHMATICS_KAGGLE_SOURCE_BASE64_START__[A-Za-z0-9+/=]+__CLOTHMATICS_KAGGLE_SOURCE_BASE64_END__\*\/\s*$/;
+const embedSource=app=>`${app.replace(sourceMarker,'').trimEnd()}\n/*__CLOTHMATICS_KAGGLE_SOURCE_BASE64_START__${encoded}__CLOTHMATICS_KAGGLE_SOURCE_BASE64_END__*/\n`;
+const appPath=join(target,'app.js');
+await writeFile(appPath,embedSource(await readFile(appPath,'utf8')));
+await writeFile(join(root,'app.js'),embedSource(await readFile(join(root,'app.js'),'utf8')));
+await mkdir(join(root,'downloads'),{recursive:true});
+for(const name of ['clothmatics_ghost_v9.py','clothmatics_ghost_v9.ipynb','clothmatics_ghost_v9_2.py','clothmatics_ghost_v9_2.ipynb']){
+ await copyFile(join(target,'downloads',name),join(root,'downloads',name));
+}
+for(const name of ['clothmatics_ghost_v9.txt','clothmatics_ghost_v9_source.js']){
+ await copyFile(join(target,'downloads',name),join(root,'downloads',name));
+}
+await writeFile(join(root,'clothmatics_ghost_v9_source.js'),python);
+await writeFile(join(root,'clothmatics_ghost_v9_source.mjs'),python);
 console.log(`app.js embedded Kaggle source SHA256 ${createHash('sha256').update(python).digest('hex')}`);
 console.log('Prepared website assets and Pages Functions in '+target);

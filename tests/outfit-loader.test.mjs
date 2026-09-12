@@ -401,4 +401,27 @@ test('complete-look prioritizes 3D image in anchor hero and renders complete-loo
   assert(content.innerHTML.includes('complete-look-overlay'), 'Must have complete-look-overlay wrapper');
 });
 
+test('AI Stylist in app.js renders transparent orbit loader during outfit generation', async () => {
+  const appJs = fs.readFileSync(path.resolve('app.js'), 'utf8');
+  const garmentStudioCss = fs.readFileSync(path.resolve('garment-studio.css'), 'utf8');
+  const companionCss = fs.readFileSync(path.resolve('companion.css'), 'utf8');
+
+  // Must import outfitOrbitLoaderMarkup
+  assert(appJs.includes('outfitOrbitLoaderMarkup'), 'app.js must import outfitOrbitLoaderMarkup');
+
+  // Must invoke outfitOrbitLoaderMarkup inside runStylist
+  assert(appJs.includes('kicker:"CLOTHMATICS AI STYLIST"'), 'Must set AI Stylist kicker');
+  assert(appJs.includes('title:"Curating Your Outfit"'), 'Must set styling title');
+  assert(appJs.includes('target.innerHTML=outfitOrbitLoaderMarkup'), 'Must render orbit loader into #stylist-result');
+
+  // Must cycle dynamic steps
+  assert(appJs.includes('Coordinating pieces from your wardrobe…'), 'Includes coordination step');
+  assert(appJs.includes('Finding best matching tops and bottoms…'), 'Includes matching tops/bottoms step');
+
+  // Must have transparent, dialogue-free CSS in stylesheets
+  assert(garmentStudioCss.includes('.ai-result .outfit-orbit-loader'), 'garment-studio.css must style .ai-result .outfit-orbit-loader');
+  assert(garmentStudioCss.includes('background: transparent !important'), 'Loader must be transparent');
+  assert(companionCss.includes('.ai-result .outfit-orbit-loader'), 'companion.css must style .ai-result .outfit-orbit-loader');
+});
+
 
