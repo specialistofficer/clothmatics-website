@@ -326,3 +326,79 @@ test('hangerLoaderMarkup with type: orbit renders orbit loader while preserving 
   assert(orbitHtml.includes('outfit-orbit-loader'), 'Type orbit must render outfit-orbit-loader');
 });
 
+test('ghostImageForMode prioritizes 3D generated image by default when available', async () => {
+  const { ghostImageForMode } = await import('../ghost-contract.mjs');
+
+  const itemWith3D = {
+    id: 'item-1',
+    image: 'https://example.com/source.jpg',
+    ghostMannequin: {
+      image: 'https://example.com/generated-3d.webp'
+    }
+  };
+
+  const itemWithout3D = {
+    id: 'item-2',
+    image: 'https://example.com/source.jpg'
+  };
+
+  // Default (mode omitted) should prioritize 3D if present
+  assert.equal(ghostImageForMode(itemWith3D), 'https://example.com/generated-3d.webp');
+  assert.equal(ghostImageForMode(itemWithout3D), 'https://example.com/source.jpg');
+
+  // Explicit 'normal' mode must respect normal image
+  assert.equal(ghostImageForMode(itemWith3D, 'normal'), 'https://example.com/source.jpg');
+
+  // Explicit '3d' mode
+  assert.equal(ghostImageForMode(itemWith3D, '3d'), 'https://example.com/generated-3d.webp');
+});
+
+test('complete-look prioritizes 3D image in anchor hero and renders complete-look-overlay loader', async () => {
+  const { createCompleteLookController } = await import('../complete-look.js');
+
+  globalThis.document = {
+    _elements: {
+      'complete-look-dialog': { open: false, showModal() { this.open = true; }, close() { this.open = false; }, addEventListener() {} },
+      'complete-look-content': { innerHTML: '', querySelector() { return null; }, querySelectorAll() { return []; } },
+      'close-complete-look': { addEventListener() {} },
+      'garment-dialog': { open: false, close() { this.open = false; } }
+    },
+    getElementById(id) { return this._elements[id] || null; },
+    createElement(tag) { return { tagName: tag, textContent: '', get innerHTML() { return this.textContent; }, set innerHTML(val) { this.textContent = val; } }; }
+  };
+
+  const dummyState = {
+    user: { uid: 'u1' },
+    wardrobe: [
+      {
+        id: 'garment-3d',
+        title: 'Linen Casual Shirt',
+        category: 'Shirts',
+        subCategory: 'Shirt',
+        primaryColor: 'White',
+        image: 'https://example.com/shirt-source.jpg',
+        ghostMannequin: {
+          image: 'https://example.com/shirt-3d.webp'
+        }
+      }
+    ],
+    profile: { gender: 'men' }
+  };
+
+  const controller = createCompleteLookController({
+    getState: () => dummyState,
+    onToast: () => {}
+  });
+
+  controller.open('garment-3d');
+  const content = document.getElementById('complete-look-content');
+
+  // Anchor hero must use 3D image
+  assert(content.innerHTML.includes('https://example.com/shirt-3d.webp'), 'Must render 3D mannequin in hero');
+  assert(content.innerHTML.includes('3D Mannequin'), 'Must include 3D Mannequin badge');
+
+  // Loader must have overlay class
+  assert(content.innerHTML.includes('complete-look-overlay'), 'Must have complete-look-overlay wrapper');
+});
+
+

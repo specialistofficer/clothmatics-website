@@ -319,29 +319,34 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
       activeItem.fit
     ].filter(Boolean).join(" · ");
 
-    // 0. Top revolving clothes orbit loader placed at the top of the dialog
-    const topLoaderHtml = isSearching ? `
-      <div class="complete-look-top-loader">
-        ${outfitOrbitLoaderMarkup({
-          kicker: "CLOTHMATICS AI STYLIST",
-          title: "Curating Complete Look",
-          subtitle: "AI IS COORDINATING YOUR PERFECT PIECES…",
-          statusMessage: "Curating your complete 4-piece look…",
-          hidden: false
-        })}
+    // 0. Floating overlay loader placed on top of the current page/dialog
+    const overlayLoaderHtml = isSearching ? `
+      <div class="complete-look-overlay complete-look-top-loader" role="dialog" aria-modal="true" aria-label="Curating Complete Look">
+        <div class="complete-look-overlay-card">
+          ${outfitOrbitLoaderMarkup({
+            kicker: "CLOTHMATICS AI STYLIST",
+            title: "Curating Complete Look",
+            subtitle: "AI IS COORDINATING YOUR PERFECT PIECES…",
+            statusMessage: "Curating your complete 4-piece look…",
+            hidden: false
+          })}
+        </div>
       </div>
     ` : "";
 
-    // 1. Hero banner
+    // 1. Hero banner with 3D mannequin priority
+    const has3d = Boolean(activeItem.ghostMannequin?.image);
+    const heroImage = has3d ? activeItem.ghostMannequin.image : activeItem.image;
     const heroHtml = `
       <div class="complete-look-hero">
         <div class="complete-look-hero-img-wrap">
-          <img src="${safeUrl(activeItem.image) || "./assets/clothmatics-logo.png"}" alt="${escapeHtml(activeItem.title || "Garment")}">
+          <img src="${safeUrl(heroImage) || "./assets/clothmatics-logo.png"}" alt="${escapeHtml(activeItem.title || "Garment")}">
         </div>
         <div class="complete-look-hero-info">
           <span class="complete-look-kicker">SHOP TO COMPLETE THE LOOK</span>
           <h2>Style with your ${escapeHtml(activeItem.title || "Garment")}</h2>
           <div class="complete-look-hero-meta">
+            ${has3d ? '<span class="complete-look-hero-3d-badge">✨ 3D Mannequin</span>' : ""}
             <span>${escapeHtml(anchorMeta || "Wardrobe Piece")}</span>
             <span class="complete-look-gender-tag">${escapeHtml(genderLabel)}</span>
             ${hasProfileSizes ? `<span class="complete-look-size-tag">📏 ${escapeHtml(sizesSummary)}</span>` : "<span>Universal sizing</span>"}
@@ -541,7 +546,7 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
     `;
 
     container.innerHTML = `
-      ${topLoaderHtml}
+      ${overlayLoaderHtml}
       ${heroHtml}
       ${categoryTabsHtml}
       ${filterBoxHtml}

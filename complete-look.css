@@ -569,9 +569,56 @@
   }
 }
 
-.complete-look-top-loader {
-  width: 100%;
-  margin-bottom: 22px;
+/* Floating Overlay Loader — Appears gracefully ON TOP of current page/dialog */
+.complete-look-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(15, 12, 34, 0.62);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: completeLookFadeIn 0.22s ease-out;
+}
+
+.complete-look-overlay-card {
+  width: min(540px, 94vw);
+  max-height: 88vh;
+  overflow-y: auto;
+  background: #ffffff;
+  border-radius: 28px;
+  padding: 16px 20px 24px;
+  box-shadow: 0 24px 64px -12px rgba(15, 12, 34, 0.45), 0 0 0 1px rgba(108, 63, 242, 0.16);
+  animation: completeLookScaleUp 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes completeLookFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes completeLookScaleUp {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* 3D Mannequin badge on Anchor Garment Banner */
+.complete-look-hero-3d-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, rgba(108, 63, 242, 0.14), rgba(236, 72, 153, 0.14));
+  color: #6c3ff2;
+  border: 1px solid rgba(108, 63, 242, 0.25);
 }
 
 .outfit-moving-progress-bar {

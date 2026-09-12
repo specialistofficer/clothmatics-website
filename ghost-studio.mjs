@@ -1,17 +1,18 @@
-import {analyzeGhostGarment,buildGhostAnalysisFromItem,hasReusableGhostMetadata,generateGhostGarment,getGhostSource,verifyGhostResult,ghostStorageBlob,downloadGhostGarment} from './ghost-mannequin.mjs';
+import {analyzeGhostGarment,buildGhostAnalysisFromItem,hasReusableGhostMetadata,isLowerGhostCategory,refineGhostAnalysis,generateGhostGarment,getGhostSource,verifyGhostResult,ghostStorageBlob,downloadGhostGarment} from './ghost-mannequin.mjs';
 import {uploadGarmentImage,deleteGarmentUpload} from './garment-upload.mjs';
 import {hangerLoaderMarkup,updateHangerLoader} from './garment-progress.mjs?v=20260912-outfit-loader-v10';
 
-export function createGhostStudio({getUser,getItem,save,onSaved,onQuota,onRequestAdmin,onDelete,escapeHtml,safeUrl,services={}}){
+export function createGhostStudio({getUser,getItem,save,onSaved,onQuota,onRequestAdmin,onDelete,onOpenGarment,escapeHtml,safeUrl,services={}}){
   const api={analyzeGhostGarment,generateGhostGarment,getGhostSource,verifyGhostResult,ghostStorageBlob,downloadGhostGarment,uploadGarmentImage,deleteGarmentUpload,...services};
   const dialog=document.createElement('dialog');dialog.className='ghost-studio';dialog.setAttribute('aria-labelledby','ghost-studio-title');document.body.append(dialog);
-  let current=null,controller=null,busy=false,saving=false,analysis=null,result=null,resultUrl=null,source=null,quality=null,replacement=false,expectedImage='';
+  let current=null,controller=null,busy=false,saving=false,analysis=null,result=null,resultUrl=null,source=null,quality=null,rejected=false,automaticRetryUsed=false,replacement=false,expectedImage='';
   const status=message=>{dialog.querySelector('[data-ghost-status]').textContent=message;updateHangerLoader(dialog,message,busy);};
   const cleanup=()=>{controller?.abort();if(resultUrl)URL.revokeObjectURL(resultUrl);resultUrl=null;};
-  const resetResult=()=>{cleanup();analysis=null;result=null;source=null;quality=null;};
+  const resetResult=()=>{cleanup();analysis=null;result=null;source=null;quality=null;rejected=false;automaticRetryUsed=false;};
+  const showResult=()=>{if(!result)return;if(!resultUrl)resultUrl=URL.createObjectURL(result);const img=dialog.querySelector('[data-ghost-result]');img.src=resultUrl;img.hidden=false;dialog.querySelector('[data-ghost-placeholder]').hidden=true;};
   function render(){
     const saved=current.ghostMannequin?.image;
-    dialog.innerHTML=`<header class="ghost-header"><button type="button" class="dialog-close" data-ghost-close aria-label="Close 3D studio">×</button><span class="app-kicker">3D GARMENT STUDIO</span><h2 id="ghost-studio-title">${escapeHtml(current.title||'Your garment')}</h2><p>Compare your original with the AI-generated 3D image. Photo analysis and quality checks use your shared AI allowance.</p></header><div class="ghost-content"><div class="ghost-comparison"><figure><img src="${safeUrl(current.image)}" alt="Original garment"><figcaption>Original wardrobe photo</figcaption></figure><figure><img data-ghost-result ${saved?`src="${safeUrl(saved)}"`:'hidden'} alt="AI-generated 3D garment"><div data-ghost-placeholder ${saved?'hidden':''}>Your 3D image will appear here</div><figcaption>AI-generated 3D image</figcaption></figure></div>${hangerLoaderMarkup()}</div><footer class="ghost-footer"><p data-ghost-status role="status" aria-live="polite">${saved?'Your original and saved 3D image are available below.':'Ready to inspect your garment.'}</p><div class="ghost-actions"><button type="button" class="button button-primary" data-ghost-retry hidden>Retry</button><button type="button" class="button button-ghost" data-ghost-request hidden>Request admin generation</button><button type="button" class="button button-primary" data-ghost-regenerate>${saved?'Regenerate 3D':'Create 3D image'}</button><button type="button" class="button button-ghost" data-ghost-download ${saved?'':'hidden'}>Download 3D image</button><button type="button" class="button danger-button" data-ghost-delete ${saved?'':'hidden'}>Delete 3D image</button><button type="button" class="button button-ghost" data-ghost-close>Close</button></div></footer>`;
+    dialog.innerHTML=`<header class="ghost-header"><button type="button" class="dialog-close" data-ghost-close aria-label="Close 3D studio">×</button><span class="app-kicker">3D GARMENT STUDIO</span><h2 id="ghost-studio-title">${escapeHtml(current.title||'Your garment')}</h2><p>Compare your original with the AI-generated 3D image. Photo analysis and quality checks use your shared AI allowance.</p></header><div class="ghost-content"><div class="ghost-comparison"><figure><img src="${safeUrl(current.image)}" alt="Original garment"><figcaption>Original wardrobe photo</figcaption></figure><figure><img data-ghost-result ${saved?`src="${safeUrl(saved)}"`:'hidden'} alt="AI-generated 3D garment"><div data-ghost-placeholder ${saved?'hidden':''}>Your 3D image will appear here</div><figcaption>AI-generated 3D image</figcaption></figure></div>${hangerLoaderMarkup()}</div><footer class="ghost-footer"><p data-ghost-status role="status" aria-live="polite">${saved?'Your original and saved 3D image are available below.':'Ready to inspect your garment.'}</p><div class="ghost-actions"><button type="button" class="button button-ghost" data-ghost-back>← Back to Garment</button><button type="button" class="button button-primary" data-ghost-retry hidden>Retry</button><button type="button" class="button button-ghost" data-ghost-request hidden>Request admin generation</button><button type="button" class="button button-primary" data-ghost-regenerate>${saved?'Regenerate 3D':'Create 3D image'}</button><button type="button" class="button button-ghost" data-ghost-download ${saved?'':'hidden'}>Download 3D image</button><button type="button" class="button danger-button" data-ghost-delete ${saved?'':'hidden'}>Delete 3D image</button><button type="button" class="button button-ghost" data-ghost-close>Close</button></div></footer>`;
   }
   function setBusy(value){
     busy=value;dialog.setAttribute('aria-busy',String(value));
@@ -31,18 +32,25 @@ export function createGhostStudio({getUser,getItem,save,onSaved,onQuota,onReques
       }
       if(!result){status('Creating your 3D garment… This can take a few minutes.');result=await api.generateGhostGarment(user,item.id,analysis,{signal});}
       if(!quality){
-        status('Checking color, fabric, shape and empty openings…');
-        try{quality=await api.verifyGhostResult(user,source,result,{signal});}
-        catch(error){if(error.code==='quality_rejected'){result=null;quality=null;}throw error;}
-        finally{onQuota?.();}
+        while(!quality){
+          status('Checking color, fabric, shape and empty openings…');
+          try{quality=await api.verifyGhostResult(user,source,result,{signal,palette:analysis.manifest?.palette,category:analysis.category});}
+          catch(error){
+            if(error.code==='quality_rejected'&&isLowerGhostCategory(analysis.category)&&!automaticRetryUsed){
+              automaticRetryUsed=true;analysis=refineGhostAnalysis(analysis,error.quality);if(resultUrl)URL.revokeObjectURL(resultUrl);resultUrl=null;result=null;
+              status('Refining the lower garment from the photo comparison…');result=await api.generateGhostGarment(user,item.id,analysis,{signal});continue;
+            }
+            if(error.code==='quality_rejected'){quality=error.quality||null;rejected=true;showResult();}
+            throw error;
+          }finally{onQuota?.();}
+        }
       }
       if(signal.aborted||getUser()?.uid!==user.uid)throw new DOMException('Aborted','AbortError');
-      if(!resultUrl)resultUrl=URL.createObjectURL(result);
-      const img=dialog.querySelector('[data-ghost-result]');img.src=resultUrl;img.hidden=false;dialog.querySelector('[data-ghost-placeholder]').hidden=true;
+      showResult();
       saving=true;dialog.querySelectorAll('[data-ghost-close]').forEach(button=>button.disabled=true);status('Saving the checked 3D image alongside your original…');
       const oldKey=item.ghostMannequin?.imageObjectKey;
       upload=await api.uploadGarmentImage(user,await api.ghostStorageBlob(result),{signal});
-      const value={image:upload.imageUrl,imageObjectKey:upload.objectKey,sourceImage:item.image,category:analysis.category,prompt:analysis.prompt,contractVersion:2,quality,kind:'ai_generated'};
+      const value={image:upload.imageUrl,imageObjectKey:upload.objectKey,sourceImage:item.image,category:analysis.category,prompt:analysis.prompt,...(analysis.manifest?{manifest:analysis.manifest}:{}),contractVersion:2,quality,kind:'ai_generated'};
       await save(user,item,value,{allowOverwrite:replacement,expectedImage,metadata:analysis.metadata});
       upload=null;if(analysis.metadata){Object.assign(item,analysis.metadata);if(item.visualProfile)item.visualProfile={...item.visualProfile,sourceImage:item.image};}item.ghostMannequin=value;replacement=false;expectedImage=value.image;
       // Commit the replacement before removing the former object. A failed save
@@ -52,7 +60,7 @@ export function createGhostStudio({getUser,getItem,save,onSaved,onQuota,onReques
     }catch(error){
       if(upload)await api.deleteGarmentUpload(user,upload.objectKey).catch(()=>{});
       if(error.name!=='AbortError'){
-        status(error.message);const retry=dialog.querySelector('[data-ghost-retry]');retry.hidden=false;retry.textContent=result?(quality?'Retry saving':'Retry quality check'):'Try another 3D image';
+        status(error.message);const retry=dialog.querySelector('[data-ghost-retry]');retry.hidden=false;retry.textContent=rejected?'Try another 3D image':result?(quality?'Retry saving':'Retry quality check'):'Try another 3D image';
         if(error.status>=500||/offline|unavailable|timed out/i.test(error.message))dialog.querySelector('[data-ghost-request]').hidden=false;
       }
     }finally{saving=false;setBusy(false);dialog.querySelectorAll('[data-ghost-close]').forEach(button=>button.disabled=false);}
@@ -61,9 +69,18 @@ export function createGhostStudio({getUser,getItem,save,onSaved,onQuota,onReques
   // A close event can be queued just before the same dialog is reopened.
   dialog.addEventListener('close',()=>{if(!dialog.open)cleanup();});
   dialog.addEventListener('click',async event=>{
+    if(event.target===dialog&&!saving){dialog.close();return;}
     if(event.target.closest('[data-ghost-close]')){if(!saving)dialog.close();return;}
+    if(event.target.closest('[data-ghost-back]')){
+      if(!saving){
+        const garmentId=current?.id;
+        dialog.close();
+        if(garmentId&&onOpenGarment)onOpenGarment(garmentId);
+      }
+      return;
+    }
     if(busy)return;
-    if(event.target.closest('[data-ghost-retry]')){void run();return;}
+    if(event.target.closest('[data-ghost-retry]')){if(rejected){if(resultUrl)URL.revokeObjectURL(resultUrl);resultUrl=null;result=null;quality=null;rejected=false;}void run();return;}
     if(event.target.closest('[data-ghost-regenerate]')){resetResult();replacement=Boolean(current.ghostMannequin?.image);expectedImage=current.ghostMannequin?.image||'';render();void run();return;}
     if(event.target.closest('[data-ghost-delete]')){
       setBusy(true);try{if(await onDelete?.(current.id)){resetResult();current=getItem(current.id)||current;replacement=false;expectedImage='';render();status('3D image deleted. Your original garment is still saved.');}}catch(error){status(error.message);}finally{setBusy(false);}return;
@@ -73,5 +90,19 @@ export function createGhostStudio({getUser,getItem,save,onSaved,onQuota,onReques
       try{const blob=quality&&result?result:await api.downloadGhostGarment(getUser(),current.id);const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=`clothmatics-3d.${blob.type==='image/webp'?'webp':'png'}`;link.click();setTimeout(()=>URL.revokeObjectURL(url),30000);}catch{status('Could not download this image. Please try again.');}
     }
   });
-  return {open(id){if(busy)return;const item=getItem(id);if(!item||!getUser())return;resetResult();current=item;replacement=false;expectedImage=item.ghostMannequin?.image||'';render();dialog.showModal();if(!item.ghostMannequin?.image)void run();}};
+  return {
+    open(id){
+      if(busy)return;
+      const item=getItem(id);
+      if(!item||!getUser())return;
+      document.querySelectorAll('dialog[open]').forEach(d=>{if(d!==dialog){try{d.close();}catch{}}});
+      resetResult();
+      current=item;
+      replacement=false;
+      expectedImage=item.ghostMannequin?.image||'';
+      render();
+      dialog.showModal();
+      if(!item.ghostMannequin?.image)void run();
+    }
+  };
 }
