@@ -1,7 +1,9 @@
 import { clean } from "../../_shared/firebase-rest.mjs";
 import {
   normalizeProduct,
-  fetchSerpApiShopping
+  fetchSerpApiShopping,
+  fetchSerperShopping,
+  fetchShoppingWithFallback
 } from "./search.js";
 
 function apiResponse(body, status = 200) {
@@ -1972,6 +1974,15 @@ export async function handleCompleteLook({
   env = {}
 }) {
   const apiKey = String(env.SERPAPI_API_KEY || env.SERPAPI_KEY || "").trim();
+  const serperApiKey = String(
+    env.SERPER_API_KEY ||
+    env.SERPER_KEY ||
+    env.SERVER_DEV_API_KEY ||
+    env.SERVER_API_KEY ||
+    env.SERPER_DEV_API_KEY ||
+    ""
+  ).trim();
+  const hasShoppingKey = Boolean(apiKey || serperApiKey);
   const geminiKey = String(env.GEMINI_API_KEY || "").trim();
 
   const rawGender = String(profile.gender || profile.shoppingProfile?.gender || "").toLowerCase();
@@ -2013,19 +2024,18 @@ export async function handleCompleteLook({
     style: p.style
   }));
 
-  // Fetch SerpApi in parallel for each piece's specific search term if apiKey is present
+  // Fetch SerpApi / Serper in parallel for each piece's specific search term if shopping key is present
   let liveByPieceIndex = [];
   let isSample = false;
   let notice = "";
 
-  if (apiKey) {
+  if (hasShoppingKey) {
     try {
       const searchTasks = pieces.map(async (piece) => {
         const query = (piece.category === targetCategory && customQuery) ? customQuery : piece.searchTerm;
         try {
-          const data = await fetchSerpApiShopping({ query, gl, hl, apiKey });
-          const raw = Array.isArray(data?.shopping_results) ? data.shopping_results : [];
-          return raw
+          const { items } = await fetchShoppingWithFallback({ query, gl, hl, env });
+          return items
             .map((p, idx) => ({
               ...normalizeProduct(p, idx),
               category: piece.category,
@@ -2033,7 +2043,7 @@ export async function handleCompleteLook({
             }))
             .filter(hasValidImage);
         } catch (err) {
-          console.warn(`SerpApi search error for ${piece.category}:`, err.message);
+          console.warn(`Shopping search error for ${piece.category}:`, err.message);
           return [];
         }
       });
@@ -2047,13 +2057,13 @@ export async function handleCompleteLook({
         notice = "No live shopping results found for this specific query. Showing curated matches.";
       }
     } catch (error) {
-      console.warn("SerpApi live request error:", error.message);
+      console.warn("Shopping live request error:", error.message);
       isSample = true;
       notice = "Shopping provider is temporarily unavailable. Showing preview matches.";
     }
   } else {
     isSample = true;
-    notice = "SerpApi API key not configured in Cloudflare environment yet. Displaying sample products for preview.";
+    notice = "SerpApi API key not configured in Cloudflare environment yet (Serper.dev supported as fallback). Displaying sample products for preview.";
   }
 
   // Step 3: For each piece in the outfit, pool, filter, deduplicate, and strictly cap at maximum 3 products

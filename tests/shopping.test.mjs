@@ -4,7 +4,9 @@ import {
   SAMPLE_SHOPPING_RESULTS,
   normalizeProduct,
   filterByBudget,
-  handleShoppingSearch
+  handleShoppingSearch,
+  fetchSerperShopping,
+  fetchShoppingWithFallback
 } from "../functions/api/shopping/search.js";
 import {
   getFallbackStylingPlan,
@@ -58,6 +60,193 @@ test("normalizeProduct correctly maps SerpApi shopping_results format", () => {
   assert.equal(product.discountPercent, 53); // (1000 - 470) / 1000 = 53%
   assert.equal(product.thumbnail, "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:sample");
   assert.equal(product.delivery, "Free delivery");
+});
+
+test("normalizeProduct correctly maps Serper.dev (server.dev) shopping format", () => {
+  const serperItem = {
+    title: "Highlander Men Olive Green Slim Fit Casual Shirt",
+    source: "Myntra",
+    link: "https://www.myntra.com/shirts/highlander/olive-shirt/123",
+    price: "₹699",
+    delivery: "Free delivery",
+    imageUrl: "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:serper-sample",
+    rating: 4.3,
+    ratingCount: 215,
+    productId: "serper-item-998",
+    oldPrice: "₹1,399",
+    offers: "50% off",
+    position: 2
+  };
+
+  const product = normalizeProduct(serperItem, 1);
+  assert.equal(product.id, "serper-item-998");
+  assert.equal(product.position, 2);
+  assert.equal(product.source, "Myntra");
+  assert.equal(product.extractedPrice, 699);
+  assert.equal(product.extractedOldPrice, 1399);
+  assert.equal(product.discountPercent, 50);
+  assert.equal(product.thumbnail, "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:serper-sample");
+  assert.equal(product.rating, 4.3);
+  assert.equal(product.reviews, 215);
+  assert.equal(product.delivery, "Free delivery");
+});
+
+test("fetchSerperShopping issues POST with X-API-KEY and JSON query", async () => {
+  const originalFetch = globalThis.fetch;
+  let requestedUrl = "";
+  let requestHeaders = {};
+  let requestBody = null;
+
+  globalThis.fetch = async (url, options = {}) => {
+    requestedUrl = String(url);
+    requestHeaders = options.headers || {};
+    requestBody = JSON.parse(options.body || "{}");
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({
+        shopping: [
+          {
+            title: "Test Serper Shirt",
+            source: "Amazon",
+            link: "https://amazon.in/test",
+            price: "₹499",
+            imageUrl: "https://image.example.com/test.jpg",
+            productId: "test-1"
+          }
+        ]
+      })
+    };
+  };
+
+  try {
+    const res = await fetchSerperShopping({
+      query: "men black shirt",
+      gl: "in",
+      hl: "en",
+      apiKey: "test-serper-key-xyz"
+    });
+
+    assert.equal(requestedUrl, "https://google.serper.dev/shopping");
+    assert.equal(requestHeaders["X-API-KEY"], "test-serper-key-xyz");
+    assert.equal(requestHeaders["Content-Type"], "application/json");
+    assert.equal(requestBody.q, "men black shirt");
+    assert.equal(requestBody.gl, "in");
+    assert.equal(requestBody.hl, "en");
+    assert.equal(res.shopping.length, 1);
+    assert.equal(res.shopping[0].title, "Test Serper Shirt");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("fetchShoppingWithFallback queries Serper.dev directly when only SERPER_API_KEY is configured", async () => {
+  const originalFetch = globalThis.fetch;
+  let calledUrl = "";
+
+  globalThis.fetch = async (url) => {
+    calledUrl = String(url);
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({
+        shopping: [{ title: "Serper Direct", price: "₹999", productId: "s1", imageUrl: "https://img.com/1.jpg" }]
+      })
+    };
+  };
+
+  try {
+    const res = await fetchShoppingWithFallback({
+      query: "navy chinos",
+      env: { SERPER_API_KEY: "serper-key-123" }
+    });
+
+    assert.equal(calledUrl, "https://google.serper.dev/shopping");
+    assert.equal(res.provider, "serper");
+    assert.equal(res.hasKey, true);
+    assert.equal(res.items.length, 1);
+    assert.equal(res.items[0].title, "Serper Direct");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("fetchShoppingWithFallback recognizes SERVER_DEV_API_KEY and SERPER_KEY aliases", async () => {
+  const originalFetch = globalThis.fetch;
+  let calledCount = 0;
+
+  globalThis.fetch = async () => {
+    calledCount++;
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({
+        shopping: [{ title: "Alias Product", price: "₹850", productId: "alias-1", imageUrl: "https://img.com/a.jpg" }]
+      })
+    };
+  };
+
+  try {
+    const res = await fetchShoppingWithFallback({
+      query: "white sneakers",
+      env: { SERVER_DEV_API_KEY: "my-server-dev-key" }
+    });
+    assert.equal(calledCount, 1);
+    assert.equal(res.provider, "serper");
+    assert.equal(res.items[0].title, "Alias Product");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("fetchShoppingWithFallback falls back to Serper.dev when SerpApi errors", async () => {
+  const originalFetch = globalThis.fetch;
+  const attemptedUrls = [];
+
+  globalThis.fetch = async (url) => {
+    const urlStr = String(url);
+    attemptedUrls.push(urlStr);
+
+    if (urlStr.includes("serpapi.com")) {
+      return {
+        ok: false,
+        status: 429,
+        text: async () => "Rate limit exceeded / Quota exhausted"
+      };
+    }
+
+    if (urlStr.includes("serper.dev")) {
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          shopping: [
+            { title: "Fallback Serper Item", price: "₹1,200", productId: "fb-1", imageUrl: "https://img.com/fb.jpg" }
+          ]
+        })
+      };
+    }
+
+    return { ok: false, status: 404, text: async () => "Not found" };
+  };
+
+  try {
+    const res = await fetchShoppingWithFallback({
+      query: "black blazer",
+      env: {
+        SERPAPI_API_KEY: "failing-serpapi-key",
+        SERPER_API_KEY: "working-serper-key"
+      }
+    });
+
+    assert.equal(attemptedUrls.length, 2);
+    assert(attemptedUrls[0].includes("serpapi.com"));
+    assert(attemptedUrls[1].includes("serper.dev"));
+    assert.equal(res.provider, "serper");
+    assert.equal(res.items[0].title, "Fallback Serper Item");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });
 
 test("filterByBudget respects minPrice and maxPrice limits", () => {

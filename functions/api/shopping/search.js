@@ -153,19 +153,24 @@ export const SAMPLE_SHOPPING_RESULTS = [
 
 export function normalizeProduct(raw = {}, index = 0) {
   const title = clean(raw.title || raw.name || "Shopping Product", 180);
-  const productId = clean(raw.product_id || raw.id || `item-${index + 1}`, 100);
+  const productId = clean(raw.product_id || raw.productId || raw.id || `item-${index + 1}`, 100);
   const productLink = String(raw.product_link || raw.link || "").trim();
   const source = clean(raw.source || raw.merchant || "Online Retailer", 80);
-  const sourceIcon = String(raw.source_icon || "").trim();
-  const price = clean(raw.price || (raw.extracted_price ? `₹${raw.extracted_price}` : "₹0"), 40);
-  const extractedPrice = Number(raw.extracted_price ?? (price.replace(/[^\d.]/g, "") || 0));
-  const oldPrice = clean(raw.old_price || "", 40);
-  const extractedOldPrice = Number(raw.extracted_old_price ?? (oldPrice.replace(/[^\d.]/g, "") || 0));
-  const thumbnail = String(raw.thumbnail || raw.serpapi_thumbnail || raw.image || "").trim();
+  const sourceIcon = String(raw.source_icon || raw.sourceIcon || "").trim();
+  const price = clean(raw.price || (raw.extracted_price ? `₹${raw.extracted_price}` : (raw.extractedPrice ? `₹${raw.extractedPrice}` : "₹0")), 40);
+  const rawNumeric = raw.extracted_price ?? raw.extractedPrice;
+  const parsedPrice = Number(String(price).replace(/[^\d.]/g, "") || 0);
+  const extractedPrice = Number.isFinite(Number(rawNumeric)) ? Number(rawNumeric) : (Number.isFinite(parsedPrice) ? parsedPrice : 0);
+  const oldPrice = clean(raw.old_price || raw.oldPrice || raw.secondPrice || "", 40);
+  const rawOldNumeric = raw.extracted_old_price ?? raw.extractedOldPrice;
+  const parsedOldPrice = Number(String(oldPrice).replace(/[^\d.]/g, "") || 0);
+  const extractedOldPrice = Number.isFinite(Number(rawOldNumeric)) ? Number(rawOldNumeric) : (Number.isFinite(parsedOldPrice) ? parsedOldPrice : 0);
+  const thumbnail = String(raw.thumbnail || raw.serpapi_thumbnail || raw.imageUrl || raw.image || "").trim();
   const rating = Number.isFinite(Number(raw.rating)) ? Number(raw.rating) : null;
-  const reviews = Number.isFinite(Number(raw.reviews)) ? Number(raw.reviews) : null;
+  const rawReviews = raw.reviews ?? raw.ratingCount;
+  const reviews = Number.isFinite(Number(rawReviews)) ? Number(rawReviews) : null;
   const delivery = clean(raw.delivery || "", 80);
-  const tag = clean(raw.tag || (Array.isArray(raw.extensions) ? raw.extensions[0] : "") || "", 60);
+  const tag = clean(raw.tag || raw.offers || (Array.isArray(raw.extensions) ? raw.extensions[0] : "") || "", 60);
 
   let discountPercent = 0;
   if (extractedOldPrice > extractedPrice && extractedPrice > 0) {
@@ -230,31 +235,157 @@ export async function fetchSerpApiShopping({ query, gl = "in", hl = "en", apiKey
   return response.json();
 }
 
+/**
+ * Serper.dev (server.dev) Google Shopping API endpoint.
+ * Acts as high-performance alternative/fallback to SerpApi.
+ */
+export async function fetchSerperShopping({ query, gl = "in", hl = "en", apiKey }) {
+  const url = "https://google.serper.dev/shopping";
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "X-API-KEY": apiKey,
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    body: JSON.stringify({
+      q: query,
+      gl,
+      hl
+    })
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    throw new Error(`Serper error (${response.status}): ${text.slice(0, 200)}`);
+  }
+
+  return response.json();
+}
+
+/**
+ * Seamlessly queries SerpApi or Serper.dev with automatic fallback:
+ * 1. If SerpApi key is present, tries SerpApi first.
+ * 2. If SerpApi fails or quota runs out, automatically falls back to Serper.dev.
+ * 3. If only Serper key is present, queries Serper.dev directly.
+ */
+export async function fetchShoppingWithFallback({ query, gl = "in", hl = "en", env = {} }) {
+  const serpApiKey = String(env.SERPAPI_API_KEY || env.SERPAPI_KEY || "").trim();
+  const serperApiKey = String(
+    env.SERPER_API_KEY ||
+    env.SERPER_KEY ||
+    env.SERVER_DEV_API_KEY ||
+    env.SERVER_API_KEY ||
+    env.SERPER_DEV_API_KEY ||
+    ""
+  ).trim();
+  const preferredProvider = String(env.SHOPPING_PROVIDER || "").toLowerCase().trim();
+
+  let primaryError = null;
+  let fallbackError = null;
+
+  const shouldTrySerperFirst = (
+    preferredProvider === "serper" ||
+    preferredProvider === "server.dev" ||
+    (!serpApiKey && Boolean(serperApiKey))
+  );
+
+  if (shouldTrySerperFirst) {
+    if (serperApiKey) {
+      try {
+        const data = await fetchSerperShopping({ query, gl, hl, apiKey: serperApiKey });
+        const items = Array.isArray(data?.shopping) ? data.shopping : [];
+        if (items.length > 0) {
+          return { items, provider: "serper", hasKey: true };
+        }
+      } catch (err) {
+        console.warn("[shopping] Serper primary search error:", err?.message);
+        primaryError = err;
+      }
+    }
+
+    if (serpApiKey) {
+      try {
+        const data = await fetchSerpApiShopping({ query, gl, hl, apiKey: serpApiKey });
+        const items = Array.isArray(data?.shopping_results) ? data.shopping_results : [];
+        if (items.length > 0) {
+          return { items, provider: "serpapi", hasKey: true };
+        }
+        return { items: [], provider: "serpapi", hasKey: true };
+      } catch (err) {
+        console.warn("[shopping] SerpApi fallback search error:", err?.message);
+        fallbackError = err;
+      }
+    }
+  } else {
+    // Default: try SerpApi first
+    if (serpApiKey) {
+      try {
+        const data = await fetchSerpApiShopping({ query, gl, hl, apiKey: serpApiKey });
+        const items = Array.isArray(data?.shopping_results) ? data.shopping_results : [];
+        if (items.length > 0) {
+          return { items, provider: "serpapi", hasKey: true };
+        }
+        if (!serperApiKey) {
+          return { items: [], provider: "serpapi", hasKey: true };
+        }
+      } catch (err) {
+        console.warn("[shopping] SerpApi search error:", err?.message);
+        primaryError = err;
+      }
+    }
+
+    // Fallback to Serper.dev
+    if (serperApiKey) {
+      try {
+        const data = await fetchSerperShopping({ query, gl, hl, apiKey: serperApiKey });
+        const items = Array.isArray(data?.shopping) ? data.shopping : [];
+        if (items.length > 0) {
+          return { items, provider: "serper", hasKey: true };
+        }
+        return { items: [], provider: "serper", hasKey: true };
+      } catch (err) {
+        console.warn("[shopping] Serper.dev fallback search error:", err?.message);
+        fallbackError = err;
+      }
+    }
+  }
+
+  return {
+    items: [],
+    provider: null,
+    error: fallbackError || primaryError,
+    hasKey: Boolean(serpApiKey || serperApiKey)
+  };
+}
+
 export async function handleShoppingSearch({ q, minPrice, maxPrice, allowAboveBudget, gl = "in", hl = "en", env = {} }) {
   const cleanedQuery = clean(q, 200);
   if (!cleanedQuery) {
     return { ok: false, error: "A search query (q) is required.", status: 400 };
   }
 
-  const apiKey = String(env.SERPAPI_API_KEY || env.SERPAPI_KEY || "").trim();
+  const { items, provider, error, hasKey } = await fetchShoppingWithFallback({
+    query: cleanedQuery,
+    gl,
+    hl,
+    env
+  });
+
   let rawResults = [];
   let isSample = false;
   let notice = "";
 
-  if (apiKey) {
-    try {
-      const data = await fetchSerpApiShopping({ query: cleanedQuery, gl, hl, apiKey });
-      rawResults = Array.isArray(data?.shopping_results) ? data.shopping_results : [];
-    } catch (apiError) {
-      console.warn("[shopping-search] live_serpapi_failed", apiError?.message);
-      rawResults = SAMPLE_SHOPPING_RESULTS;
-      isSample = true;
-      notice = `SerpApi live request encountered an issue (${apiError?.message || "connection error"}). Showing sample results.`;
-    }
+  if (items.length > 0) {
+    rawResults = items;
+  } else if (hasKey) {
+    rawResults = SAMPLE_SHOPPING_RESULTS;
+    isSample = true;
+    notice = `Shopping search live request encountered an issue (${error?.message || "no live products found"}). Showing sample results.`;
   } else {
     rawResults = SAMPLE_SHOPPING_RESULTS;
     isSample = true;
-    notice = "SerpApi API key not configured in Cloudflare environment yet. Displaying sample products for preview.";
+    notice = "SerpApi API key not configured in Cloudflare environment yet (or configure Serper.dev / server.dev fallback). Displaying sample products for preview.";
   }
 
   const normalized = rawResults.map((item, index) => normalizeProduct(item, index));
@@ -268,6 +399,7 @@ export async function handleShoppingSearch({ q, minPrice, maxPrice, allowAboveBu
     unfilteredTotal: normalized.length,
     isSample,
     notice,
+    provider: provider || (isSample ? "sample" : "unknown"),
     status: 200
   };
 }
