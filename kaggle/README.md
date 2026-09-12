@@ -77,6 +77,16 @@ Published downloads:
 - https://clothmatics.pages.dev/downloads/clothmatics_ghost_v9.ipynb
 - https://clothmatics.pages.dev/downloads/clothmatics_ghost_v9.txt (use this
   text endpoint from a direct Kaggle cell; Pages serves it as a static asset)
+- https://clothmatics.pages.dev/downloads/clothmatics_ghost_v9_source.js (preferred
+  direct Kaggle endpoint; content is Python source despite the `.js` extension)
+- https://clothmatics.pages.dev/clothmatics_ghost_v9_source.js (preferred root
+  endpoint; Pages serves root JavaScript assets directly)
+- https://clothmatics.pages.dev/clothmatics_ghost_v9_source.mjs (final root
+  endpoint used by the direct Kaggle cell)
+- https://clothmatics.pages.dev/api/kaggle-source (final direct-run endpoint;
+  a Pages Function returns the verified Python source as plain text)
+- https://clothmatics.pages.dev/app.js (final fallback source: the direct cell
+  extracts the marked base64 source embedded in this already-served asset)
 
 The server keeps a bounded ten-minute result cache keyed by source/evidence/seed
 so a transport retry can reuse completed inference. New user attempts receive a

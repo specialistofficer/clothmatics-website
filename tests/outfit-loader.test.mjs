@@ -4,7 +4,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {
   OUTFIT_BUILD_STEPS,
+  OUTFIT_ORBIT_ITEMS,
+  OUTFIT_ORBIT_CENTER,
   outfitBuildLoaderMarkup,
+  outfitOrbitLoaderMarkup,
   hangerLoaderMarkup,
   updateHangerLoader
 } from '../garment-progress.mjs';
@@ -260,7 +263,67 @@ test('createCompleteLookController open() initializes and opens dialog without R
   assert(content.innerHTML.length > 50, 'Content must be rendered');
   assert(content.innerHTML.includes('Dark Wash Denim Jeans'), 'Must include active garment title');
   assert(content.innerHTML.includes('complete-look-top-loader'), 'Must render moving loader at top of screen');
-  assert(content.innerHTML.includes('outfit-build-loader'), 'Must include 3D progression outfit build loader');
+  assert(content.innerHTML.includes('outfit-orbit-loader') || content.innerHTML.includes('outfit-build-loader'), 'Must include 3D outfit loader');
   assert(!content.innerHTML.includes('complete-look-ready'), 'Must not have separate intermediate ready section');
+});
+
+test('OUTFIT_ORBIT_ITEMS defines 5 rotating clothes items and center outfit with valid assets', () => {
+  assert.equal(OUTFIT_ORBIT_ITEMS.length, 5, 'Must define exactly 5 orbit clothes items');
+
+  const expectedIds = ['tshirt', 'dress', 'bag', 'sneakers', 'jacket'];
+  const expectedNames = ['T-Shirt', 'Dress', 'Handbag', 'Sneakers', 'Jacket'];
+
+  for (let i = 0; i < 5; i++) {
+    const item = OUTFIT_ORBIT_ITEMS[i];
+    assert.equal(item.id, expectedIds[i]);
+    assert.equal(item.name, expectedNames[i]);
+    assert(item.image.includes('.png'));
+
+    const diskPath = path.resolve('assets/loader/orbit', path.basename(item.image));
+    assert(fs.existsSync(diskPath), 'Image file ' + diskPath + ' must exist on disk');
+    const stat = fs.statSync(diskPath);
+    assert(stat.size > 5000, 'Image file ' + diskPath + ' must not be empty');
+  }
+
+  assert(OUTFIT_ORBIT_CENTER.image.includes('center-outfit.png'));
+  const centerPath = path.resolve('assets/loader/orbit', 'center-outfit.png');
+  assert(fs.existsSync(centerPath), 'Center outfit image must exist');
+  assert(fs.statSync(centerPath).size > 10000, 'Center outfit image must not be empty');
+});
+
+test('outfitOrbitLoaderMarkup renders revolving orbit stage, center card, dashed track and 5 nodes', () => {
+  const html = outfitOrbitLoaderMarkup({
+    title: 'Curating Complete Look',
+    subtitle: 'AI IS COORDINATING YOUR PERFECT PIECES…',
+    statusMessage: 'Matching wardrobe coordinates…',
+    hidden: false
+  });
+
+  assert(html.includes('class="hanger-loader outfit-orbit-loader"'), 'Contains container classes');
+  assert(html.includes('Curating Complete Look'), 'Contains title');
+  assert(html.includes('AI IS COORDINATING YOUR PERFECT PIECES…'), 'Contains subtitle');
+  assert(html.includes('class="outfit-orbit-stage"'), 'Contains orbit stage');
+  assert(html.includes('class="outfit-orbit-track"'), 'Contains dashed orbit track');
+  assert(html.includes('class="outfit-orbit-center-card"'), 'Contains center card');
+  assert(html.includes('center-outfit.png'), 'Contains center outfit image');
+  assert(html.includes('class="outfit-orbit-ring"'), 'Contains revolving orbit ring');
+
+  for (const item of OUTFIT_ORBIT_ITEMS) {
+    assert(html.includes('data-orbit-id="' + item.id + '"'), 'Node for ' + item.id + ' must exist');
+    assert(html.includes(path.basename(item.image)), 'Image for ' + item.id + ' must exist');
+  }
+
+  assert(html.includes('class="outfit-moving-progress-bar"'), 'Contains moving progress bar');
+  assert(html.includes('class="outfit-moving-progress-runner"'), 'Contains moving runner');
+  assert(html.includes('data-hanger-message'), 'Provides status message element');
+  assert(html.includes('Matching wardrobe coordinates…'), 'Contains initial status message');
+});
+
+test('hangerLoaderMarkup with type: orbit renders orbit loader while preserving default build loader', () => {
+  const defaultHtml = hangerLoaderMarkup();
+  assert(defaultHtml.includes('outfit-build-loader'), 'Default must preserve outfit-build-loader');
+
+  const orbitHtml = hangerLoaderMarkup({ type: 'orbit' });
+  assert(orbitHtml.includes('outfit-orbit-loader'), 'Type orbit must render outfit-orbit-loader');
 });
 

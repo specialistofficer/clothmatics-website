@@ -123,7 +123,83 @@ export function outfitBuildLoaderMarkup({
   `.trim();
 }
 
+export const OUTFIT_ORBIT_ITEMS = [
+  { id: "tshirt", name: "T-Shirt", image: "./assets/loader/orbit/orbit-tshirt.png", angle: 270, x: 50, y: 0 },
+  { id: "dress", name: "Dress", image: "./assets/loader/orbit/orbit-dress.png", angle: 342, x: 97.55, y: 34.55 },
+  { id: "bag", name: "Handbag", image: "./assets/loader/orbit/orbit-bag.png", angle: 54, x: 79.39, y: 90.45 },
+  { id: "sneakers", name: "Sneakers", image: "./assets/loader/orbit/orbit-sneakers.png", angle: 126, x: 20.61, y: 90.45 },
+  { id: "jacket", name: "Jacket", image: "./assets/loader/orbit/orbit-jacket.png", angle: 198, x: 2.45, y: 34.55 }
+];
+
+export const OUTFIT_ORBIT_CENTER = {
+  id: "center-outfit",
+  name: "Complete Coordinated Look",
+  image: "./assets/loader/orbit/center-outfit.png"
+};
+
+export function outfitOrbitLoaderMarkup({
+  kicker = "CLOTHMATICS AI STYLIST",
+  title = "Curating Your Complete Look",
+  subtitle = "AI IS COORDINATING YOUR PERFECT PIECES…",
+  statusMessage = "Finding perfect coordinates for your outfit…",
+  hidden = false
+} = {}) {
+  const nodesHtml = OUTFIT_ORBIT_ITEMS.map((item) => `
+    <div class="outfit-orbit-node" data-orbit-id="${item.id}" style="--node-x: ${item.x}%; --node-y: ${item.y}%;">
+      <div class="outfit-orbit-bubble">
+        <img src="${item.image}" alt="${item.name}" loading="eager" />
+      </div>
+    </div>
+  `).join("");
+
+  return `
+    <div class="hanger-loader outfit-orbit-loader" data-phase="prepare"${hidden ? " hidden" : ""}>
+      <div class="outfit-loader-head">
+        <span class="outfit-loader-kicker">${kicker}</span>
+        <h3 class="outfit-loader-title">${title} <span class="outfit-loader-sparkle" aria-hidden="true">✦</span></h3>
+        <p class="outfit-loader-subtitle">${subtitle}</p>
+      </div>
+
+      <div class="outfit-orbit-stage" role="progressbar" aria-label="${title}" aria-valuetext="${statusMessage}">
+        <div class="outfit-orbit-ambient-glow" aria-hidden="true"></div>
+
+        <!-- Dashed glowing orbital track with sparkles -->
+        <div class="outfit-orbit-track" aria-hidden="true">
+          <span class="outfit-orbit-sparkle s-top" aria-hidden="true">✦</span>
+          <span class="outfit-orbit-sparkle s-right" aria-hidden="true">✦</span>
+          <span class="outfit-orbit-sparkle s-bottom" aria-hidden="true">✦</span>
+          <span class="outfit-orbit-sparkle s-left" aria-hidden="true">✦</span>
+        </div>
+
+        <!-- Center Complete Look Card -->
+        <div class="outfit-orbit-center-card">
+          <img src="${OUTFIT_ORBIT_CENTER.image}" alt="${OUTFIT_ORBIT_CENTER.name}" loading="eager" />
+          <span class="outfit-orbit-center-sparkle" aria-hidden="true">✦</span>
+        </div>
+
+        <!-- Revolving 360-degree Orbit Ring with 5 Clothes Nodes -->
+        <div class="outfit-orbit-ring" aria-hidden="true">
+          ${nodesHtml}
+        </div>
+      </div>
+
+      <div class="outfit-moving-progress-bar" aria-hidden="true">
+        <div class="outfit-moving-progress-runner"></div>
+      </div>
+
+      <div class="outfit-orbit-status">
+        <span class="outfit-orbit-status-dot" aria-hidden="true"></span>
+        <span class="outfit-orbit-status-text" data-hanger-message>${statusMessage}</span>
+        <b data-hanger-title class="hidden-hanger-compat" style="display:none;">${title}</b>
+      </div>
+    </div>
+  `.trim();
+}
+
 export function hangerLoaderMarkup(options = {}) {
+  if (options && options.type === "orbit") {
+    return outfitOrbitLoaderMarkup(options);
+  }
   return outfitBuildLoaderMarkup(options);
 }
 

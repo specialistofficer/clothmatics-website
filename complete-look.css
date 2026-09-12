@@ -1057,3 +1057,239 @@
     flex-direction: column;
   }
 }
+
+/* =========================================================
+   3D Revolving Clothes Orbit Loader
+   ========================================================= */
+.outfit-orbit-loader {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 14px !important;
+  margin: 12px 0 16px !important;
+  padding: 22px 18px 20px !important;
+  border: 1px solid #e7e0fc !important;
+  border-radius: 24px !important;
+  background: radial-gradient(ellipse at top right, rgba(255, 234, 250, 0.55), transparent 70%), #faf9fe !important;
+  box-shadow: 0 12px 40px rgba(45, 27, 105, 0.05) !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.outfit-orbit-stage {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  height: 290px;
+  margin: 4px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.outfit-orbit-ambient-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.22) 0%, rgba(236, 72, 153, 0.12) 40%, rgba(108, 63, 242, 0.03) 65%, transparent 75%);
+  border-radius: 50%;
+  filter: blur(18px);
+  pointer-events: none;
+  z-index: 1;
+  animation: outfit-ambient-pulse 3s ease-in-out infinite alternate;
+}
+
+/* Dashed Orbit Track */
+.outfit-orbit-track {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 236px;
+  height: 236px;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(168, 85, 247, 0.38);
+  box-shadow: inset 0 0 16px rgba(168, 85, 247, 0.08), 0 0 16px rgba(108, 63, 242, 0.08);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.outfit-orbit-sparkle {
+  position: absolute;
+  color: #ec4899;
+  font-size: 14px;
+  line-height: 1;
+  display: inline-block;
+  animation: outfit-sparkle-pulse 2.2s ease-in-out infinite;
+}
+.outfit-orbit-sparkle.s-top {
+  top: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.outfit-orbit-sparkle.s-right {
+  top: 50%;
+  right: -7px;
+  transform: translateY(-50%);
+}
+.outfit-orbit-sparkle.s-bottom {
+  bottom: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.outfit-orbit-sparkle.s-left {
+  top: 50%;
+  left: -7px;
+  transform: translateY(-50%);
+}
+
+/* Center Coordinated Look Card */
+.outfit-orbit-center-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 104px;
+  height: 126px;
+  background: #ffffff;
+  border-radius: 18px;
+  border: 1.5px solid rgba(231, 224, 252, 0.95);
+  box-shadow: 0 14px 32px rgba(45, 27, 105, 0.12), 0 4px 12px rgba(108, 63, 242, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  animation: outfit-center-float 3.5s ease-in-out infinite alternate;
+}
+.outfit-orbit-center-card img {
+  width: 90%;
+  height: 90%;
+  object-fit: contain;
+  display: block;
+}
+.outfit-orbit-center-sparkle {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 13px;
+  color: #a855f7;
+  animation: outfit-sparkle-pulse 2s ease-in-out infinite;
+}
+
+/* 360-Degree Revolving Orbit Ring */
+.outfit-orbit-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 236px;
+  height: 236px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 4;
+  transform-origin: center center;
+  animation: outfit-orbit-spin 18s linear infinite;
+}
+
+.outfit-orbit-node {
+  position: absolute;
+  top: var(--node-y);
+  left: var(--node-x);
+  transform: translate(-50%, -50%);
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.outfit-orbit-bubble {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffffff 0%, #f6f3fe 70%, #ede6fd 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 8px 20px rgba(45, 27, 105, 0.14), 0 2px 6px rgba(108, 63, 242, 0.14), inset 0 2px 4px rgba(255, 255, 255, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.outfit-orbit-bubble img {
+  width: 86%;
+  height: 86%;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 4px 8px rgba(45, 27, 105, 0.12));
+  transform-origin: center center;
+  animation: outfit-orbit-counter-spin 18s linear infinite;
+}
+
+@keyframes outfit-orbit-spin {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@keyframes outfit-orbit-counter-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes outfit-center-float {
+  0% {
+    transform: translate(-50%, -50%) translateY(0px) scale(1);
+    box-shadow: 0 14px 32px rgba(45, 27, 105, 0.12), 0 4px 12px rgba(108, 63, 242, 0.1);
+  }
+  50% {
+    transform: translate(-50%, -50%) translateY(-4px) scale(1.03);
+    box-shadow: 0 20px 42px rgba(108, 63, 242, 0.22), 0 6px 16px rgba(236, 72, 153, 0.18);
+  }
+  100% {
+    transform: translate(-50%, -50%) translateY(0px) scale(1);
+    box-shadow: 0 14px 32px rgba(45, 27, 105, 0.12), 0 4px 12px rgba(108, 63, 242, 0.1);
+  }
+}
+
+.outfit-orbit-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 700 12px/1.4 "DM Sans", sans-serif;
+  color: #6c3ff2;
+  background: rgba(108, 63, 242, 0.08);
+  padding: 6px 14px;
+  border-radius: 999px;
+  margin-top: 4px;
+}
+
+.outfit-orbit-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+  animation: outfit-sparkle-pulse 1.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .outfit-orbit-ring,
+  .outfit-orbit-bubble img,
+  .outfit-orbit-center-card {
+    animation: none !important;
+  }
+}

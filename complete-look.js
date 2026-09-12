@@ -15,11 +15,12 @@ import {
   getCategoryFallbackImage,
   getUserProfileSizes,
   getUserProfilePreferences
-} from "./complete-look-helpers.js?v=20260912-outfit-loader-v8";
+} from "./complete-look-helpers.js?v=20260912-outfit-loader-v9";
 import {
   outfitBuildLoaderMarkup,
+  outfitOrbitLoaderMarkup,
   updateHangerLoader
-} from "./garment-progress.mjs?v=20260912-outfit-loader-v8";
+} from "./garment-progress.mjs?v=20260912-outfit-loader-v9";
 
 function safeUrl(value = "") {
   try {
@@ -212,15 +213,20 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
         return;
       }
       searchStep = (searchStep % 4) + 1;
-      const loader = container ? container.querySelector(".outfit-build-loader") : null;
+      const loader = container ? container.querySelector(".outfit-orbit-loader, .outfit-build-loader, .hanger-loader") : null;
       if (loader) {
         const stepMessages = [
-          "Your first piece is in.",
-          "Building your look with coordinated layers…",
-          "Finding the perfect shoes and accessories…",
+          "Finding perfect coordinated tops and layers…",
+          "Matching shoes and accessories in your palette…",
+          "Checking size availability & retailers…",
           "Polishing your complete styled outfit…"
         ];
-        updateHangerLoader(loader, stepMessages[searchStep - 1], true, searchStep);
+        const msg = stepMessages[searchStep - 1];
+        const statusEl = loader.querySelector('[data-hanger-message]');
+        if (statusEl) {
+          statusEl.textContent = msg;
+        }
+        updateHangerLoader(loader, msg, true, searchStep);
       }
     }, 1600);
 
@@ -307,17 +313,17 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
       activeItem.fit
     ].filter(Boolean).join(" · ");
 
-    // 0. Top moving loader placed at the very top of the dialog
+    // 0. Top moving revolving clothes orbit loader placed at the very top of the dialog
     const topLoaderHtml = isSearching ? `
       <div class="complete-look-top-progress-wrap" aria-hidden="true">
         <div class="complete-look-top-progress-indicator"></div>
       </div>
       <div class="complete-look-top-loader">
-        ${outfitBuildLoaderMarkup({
+        ${outfitOrbitLoaderMarkup({
           kicker: "CLOTHMATICS AI STYLIST",
-          title: "Outfit Build",
-          subtitle: "TURNING YOUR STYLE INTO SOMETHING GREAT…",
-          initialStep: searchStep,
+          title: "Curating Complete Look",
+          subtitle: "AI IS COORDINATING YOUR PERFECT PIECES…",
+          statusMessage: "Curating your complete 4-piece look…",
           hidden: false
         })}
       </div>
