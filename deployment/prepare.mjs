@@ -9,12 +9,14 @@ for(const entry of await readdir(root,{withFileTypes:true})){
 }
 for(const name of ['assets','data','functions'])await cp(join(root,name),join(target,name),{recursive:true});
 await mkdir(join(target,'downloads'),{recursive:true});
-for(const name of ['clothmatics_ghost_v9.py','clothmatics_ghost_v9.ipynb']){
+for(const name of ['clothmatics_ghost_v9.py','clothmatics_ghost_v9.ipynb','clothmatics_ghost_v9_2.py','clothmatics_ghost_v9_2.ipynb']){
  const bytes=await readFile(join(root,'kaggle',name));
  await writeFile(join(target,'downloads',name),bytes);
  console.log(`${name} SHA256 ${createHash('sha256').update(bytes).digest('hex')}`);
 }
-const python=await readFile(join(root,'kaggle','clothmatics_ghost_v9.py'));
+// Every compatibility URL and the embedded direct-run cell must serve the
+// current reviewed runner, even when an older filename remains bookmarked.
+const python=await readFile(join(root,'kaggle','clothmatics_ghost_v9_2.py'));
 await writeFile(join(target,'downloads','clothmatics_ghost_v9.txt'),python);
 console.log(`clothmatics_ghost_v9.txt SHA256 ${createHash('sha256').update(python).digest('hex')}`);
 await writeFile(join(target,'downloads','clothmatics_ghost_v9_source.js'),python);

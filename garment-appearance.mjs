@@ -1,6 +1,7 @@
 // Evidence measured on the uploaded photograph, never inferred from a title or
 // from generated pixels. Coordinates are supplied by vision; RGB is sampled here.
-export const APPEARANCE_VERSION = 1;
+import {PALETTE_ROLES} from './garment-palette.mjs';
+export const APPEARANCE_VERSION = 2;
 export const APPEARANCE_PROMPT = `
 For EACH garment, describe observed color and construction before naming it.
 Preserve the photographed white balance: do not turn taupe/beige into pink,
@@ -21,27 +22,34 @@ For each clothing entry ALSO return:
   "lightingNotes": "observed lighting/cast; do not guess an unseen true color",
   "materialConfidence": "high|medium|low|unknown",
   "uncertainties": ["specific details not reliably visible"],
-  "colors": [{"role":"base|secondary|print|trim|hardware|wash",
-    "name":"precise observed shade", "point":[500,500], "confidence":"high"}]
+  "colors": [{"role":"base|secondary|print|trim|hardware|wash|embroidery|panel",
+    "region":"visible component and color region", "name":"precise observed shade", "point":[500,500], "confidence":"high"}]
 }
 point is [y,x] in 0..1000 relative to THIS WHOLE supplied image, not the garment
-box. Select 2-4 well-lit points inside the base fabric and at most 3 other color
-points. Each point must lie well inside its fabric/color region. Omit uncertain
+box. Select up to 12 points covering EVERY distinct visible color region, including
+small contrasting prints, embroidery, borders, panels, trim and hardware. Include
+base fabric samples under representative light. For multicolor fabric, never
+collapse colors into a single average or choose only the dominant shade.
+This applies to all clothing, draped garments and separate pieces of sets.
+Each point must lie well inside its fabric/color region. Omit uncertain
 points. Do not output invented hex codes; the app measures source RGB itself.
 Use the same observed shade in primaryColor, title, colorDetail and description.
 `;
 
 const text = (value, max = 240) => typeof value === 'string' ? value.replace(/[<>\u0000-\u001f]/g, ' ').trim().slice(0, max) : '';
+const normalizedRole = value => ({primary:'base',dominant:'base',accent:'secondary'}[String(value||'').toLowerCase()]||String(value||'').toLowerCase());
+const reliableConfidence = value => String(value||'').toLowerCase()==='high'||(typeof value==='number'&&Number.isFinite(value)&&value>=.8);
+const normalizedPoint = value => Array.isArray(value)&&value.length===2?value:(value&&typeof value==='object'?[value.y,value.x]:null);
 export function normalizeVisualProfile(value = {}) {
   return {
     lightingNotes: text(value?.lightingNotes),
     materialConfidence: ['high','medium','low','unknown'].includes(value?.materialConfidence) ? value.materialConfidence : 'unknown',
     uncertainties: Array.isArray(value?.uncertainties) ? value.uncertainties.map(v => text(v, 160)).filter(Boolean).slice(0, 6) : [],
-    colors: (Array.isArray(value?.colors) ? value.colors : []).filter(color =>
-      ['base','secondary','print','trim','hardware','wash'].includes(color?.role) &&
-      color.confidence === 'high' && Array.isArray(color.point) && color.point.length === 2 &&
-      color.point.every(n => typeof n === 'number' && Number.isFinite(n) && n > 0 && n < 1000)
-    ).slice(0, 7).map(color => ({role: color.role, name: text(color.name, 60), point: color.point.map(Math.round), confidence: 'high'})),
+    colors: (Array.isArray(value?.colors) ? value.colors : []).map(color => {
+      const role=normalizedRole(color?.role),point=normalizedPoint(color?.point);
+      if(!PALETTE_ROLES.includes(role)||!reliableConfidence(color?.confidence)||!point?.every(n=>typeof n==='number'&&Number.isFinite(n)&&n>0&&n<1000))return null;
+      return {role,region:text(color.region,48),name:text(color.name,60),point:point.map(Math.round),confidence:'high'};
+    }).filter(Boolean).slice(0,12),
   };
 }
 
@@ -75,8 +83,15 @@ export async function attachPhotoEvidence(imageBlob, garments) {
     for (const garment of garments) {
       const profile = normalizeVisualProfile(garment.visualProfile);
       const box = garment.boundingBox;
-      profile.colors = profile.colors.filter(({point:[y,x]}) => !box || (y>box[0] && y<box[2] && x>box[1] && x<box[3]))
-        .map(color => ({...color,hex:samplePatchHex(data,canvas.width,canvas.height,color.point)})).filter(color=>color.hex);
+      const inside=point=>!box||(point[0]>Math.max(0,box[0]-60)&&point[0]<Math.min(1000,box[2]+60)&&point[1]>Math.max(0,box[1]-60)&&point[1]<Math.min(1000,box[3]+60));
+      profile.colors = profile.colors.map(color=>{
+        let point=color.point;
+        // Vision models occasionally return [x,y] despite the requested [y,x].
+        // Correct only when the swapped point is consistent with the garment box.
+        if(box&&!inside(point)&&inside([point[1],point[0]]))point=[point[1],point[0]];
+        if(!inside(point))return null;
+        const hex=samplePatchHex(data,canvas.width,canvas.height,point);return hex?{...color,point,hex}:null;
+      }).filter(Boolean);
       garment.visualProfile = {...profile,version:APPEARANCE_VERSION,sourceFingerprint};
     }
     return garments;

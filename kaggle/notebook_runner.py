@@ -1,5 +1,5 @@
 # ==============================================================================
-# CLOTHMATICS 3D GHOST MANNEQUIN - APPEARANCE V2 PIPELINE (v9.1.0)
+# CLOTHMATICS 3D GHOST MANNEQUIN - APPEARANCE V2 PIPELINE (v9.2.0)
 # ==============================================================================
 # Architecture:
 # 1. 🛡️ Safe Baseline: Non-destructive raw FLUX generation, high-speed FP16 compute.
@@ -13,7 +13,7 @@
 import os, sys, json, time, re, socket, subprocess, textwrap, urllib.request, shutil
 from pathlib import Path
 
-print("Starting ClothMatics appearance v2 engine (v9.1.0)...\n")
+print("Starting ClothMatics appearance v2 engine (v9.2.0)...\n")
 
 def read_kaggle_secret(name):
     value = os.environ.get(name, '').strip()
@@ -294,7 +294,7 @@ except Exception as e:
 # FINISHED!
 # ------------------------------------------------------------------------------
 print("\n" + "="*80)
-print("CLOTHMATICS v9.1.0 GHOST VOLUME ENGINE IS LIVE")
+print("CLOTHMATICS v9.2.0 GHOST VOLUME ENGINE IS LIVE")
 print("="*80)
 print(f"👉 PERMANENT WEBSITE ENDPOINT : https://clothmatics-ghost.chiragsharma376.workers.dev/generate")
 print(f"👉 ACTIVE KAGGLE TUNNEL       : {PUBLIC_API_URL}")
@@ -307,18 +307,16 @@ print("="*80)
 print("💡 Ready for generation requests via Cloudflare Worker proxy or active Kaggle tunnel.\n")
 
 # ------------------------------------------------------------------------------
-# STEP 7: Keep-Alive Server Loop & Live Request Monitor
+# STEP 7: Quiet listener & request-only diagnostics
 # ------------------------------------------------------------------------------
-print("📡 Listening for requests in real time (cell stays active [*])...")
+print("📡 Ready. Idle output is quiet; generation requests print diagnostics (cell stays active [*]).")
 print("   To stop the server, click the Stop button in Kaggle.\n")
 
 last_api_pos = log_pos if 'log_pos' in globals() else (API_LOG.stat().st_size if API_LOG.exists() else 0)
-tick = 0
 
 try:
     while True:
         time.sleep(1)
-        tick += 1
 
         # 1. Process Health Checks
         if API_PROCESS.poll() is not None:
@@ -347,19 +345,6 @@ try:
                                     print(f"  {sline}", flush=True)
                 except Exception:
                     pass
-
-        # 3. Periodic Heartbeat every 30 seconds
-        if tick % 30 == 0:
-            vram_status = ""
-            try:
-                import torch
-                if torch.cuda.is_available():
-                    free0, total0 = torch.cuda.mem_get_info(0)
-                    free1, total1 = torch.cuda.mem_get_info(1)
-                    vram_status = f" | VRAM GPU0: {round(free0/2**30, 1)}/{round(total0/2**30, 1)}GB | GPU1: {round(free1/2**30, 1)}/{round(total1/2**30, 1)}GB"
-            except Exception:
-                pass
-            print(f"💓 [Heartbeat] Engine active & ready{vram_status} | Tunnel: {PUBLIC_API_URL}", flush=True)
 
 except KeyboardInterrupt:
     print("\n🛑 Stop requested by user (KeyboardInterrupt).")

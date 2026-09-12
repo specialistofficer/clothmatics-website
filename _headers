@@ -110,5 +110,11 @@
 /browser-extraction.mjs
   Cache-Control: no-cache
 
+/garment-taxonomy.mjs
+  Cache-Control: no-store
+
+/garment-palette.mjs
+  Cache-Control: no-store
+
 /production-extraction.mjs
   Cache-Control: no-cache

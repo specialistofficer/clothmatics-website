@@ -2,7 +2,7 @@ import io, json, os, subprocess, sys, tempfile, threading, time, uuid, re, warni
 import importlib.metadata
 import asyncio, hashlib
 from collections import OrderedDict
-from prompt_contract import normalize_category, normalize_manifest, pack_prompt, CONTRACT_VERSION
+from prompt_contract import normalize_category, normalize_manifest, pack_prompt, category_dimensions, CONTRACT_VERSION
 from dataclasses import dataclass
 from typing import Optional, Dict, Any, Tuple, List
 from pathlib import Path
@@ -17,7 +17,7 @@ from fastapi.responses import Response
 # ==============================================================================
 # 1. CONSTANTS, PROFILES & COLOR MANAGEMENT
 # ==============================================================================
-PIPELINE_VERSION = "9.1.0-ghost-volume-v2"
+PIPELINE_VERSION = "9.2.0-multicolor"
 MAX_UPLOAD_BYTES = 20 * 1024 * 1024  # 20 MB
 MAX_INPUT_PIXELS = 24_000_000        # 24 Mpx
 SRGB_PROFILE = ImageCms.ImageCmsProfile(ImageCms.createProfile("sRGB"))
@@ -249,12 +249,7 @@ class WarmDualGpuEngine:
             decoded = DecodedGarment(rgb=rgb, alpha=None, conditioning_rgb=conditioning, notices=("synthetic_warmup",))
 
         if width is None or height is None:
-            if quality in ("high", "portrait", "standard"):
-                width, height = 768, 1024
-            elif quality == "wide":
-                width, height = 1024, 768
-            else:
-                width, height = 576, 768
+            width, height = category_dimensions(cat_norm, decoded.conditioning_rgb.size, quality)
 
         # Warmup is the only call allowed without a real appearance manifest.
         if manifest is None and 'synthetic_warmup' in decoded.notices:
@@ -283,7 +278,7 @@ class WarmDualGpuEngine:
 
         # 3. Conditioning Image Preparation
         t0 = time.perf_counter()
-        conditioned = conditioning_thumbnail(decoded, max_size=(768, 1024))
+        conditioned = conditioning_thumbnail(decoded, max_size=(width, height))
         timings['preprocess'] = round((time.perf_counter() - t0) * 1000, 1)
 
         # 4. Denoising Diffusion on GPU 1 (4 steps)

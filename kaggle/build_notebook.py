@@ -11,11 +11,18 @@ def build():
     runner = (ROOT / "notebook_runner.py").read_text(encoding="utf-8")
     server = (ROOT / "ghost_server.py").read_text(encoding="utf-8-sig") + '\n' + (ROOT / 'request_handler.py').read_text(encoding='utf-8')
     contract = (ROOT / "prompt_contract.py").read_text(encoding="utf-8")
+    # The same geometry rules are used by JS and the embedded Kaggle contract.
+    import subprocess
+    shapes = subprocess.check_output(['node','--input-type=module','-e',"import {SHAPE_RULES} from './garment-taxonomy.mjs'; console.log(JSON.stringify(SHAPE_RULES));"], cwd=ROOT.parent, text=True)
+    (ROOT / 'garment_shapes.json').write_text(shapes, encoding='utf-8')
+    start = contract.index('SHAPE_RULES = {}')
+    end = contract.index('CATEGORIES.update(SHAPE_RULES)', start)
+    contract = contract[:start] + 'SHAPE_RULES = ' + repr(json.loads(shapes)) + '\n' + contract[end:]
     runner = runner.replace("# EMBED_SERVER", f"WARM_SERVER_CODE = {server!r}\nPROMPT_CONTRACT_CODE = {contract!r}")
     ast.parse(runner)
-    (ROOT / "clothmatics_ghost_v9.py").write_text(runner, encoding="utf-8")
+    (ROOT / "clothmatics_ghost_v9_2.py").write_text(runner, encoding="utf-8")
     notebook = {"nbformat":4,"nbformat_minor":5,"metadata":{"kernelspec":{"display_name":"Python 3","language":"python","name":"python3"}},"cells":[{"cell_type":"code","execution_count":None,"metadata":{},"outputs":[],"source":runner.splitlines(keepends=True)}]}
-    (ROOT / "clothmatics_ghost_v9.ipynb").write_text(json.dumps(notebook, indent=2), encoding="utf-8")
+    (ROOT / "clothmatics_ghost_v9_2.ipynb").write_text(json.dumps(notebook, indent=2), encoding="utf-8")
 
 if __name__ == "__main__":
     build()

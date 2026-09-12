@@ -1,12 +1,46 @@
 /* The hidden attribute is authoritative, including flex/grid action buttons. */
-.ghost-studio [hidden],.hanger-loader[hidden],.outfit-build-loader[hidden],.outfit-orbit-loader[hidden]{display:none!important}
+.ghost-studio [hidden],.hanger-loader[hidden],.outfit-build-loader[hidden],.outfit-orbit-loader[hidden],.ghost-content>[hidden],.garment-upload-dialog>[hidden]{display:none!important}
 html:has(dialog[open]),body:has(dialog[open]){overflow:hidden}
-.ghost-studio{width:min(1000px,calc(100vw - 32px));max-height:calc(100dvh - 32px);padding:0;border:1px solid #e5e1f2;border-radius:24px;background:#fff;overflow:hidden;font-family:Manrope,Arial,sans-serif}
+.ghost-studio{width:min(1000px,calc(100vw - 32px));max-height:calc(100dvh - 32px);padding:0;border:1px solid #e5e1f2;border-radius:24px;background:#fff;overflow:hidden;font-family:Manrope,Arial,sans-serif;position:relative}
 .ghost-studio[open]{display:flex;flex-direction:column}
-.ghost-header{position:relative;flex:none;padding:24px 28px 16px;border-bottom:1px solid #eeeaf6}
+.ghost-header{position:relative;flex:none;padding:24px 28px 16px;border-bottom:1px solid #eeeaf6;z-index:60}
 .ghost-header h2{margin:7px 38px 8px 0;font-family:inherit;font-size:clamp(20px,2.8vw,28px);line-height:1.25;color:#15122b}
 .ghost-header p{margin:0;color:#726a8e;font-size:13px;line-height:1.6}
-.ghost-content{overflow-y:auto;overscroll-behavior:contain;min-height:0;padding:20px 28px}
+.ghost-content{position:relative;overflow-y:auto;overscroll-behavior:contain;min-height:360px;padding:20px 28px}
+.garment-upload-dialog{position:relative}
+
+/* Full-area overlay loader on top of the content */
+.ghost-content > .hanger-loader,
+.ghost-content > .outfit-build-loader,
+.ghost-content > .outfit-orbit-loader,
+.garment-upload-dialog > .hanger-loader,
+.garment-upload-dialog > .outfit-build-loader,
+.garment-upload-dialog > .outfit-orbit-loader {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 55 !important;
+  margin: 0 !important;
+  border: none !important;
+  border-radius: inherit !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+  overflow-y: auto !important;
+}
+
+.ghost-content > .hanger-loader[hidden],
+.ghost-content > .outfit-build-loader[hidden],
+.ghost-content > .outfit-orbit-loader[hidden],
+.garment-upload-dialog > .hanger-loader[hidden],
+.garment-upload-dialog > .outfit-build-loader[hidden],
+.garment-upload-dialog > .outfit-orbit-loader[hidden] {
+  display: none !important;
+}
 .ghost-comparison{margin:0;gap:16px}
 .ghost-comparison figure{min-width:0;padding:12px;background:#faf9fe}
 .ghost-comparison img,.ghost-comparison [data-ghost-placeholder]{height:clamp(180px,36dvh,360px)}

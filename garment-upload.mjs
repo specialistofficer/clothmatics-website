@@ -20,9 +20,11 @@ Return ONLY valid JSON using this schema:
     "primaryColor": "", "secondaryColors": [], "colorDetail": "", "pattern": "", "fit": "",
     "material": "", "fabricTexture": "", "sleeveType": "", "neckline": "", "season": "",
     "occasion": [], "formality": "", "aiDescription": "",
-    "technical3DDetails": {
-      "fabricWeave": "", "collarOrWaistband": "", "closuresAndHardware": "",
-      "pocketsAndDetails": "", "garmentLengthAndHem": "", "graphicsAndLogos": "", "openingsAndHollowStructure": ""
+      "technical3DDetails": {
+        "fabricWeave": "", "collarOrWaistband": "", "closuresAndHardware": "",
+        "pocketsAndDetails": "", "garmentLengthAndHem": "", "graphicsAndLogos": "", "openingsAndHollowStructure": "",
+        "waistbandAndRise": "", "flyAndClosure": "", "crotchAndInseam": "",
+        "legSilhouette": "", "hemAndCuffs": "", "pocketLayout": ""
     },
     "boundingBox": [0, 0, 0, 0], "visibility": "full",
     "visibleFraction": 1, "extractionReady": true
@@ -54,7 +56,15 @@ Rules:
   * closuresAndHardware: placket details, button count/contrast/color (e.g. center vertical front button placket with visible 4-hole buttons, button-down collar points), zipper type/color, snaps.
   * fabricWeave: visible weave/knit micro-texture, grain, surface and actual sheen. Report uncertainty for weave or fibre composition that cannot be resolved. Preserve glossy fabric when visible; never impose a matte finish.
   * graphicsAndLogos: exact transcription of visible text, embroidery subject/placement (e.g. small brown bear silhouette on chest pocket).
-  * openingsAndHollowStructure: hollow openings showing inner fabric lining (collar cavity showing back neckband fabric, sleeve cuffs, hem).
+   * openingsAndHollowStructure: hollow openings showing inner fabric lining (collar cavity showing back neckband fabric, sleeve cuffs, hem).
+  For trousers, jeans, joggers, cargo pants, leggings and shorts, ALSO return:
+  * waistbandAndRise: waistband construction plus observed rise from waist to crotch.
+  * flyAndClosure: fly, zipper, buttons, hooks or drawcord exactly as visible.
+  * crotchAndInseam: front/back orientation, crotch seam shape and visible inseam construction.
+  * legSilhouette: exact number of legs, straight/tapered/wide/bootcut shape and relative leg width.
+  * hemAndCuffs: both leg openings, their length, turn-up, elastic/rib cuff or open hem.
+  * pocketLayout: exact front, rear and cargo pocket count, placement and symmetry.
+  Never infer these bottom-specific details from gender or a standard trouser template.
 - category should be one of Top, Bottom, Skirt, Dress, Kurta, Saree, Lehenga,
   Traditional Wear, Outerwear, Shoes, Bag, Headwear, Scarf, Swimwear or Innerwear.
 - boundingBox is [ymin, xmin, ymax, xmax], with integers from 0 to 1000, around
@@ -327,7 +337,13 @@ export function normalizeGarmentMetadata(value = {}) {
   const garmentLengthAndHem = cleanText(rawTech.garmentLengthAndHem, 200);
   const graphicsAndLogos = cleanText(rawTech.graphicsAndLogos, 300);
   const openingsAndHollowStructure = cleanText(rawTech.openingsAndHollowStructure, 200);
-  const hasTech = Boolean(fabricWeave || collarOrWaistband || closuresAndHardware || pocketsAndDetails || garmentLengthAndHem || graphicsAndLogos || openingsAndHollowStructure);
+  const waistbandAndRise = cleanText(rawTech.waistbandAndRise, 200);
+  const flyAndClosure = cleanText(rawTech.flyAndClosure, 200);
+  const crotchAndInseam = cleanText(rawTech.crotchAndInseam, 220);
+  const legSilhouette = cleanText(rawTech.legSilhouette, 200);
+  const hemAndCuffs = cleanText(rawTech.hemAndCuffs, 180);
+  const pocketLayout = cleanText(rawTech.pocketLayout, 220);
+  const hasTech = Boolean(fabricWeave || collarOrWaistband || closuresAndHardware || pocketsAndDetails || garmentLengthAndHem || graphicsAndLogos || openingsAndHollowStructure || waistbandAndRise || flyAndClosure || crotchAndInseam || legSilhouette || hemAndCuffs || pocketLayout);
   const technical3DDetails = hasTech ? {
     fabricWeave,
     collarOrWaistband,
@@ -336,6 +352,12 @@ export function normalizeGarmentMetadata(value = {}) {
     garmentLengthAndHem,
     graphicsAndLogos,
     openingsAndHollowStructure,
+    waistbandAndRise,
+    flyAndClosure,
+    crotchAndInseam,
+    legSilhouette,
+    hemAndCuffs,
+    pocketLayout,
   } : undefined;
 
   return {
@@ -672,7 +694,7 @@ export async function analyzeGarment(user,imageBlob,options={}) {
   if (!user) throw new ClothmaticsApiError('Sign in required.', {status:401, code:'unauthenticated'});
   const {signal, fresh=false} = options;
   if (signal?.aborted) throw new DOMException('Aborted','AbortError');
-  const key = `clothmatics:web-ai:${user.uid}:single:v10:${await imageFingerprint(imageBlob)}`;
+  const key = `clothmatics:web-ai:${user.uid}:single:v11:${await imageFingerprint(imageBlob)}`;
   const cached = fresh ? null : readAiCache(key);
   if (cached?.metadata) return cached;
   const {body,response} = await callVisionGateway(user, {
@@ -692,7 +714,7 @@ export async function analyzeStyleCheck(user, imageBlob, { signal, fresh = false
   const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", await imageBlob.arrayBuffer()));
   const fingerprint = Array.from(digest, byte => byte.toString(16).padStart(2, "0")).join("");
   if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
-  const cacheKey = `clothmatics:web-ai:${user.uid}:style_check:v10:${fingerprint}`;
+  const cacheKey = `clothmatics:web-ai:${user.uid}:style_check:v11:${fingerprint}`;
   const cached = fresh ? null : readAiCache(cacheKey);
   if (cached?.analysis) return cached;
   const data = await blobToBase64(imageBlob);

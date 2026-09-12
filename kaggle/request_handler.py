@@ -5,6 +5,31 @@ CACHE_LOCK = threading.Lock()
 CACHE_TTL = 600
 CACHE_BYTES = 40 * 1024 * 1024
 
+from contextvars import ContextVar
+REQUEST_ID = ContextVar('request_id', default='startup')
+
+def request_log(event, **details):
+    # Never log request headers, sync tokens, image bytes or raw user prompts.
+    print(json.dumps({'event':event, 'request_id':REQUEST_ID.get(), **details}), flush=True)
+
+@app.middleware('http')
+async def log_request(request: Request, call_next):
+    if request.url.path in ('/', '/health'):
+        return await call_next(request)
+    context = REQUEST_ID.set(str(uuid.uuid4()))
+    started = time.perf_counter()
+    request_log('request_received', route='generate' if request.url.path == '/generate' else 'other')
+    try:
+        response = await call_next(request)
+        response.headers['X-Request-Id'] = REQUEST_ID.get()
+        request_log('request_finished', status=response.status_code, elapsed_ms=round((time.perf_counter()-started)*1000,1))
+        return response
+    except Exception as exc:
+        request_log('request_failed', error_type=type(exc).__name__, elapsed_ms=round((time.perf_counter()-started)*1000,1))
+        raise
+    finally:
+        REQUEST_ID.reset(context)
+
 def render_request(data, category, manifest, quality, seed):
     key = hashlib.sha256(data + json.dumps([category, manifest, quality, seed], sort_keys=True).encode()).hexdigest()
     with CACHE_LOCK:
@@ -14,13 +39,16 @@ def render_request(data, category, manifest, quality, seed):
                 RESULT_CACHE.pop(old_key, None)
         cached = RESULT_CACHE.get(key)
         if cached:
+            request_log('cache_hit', category=category, seed=seed)
             return Response(cached[1], media_type='image/png', headers={**cached[2], 'X-Ghost-Cache':'hit'})
     if not LOCK.acquire(blocking=False):
+        request_log('gpu_busy', retry_after_seconds=15)
         raise HTTPException(429, 'Another garment is being processed. Please retry.', headers={'Retry-After':'15'})
     try:
         decoded = decode_garment(data)
         if min(decoded.rgb.size) < 64:
             raise InputImageError('The source garment image is too small')
+        request_log('generation_started', category=category, seed=seed, input_bytes=len(data), source_width=decoded.rgb.width, source_height=decoded.rgb.height, palette=manifest.get('palette', []))
         output, timings, report = ENGINE.generate(decoded=decoded, category=category, manifest=manifest, quality=quality, seed=seed)
         buffer = io.BytesIO()
         output.convert('RGB').save(buffer, format='PNG', icc_profile=SRGB_ICC)
@@ -28,7 +56,7 @@ def render_request(data, category, manifest, quality, seed):
         if not 500 <= len(payload) <= MAX_UPLOAD_BYTES:
             raise RuntimeError('Generated output exceeds the supported size')
         headers = {'X-Request-Id':str(uuid.uuid4()), 'X-Pipeline-Version':PIPELINE_VERSION,
-                   'X-Ghost-Contract-Version':str(CONTRACT_VERSION), 'X-Ghost-Seed':str(seed),
+                   'X-Ghost-Contract-Version':str(CONTRACT_VERSION), 'X-Ghost-Seed':str(seed), 'X-Ghost-Palette-Version':'1',
                    'X-Quality-Status':'requires_visual_comparison', 'X-Postprocess-Mode':'none',
                    'X-Prompt-Tokens':str(report['prompt_report']['prompt_tokens']),
                    'X-Generation-Time':str(timings['total']) + 'ms'}
@@ -36,7 +64,7 @@ def render_request(data, category, manifest, quality, seed):
             RESULT_CACHE[key] = (time.monotonic(), payload, headers)
             while len(RESULT_CACHE) > 4 or sum(len(entry[1]) for entry in RESULT_CACHE.values()) > CACHE_BYTES:
                 RESULT_CACHE.popitem(last=False)
-        print(f"Generated {category} seed={seed} tokens={report['prompt_report']['prompt_tokens']} time={timings['total']}ms; visual comparison still required", flush=True)
+        request_log('generation_finished', category=category, seed=seed, output_width=report['width'], output_height=report['height'], prompt_report=report['prompt_report'], timings_ms=timings, output_bytes=len(payload), quality_status='requires_visual_comparison')
         return Response(payload, media_type='image/png', headers=headers)
     except InputImageError as exc:
         raise HTTPException(400, str(exc)) from exc

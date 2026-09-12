@@ -142,7 +142,7 @@ export function outfitOrbitLoaderMarkup({
   title = "Curating Your Complete Look",
   subtitle = "AI IS COORDINATING YOUR PERFECT PIECES…",
   statusMessage = "Finding perfect coordinates for your outfit…",
-  hidden = false
+  hidden = true
 } = {}) {
   const nodesHtml = OUTFIT_ORBIT_ITEMS.map((item) => `
     <div class="outfit-orbit-node" data-orbit-id="${item.id}" style="--node-x: ${item.x}%; --node-y: ${item.y}%;">

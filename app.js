@@ -42,7 +42,7 @@ import {activePremium,extractSingleProduction,recoverSingleProduction,extractReg
 import {createGhostStudio} from "./ghost-ui.mjs?v=20260912-outfit-loader-v10";
 import {ghostCategory,ghostImageForMode,ghostSavePatch,ghostDeletePatch,generateGhostFromPhoto} from "./ghost-mannequin.mjs";
 import {LOWER_CATEGORIES} from './garment-taxonomy.mjs';
-import {hangerLoaderMarkup,updateHangerLoader,confirmDelete3D} from './garment-progress.mjs?v=20260912-outfit-loader-v10';
+import {hangerLoaderMarkup,updateHangerLoader,confirmDelete3D,outfitOrbitLoaderMarkup} from './garment-progress.mjs?v=20260912-outfit-loader-v10';
 import {renderGarmentEvidence,readGarmentEvidence} from './garment-review.mjs';
 import {createCompleteLookController} from './complete-look.js?v=20260912-outfit-loader-v10';
 
@@ -403,7 +403,7 @@ function renderGarments(target, items) {
   `}).join("");
 }
 
-function garmentViewToggle(id,mode,scope){return `<div class="garment-view-toggle" role="group" aria-label="Choose garment image"><button type="button" data-garment-view="normal" data-garment-view-id="${escapeHtml(id)}" data-garment-view-scope="${scope}" aria-pressed="${mode==='normal'}" class="${mode==='normal'?'active':''}">Normal</button><button type="button" data-garment-view="3d" data-garment-view-id="${escapeHtml(id)}" data-garment-view-scope="${scope}" aria-pressed="${mode==='3d'}" class="${mode==='3d'?'active':''}">3D</button></div>`}
+function garmentViewToggle(id,mode,scope){return `<div class="garment-view-toggle" role="group" aria-label="Choose garment image"><button type="button" data-garment-view="3d" data-garment-view-id="${escapeHtml(id)}" data-garment-view-scope="${scope}" aria-pressed="${mode==='3d'}" class="${mode==='3d'?'active':''}">3D</button><button type="button" data-garment-view="normal" data-garment-view-id="${escapeHtml(id)}" data-garment-view-scope="${scope}" aria-pressed="${mode==='normal'}" class="${mode==='normal'?'active':''}">Normal</button></div>`}
 
 function renderLooks(looks) {
   $("#looks-grid").innerHTML = looks.length ? looks.map((look) => {
@@ -690,8 +690,8 @@ $$("[data-outfit-filter]").forEach((button)=>button.addEventListener("click",()=
 $("#month-prev").addEventListener("click",()=>shiftPlanner(-1));
 $("#month-next").addEventListener("click",()=>shiftPlanner(1));
 $("#month-today").addEventListener("click",()=>{state.calendarDate=new Date();state.selectedDate=localDateKey(new Date());renderCalendar()});
-$("#close-garment").addEventListener("click",()=>$("#garment-dialog").close());
-$("#close-outfit").addEventListener("click",()=>$("#outfit-dialog").close());
+$("#close-garment").addEventListener("click",()=>closeAllDialogs());
+$("#close-outfit").addEventListener("click",()=>closeAllDialogs());
 
 function shiftPlanner(offset){const next=shiftCalendarMonth(state.calendarDate,state.selectedDate,offset);state.calendarDate=next.displayedMonth;state.selectedDate=next.selectedDate;renderCalendar()}
 function renderPlannerOptions(){const select=$("#plan-outfit-select");if(!select)return;select.innerHTML='<option value="">Choose a saved outfit</option>'+state.outfits.map(look=>`<option value="${escapeHtml(look.id)}">${escapeHtml(look.outfit?.title||look.title||look.occasion||"Saved outfit")}</option>`).join("")}
@@ -797,7 +797,7 @@ function setGarmentUploadBusy(busy){
   if($("#generate-garment-3d"))$("#generate-garment-3d").disabled=busy;
   const dialog=$("#garment-upload-dialog");dialog.setAttribute('aria-busy',String(busy));
   if(!dialog.querySelector('.hanger-loader')){
-    dialog.querySelector('.upload-dialog-heading').insertAdjacentHTML('afterend',hangerLoaderMarkup());
+    dialog.querySelector('.upload-dialog-heading').insertAdjacentHTML('afterend',hangerLoaderMarkup({type:'orbit',hidden:true}));
     for(const id of ['garment-upload-message','garment-save-message'])new MutationObserver(()=>updateHangerLoader(dialog,$(`#${id}`).textContent,state.garmentUpload.busy)).observe($(`#${id}`),{childList:true,characterData:true,subtree:true});
   }
   updateHangerLoader(dialog,$('#garment-upload-message').textContent,busy);
@@ -958,7 +958,7 @@ function showPreparedGarment(entry,index=(state.garmentUpload.preparedItems||[])
   $(".upload-dialog-heading p").textContent=auto?"All detected pieces are shown below. Select any ready item to review its details.":"Check the prepared image and details before saving.";renderAutoExtractResults();
 }
 function nextReadyExtracted(exclude){return(state.garmentUpload.preparedItems||[]).find((entry)=>entry!==exclude&&entry.status==="ready")||null}
-function launchGhostGeneration(id){if(!id)return;toast("3D generation started. Your original image is already saved.");setTimeout(()=>ghostStudio.open(id),80)}
+function launchGhostGeneration(id){if(!id)return;closeAllDialogs();toast("3D generation started. Your original image is already saved.");setTimeout(()=>ghostStudio.open(id),80)}
 function finishAutoExtractReview(){const saved=state.garmentUpload.savedCount||0,generate3dId=state.garmentUpload.generated3dIds?.[0]||"";resetGarmentUpload();$("#garment-upload-dialog").close();resetCameraPhoto();toast(saved?`${saved} item${saved===1?"":"s"} added to your wardrobe.`:"No items were saved.");launchGhostGeneration(generate3dId)}
 function handleGarmentReviewSecondaryAction(){
   if(!state.garmentUpload.autoExtract){resetGarmentUpload({keepDialog:true});return}

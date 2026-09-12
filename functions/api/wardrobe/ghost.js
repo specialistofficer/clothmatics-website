@@ -1,6 +1,6 @@
 import {bearer,json,verifyFirebaseToken} from '../../_shared/firebase-rest.mjs';
-import {compileUniversalManifest} from '../../../ghost-contract.mjs';
-export const GHOST_CATEGORIES=new Set(['shirt','tshirt','trackpants','trousers','cargo','hoodie','jacket','dress','shorts']);
+import {compileUniversalManifest,CATEGORIES} from '../../../ghost-contract.mjs';
+export const GHOST_CATEGORIES=new Set(CATEGORIES);
 const DEFAULT_ENDPOINT='https://clothmatics-ghost.chiragsharma376.workers.dev/generate';
 const PNG=[137,80,78,71,13,10,26,10];
 const isRedirect=response=>response.status>=300&&response.status<400;
@@ -52,7 +52,7 @@ async function handle({request,env}){
       const manifest=typeof body.manifest==='string'?JSON.parse(body.manifest):body.manifest;
       if(!manifest||manifest.category!==body.category)throw Error('Category mismatch');
       const compiled=compileUniversalManifest(manifest);
-      if(!compiled.manifest.colorAndFinish||!compiled.manifest.surfaceTextureAndWeave)throw Error('Missing appearance');
+      if(!compiled.manifest.colorAndFinish||!compiled.manifest.surfaceTextureAndWeave||!compiled.manifest.palette?.some(color=>color.role==='base'))throw Error('Missing appearance');
       body.manifest=compiled.manifest;body.prompt=compiled.prompt;
     }catch{return json({error:{message:'A matching garment manifest with color and fabric evidence is required.'}},400);}
   }
@@ -96,13 +96,13 @@ async function handle({request,env}){
     if(result.status===524)return json({error:{message:'The 3D studio is still warming up. Please retry in a moment.',code:'generation_timeout'}},504);
     if([502,503,520,521,522,523,525,526,530].includes(result.status))return json({error:{message:'The 3D GPU backend is offline. Restart the Kaggle backend connection, then retry.',code:'backend_offline'}},503);
     if(!result.ok)return json({error:{message:'3D generation failed. Please try again.',code:'generation_failed'}},502);
-    if(body.contractVersion===2&&result.headers.get('X-Ghost-Contract-Version')!=='2'){
+    if(body.contractVersion===2&&(result.headers.get('X-Ghost-Contract-Version')!=='2'||(body.manifest.palette?.length&&result.headers.get('X-Ghost-Palette-Version')!=='1'))){
       await result.body?.cancel().catch(()=>{});
-      return json({error:{message:'The connected Kaggle engine needs the appearance v2 update. Restart it with the updated notebook, then retry. Your original photo is safe.',code:'backend_upgrade_required'}},503);
+      return json({error:{message:'The connected Kaggle engine needs the latest multicolor update. Restart it with the updated notebook, then retry. Your original photo is safe.',code:'backend_upgrade_required'}},503);
     }
     const output=await boundedBytes(result,20*1024*1024);
     if(!(result.headers.get('content-type')||'').toLowerCase().startsWith('image/png')||output.length<500||!PNG.every((v,i)=>output[i]===v))throw Error('The generator returned an invalid PNG.');
-    return new Response(output,{headers:{'Content-Type':'image/png','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','X-Ghost-Generation-Attempts':String(attempts),'X-Ghost-Contract-Version':result.headers.get('X-Ghost-Contract-Version')||'legacy','X-Ghost-Seed':String(seed)}});
+    return new Response(output,{headers:{'Content-Type':'image/png','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','X-Ghost-Generation-Attempts':String(attempts),'X-Ghost-Contract-Version':result.headers.get('X-Ghost-Contract-Version')||'legacy','X-Ghost-Seed':String(seed),'X-Ghost-Request-Id':result.headers.get('X-Request-Id')||''}});
   }catch(error){return json({error:{message:controller.signal.aborted?'3D generation timed out. Please retry.':error.message||'3D generation is unavailable.'}},controller.signal.aborted?504:502);}
   finally{clearTimeout(timer);request.signal?.removeEventListener('abort',abort);}
 }

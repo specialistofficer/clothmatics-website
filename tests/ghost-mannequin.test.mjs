@@ -27,7 +27,7 @@ test('regeneration overwrites a previously saved 3D image with allowOverwrite',(
 });
 test('technical analysis accepts supported garments and rejects invented categories or missing detail',()=>{
   assert.deepEqual(parseGhostAnalysis(encoded({category:'hoodie',prompt:'Navy cotton hoodie with drawstrings and a kangaroo pocket.'})),{category:'hoodie',prompt:'Navy cotton hoodie with drawstrings and a kangaroo pocket.'});
-  assert.throws(()=>parseGhostAnalysis(encoded({category:'saree',prompt:'Long description of a garment.'})),/supported/);
+  assert.throws(()=>parseGhostAnalysis(encoded({category:'unknown',prompt:'Long description of a garment.'})),/supported/);
   assert.throws(()=>parseGhostAnalysis(encoded({category:'shirt',prompt:''})),/incomplete/);
 });
 test('analysis captures physical evidence; generation uses compact category-specific instructions',()=>{

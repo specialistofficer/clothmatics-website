@@ -569,30 +569,48 @@
   }
 }
 
-/* Floating Overlay Loader — Appears gracefully ON TOP of current page/dialog */
+/* Floating Orbit Loader on Complete the Look — Transparent background, no dialogue box container */
 .complete-look-overlay {
   position: fixed;
   inset: 0;
   z-index: 10000;
-  background: rgba(15, 12, 34, 0.62);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 24px;
+  pointer-events: none;
   animation: completeLookFadeIn 0.22s ease-out;
 }
 
 .complete-look-overlay-card {
-  width: min(540px, 94vw);
-  max-height: 88vh;
-  overflow-y: auto;
-  background: #ffffff;
-  border-radius: 28px;
-  padding: 16px 20px 24px;
-  box-shadow: 0 24px 64px -12px rgba(15, 12, 34, 0.45), 0 0 0 1px rgba(108, 63, 242, 0.16);
+  width: auto !important;
+  max-width: 100% !important;
+  max-height: none !important;
+  overflow: visible !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  border: none !important;
+  padding: 0 !important;
+  box-shadow: none !important;
   animation: completeLookScaleUp 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.complete-look-overlay .outfit-orbit-loader {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.complete-look-overlay .outfit-orbit-status {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border: 1px solid rgba(108, 63, 242, 0.18) !important;
+  box-shadow: 0 4px 18px rgba(45, 27, 105, 0.12) !important;
 }
 
 @keyframes completeLookFadeIn {

@@ -39,7 +39,7 @@ async function authenticatedFetch(user, baseUrl, path, { method = "POST", data =
     const message = response.status === 429 || code === "DAILY_LIMIT" || code === "resource-exhausted"
       ? "You have used today’s AI allowance. Your calls reset at midnight IST."
       : response.status === 503
-      ? "We couldn’t process this photo right now. Please try again."
+      ? String(error?.message || "We couldn’t process this photo right now. Please try again.")
       : String(error?.message || `Request failed (${response.status}).`);
     throw new ClothmaticsApiError(message, { code, status: response.status, details: body?.details || null });
   }

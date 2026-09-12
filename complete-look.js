@@ -321,7 +321,7 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
 
     // 0. Floating overlay loader placed on top of the current page/dialog
     const overlayLoaderHtml = isSearching ? `
-      <div class="complete-look-overlay complete-look-top-loader" role="dialog" aria-modal="true" aria-label="Curating Complete Look">
+      <div class="complete-look-overlay complete-look-top-loader" aria-live="polite" aria-label="Curating Complete Look">
         <div class="complete-look-overlay-card">
           ${outfitOrbitLoaderMarkup({
             kicker: "CLOTHMATICS AI STYLIST",
