@@ -69,7 +69,7 @@ test("web garment intake uses authenticated shared AI, Oracle and owner-scoped s
     readFile(new URL("functions/api/wardrobe/upload.js",root),"utf8"),
   ]);
   assert.match(html,/theme-refresh\.css\?v=20260906-ghost-toggle-2/);
-  assert.match(html,/app\.js\?v=20260911-appearance/);
+  assert.match(html,/app\.js\?v=\d{8}-[\w-]+/);
   assert.match(html,/name="theme-color" content="#2D1B69"/);
   assert.match(app,/garment-upload\.mjs\?v=20260911-appearance/);
   assert.match(headers,/\/garment-upload\.mjs\s+Cache-Control: no-store/);

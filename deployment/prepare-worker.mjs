@@ -1,0 +1,38 @@
+import {readFile,writeFile,mkdir} from 'node:fs/promises';
+const source=await readFile('.deploy-private/worker-source.txt','utf8');
+const start=source.indexOf('// src/index.js');
+const end=source.indexOf('//# sourceMappingURL=');
+if(start<0||end<start)throw Error('Unexpected deployed Worker format');
+let code=source.slice(start,end);
+const marker='    if (url.pathname === "/set-target") {';
+if(!code.includes(marker))throw Error('Worker target route changed');
+code=code.replace(marker,marker+`
+      if (request.method !== "POST") return new Response("Use POST to register a backend.", {status:405,headers:{...CORS_HEADERS,Allow:"POST"}});
+      if (!env.CLOTHMATICS_SYNC_TOKEN) return new Response("Backend registration is not configured.",{status:503,headers:CORS_HEADERS});
+      const supplied = request.headers.get("X-Sync-Token") || "";
+      const encode = new TextEncoder();
+      const expectedHash = new Uint8Array(await crypto.subtle.digest("SHA-256",encode.encode(env.CLOTHMATICS_SYNC_TOKEN)));
+      const suppliedHash = new Uint8Array(await crypto.subtle.digest("SHA-256",encode.encode(supplied)));
+      let mismatch = 0;
+      for(let i=0;i<expectedHash.length;i++) mismatch |= expectedHash[i]^suppliedHash[i];
+      if(mismatch) return new Response("Invalid sync token.",{status:401,headers:CORS_HEADERS});
+`);
+code=code.replace('      target = target.trim().replace(/\\/+$/, "");',`      try {
+        if(typeof target !== "string") throw Error("Invalid target");
+        const parsed = new URL(target.trim());
+        if(parsed.protocol !== "https:" || parsed.username || parsed.password || parsed.port || parsed.search || parsed.hash || parsed.pathname !== "/" || !/^[a-z0-9-]+\\.trycloudflare\\.com$/.test(parsed.hostname)) throw Error("Invalid target");
+        target = parsed.origin;
+      } catch { return new Response("A valid HTTPS Kaggle Quick Tunnel origin is required.",{status:400,headers:CORS_HEADERS}); }`);
+code=code.replace('    forwardHeaders.delete("host");','    forwardHeaders.delete("host");\n    forwardHeaders.delete("authorization");\n    forwardHeaders.delete("cookie");\n    forwardHeaders.delete("x-sync-token");');
+code=code.replace('redirect: "follow"','redirect: "manual"');
+code=code.replace('      const contentType = backendResponse.headers.get("content-type") || "";',`      if(backendResponse.status>=300&&backendResponse.status<400) return new Response(JSON.stringify({error:"Unexpected backend redirect"}),{status:502,headers:{"Content-Type":"application/json",...CORS_HEADERS}});
+      const contentType = backendResponse.headers.get("content-type") || "";`);
+if(!code.includes('A valid HTTPS Kaggle'))throw Error('Target validation patch did not apply');
+await mkdir('cloudflare/ghost',{recursive:true});
+await writeFile('cloudflare/ghost/index.mjs',code);
+const settings=JSON.parse(await readFile('.deploy-private/worker-settings.txt','utf8')).result;
+const kv=settings.bindings.find(b=>b.name==='GHOST_CONFIG');
+const name=settings.bindings.find(b=>b.name==='SERVICE_NAME');
+if(!kv?.namespace_id)throw Error('Missing existing Ghost KV binding');
+await writeFile('cloudflare/ghost/wrangler.json',JSON.stringify({name:'clothmatics-ghost',main:'index.mjs',compatibility_date:settings.compatibility_date,workers_dev:true,kv_namespaces:[{binding:'GHOST_CONFIG',id:kv.namespace_id}],vars:{SERVICE_NAME:name?.text||'ClothMatics Ghost Mannequin Proxy'}},null,2));
+console.log('Prepared existing Worker with protected registration, validated tunnel origin and preserved body/header forwarding.');

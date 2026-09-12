@@ -79,7 +79,7 @@ async function handle({request,env}){
     if(request.method==='GET')return new Response(bytes,{headers:{'Content-Type':type,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
     const seed=crypto.getRandomValues(new Uint32Array(1))[0];
     const createForm=()=>{const form=new FormData();form.append('image',new Blob([bytes],{type}),`garment.${type==='image/jpeg'?'jpg':type.split('/')[1]}`);form.append('category',body.category);form.append('prompt',body.prompt);form.append('seed',String(seed));if(body.contractVersion===2){form.append('manifest',JSON.stringify(body.manifest));form.append('contract_version','2');}return form;};
-    // Generator receives image/category/prompt only. Never forward the Firebase bearer token.
+    // Generator receives only the image and bounded garment conditioning. Never forward the Firebase bearer token.
     let attempts=0,coldRestarts=0,busyRetries=0,result;
     // A timed-out GPU job can keep the single-worker lock briefly. Wait through
     // bounded 429 responses, then start one warm retry after a single 524.

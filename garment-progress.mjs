@@ -4,34 +4,42 @@ export const OUTFIT_BUILD_STEPS = [
   {
     step: 1,
     num: "1",
+    percent: 25,
+    percentLabel: "25%",
     title: "A style appears",
     desc: "Your first piece is in.",
     image: "./assets/loader/outfit-build-step-1.png",
-    alt: "A style appears - Your first piece is in"
+    alt: "A style appears - Your first piece is in (25%)"
   },
   {
     step: 2,
     num: "2",
+    percent: 50,
+    percentLabel: "50%",
     title: "Layers come together",
     desc: "Building your look…",
     image: "./assets/loader/outfit-build-step-2.png",
-    alt: "Layers come together - Building your look"
+    alt: "Layers come together - Building your look (50%)"
   },
   {
     step: 3,
     num: "3",
+    percent: 75,
+    percentLabel: "75%",
     title: "More style, more you",
     desc: "Finding the perfect pieces…",
     image: "./assets/loader/outfit-build-step-3.png",
-    alt: "More style, more you - Finding the perfect pieces"
+    alt: "More style, more you - Finding the perfect pieces (75%)"
   },
   {
     step: 4,
     num: "4",
+    percent: 100,
+    percentLabel: "100%",
     title: "Your outfit is ready",
     desc: "Style looks good on you.",
     image: "./assets/loader/outfit-build-step-4.png",
-    alt: "Your outfit is ready - Style looks good on you"
+    alt: "Your outfit is ready - Style looks good on you (100%)"
   }
 ];
 
@@ -48,13 +56,15 @@ export function outfitBuildLoaderMarkup({
     const isLast = idx === OUTFIT_BUILD_STEPS.length - 1;
     const activeClass = s.step === initialStep ? " active" : (s.step < initialStep ? " completed" : "");
     const card = `
-      <div class="outfit-loader-card outfit-stage-slide${activeClass}" data-step="${s.step}">
+      <div class="outfit-loader-card outfit-stage-slide${activeClass}" data-step="${s.step}" data-percent="${s.percent}">
         <div class="outfit-stage-badge">
           <span class="outfit-stage-pill">Step ${s.num} of 4</span>
+          <span class="outfit-stage-percent">${s.percentLabel} Complete</span>
           <span class="outfit-stage-label">${s.title}</span>
         </div>
         <div class="outfit-loader-card-box">
-          <img src="${s.image}" alt="${s.alt}" width="225" height="240" loading="eager" />
+          <div class="outfit-ambient-glow" aria-hidden="true"></div>
+          <img src="${s.image}" alt="${s.alt}" width="280" height="280" loading="eager" />
         </div>
         <div class="outfit-loader-card-info">
           <span class="outfit-loader-card-num">${s.num}</span>
@@ -82,13 +92,25 @@ export function outfitBuildLoaderMarkup({
         </div>
       </div>
 
+      <div class="outfit-progress-bar-wrap" aria-hidden="true">
+        <div class="outfit-progress-bar-track">
+          <div class="outfit-progress-bar-fill" style="width: ${initialStep * 25}%;"></div>
+        </div>
+        <div class="outfit-progress-bar-ticks">
+          <span class="tick${initialStep >= 1 ? ' active' : ''}">25%</span>
+          <span class="tick${initialStep >= 2 ? ' active' : ''}">50%</span>
+          <span class="tick${initialStep >= 3 ? ' active' : ''}">75%</span>
+          <span class="tick${initialStep >= 4 ? ' active' : ''}">100%</span>
+        </div>
+      </div>
+
       <div class="outfit-loader-pill">
         <span class="outfit-loader-pill-tag">OUTFIT BUILD</span>
         <span class="outfit-loader-dots" aria-hidden="true">
-          <i class="dot${initialStep === 1 ? ' active' : ''}" data-dot="1"></i>
-          <i class="dot${initialStep === 2 ? ' active' : ''}" data-dot="2"></i>
-          <i class="dot${initialStep === 3 ? ' active' : ''}" data-dot="3"></i>
-          <i class="dot${initialStep === 4 ? ' active' : ''}" data-dot="4"></i>
+          <i class="dot${initialStep === 1 ? ' active' : (initialStep > 1 ? ' completed' : '')}" data-dot="1"></i>
+          <i class="dot${initialStep === 2 ? ' active' : (initialStep > 2 ? ' completed' : '')}" data-dot="2"></i>
+          <i class="dot${initialStep === 3 ? ' active' : (initialStep > 3 ? ' completed' : '')}" data-dot="3"></i>
+          <i class="dot${initialStep === 4 ? ' active' : (initialStep > 4 ? ' completed' : '')}" data-dot="4"></i>
         </span>
         <span class="outfit-loader-pill-msg" data-hanger-message>SAME STYLE, BRIGHTER DAYS.</span>
         <b data-hanger-title class="hidden-hanger-compat" style="display:none;">Preparing your photo</b>
@@ -171,6 +193,15 @@ export function updateHangerLoader(root, message, active = true, explicitStep = 
     } else if (dotStep < step) {
       dot.classList.add('completed');
     }
+  });
+
+  const progressFill = loader.querySelector('.outfit-progress-bar-fill');
+  if (progressFill) {
+    progressFill.style.width = `${step * 25}%`;
+  }
+  const ticks = loader.querySelectorAll('.outfit-progress-bar-ticks .tick');
+  ticks.forEach((tick, idx) => {
+    tick.classList.toggle('active', (idx + 1) <= step);
   });
 }
 

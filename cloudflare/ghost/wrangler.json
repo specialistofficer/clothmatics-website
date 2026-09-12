@@ -1,0 +1,15 @@
+{
+  "name": "clothmatics-ghost",
+  "main": "index.mjs",
+  "compatibility_date": "2026-09-06",
+  "workers_dev": true,
+  "kv_namespaces": [
+    {
+      "binding": "GHOST_CONFIG",
+      "id": "154c6923573d441ba685088246c73d33"
+    }
+  ],
+  "vars": {
+    "SERVICE_NAME": "ClothMatics Ghost Mannequin Proxy"
+  }
+}

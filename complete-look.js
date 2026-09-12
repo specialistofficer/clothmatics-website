@@ -15,11 +15,11 @@ import {
   getCategoryFallbackImage,
   getUserProfileSizes,
   getUserProfilePreferences
-} from "./complete-look-helpers.js?v=20260912-outfit-loader-v5";
+} from "./complete-look-helpers.js?v=20260912-outfit-loader-v6";
 import {
   outfitBuildLoaderMarkup,
   updateHangerLoader
-} from "./garment-progress.mjs?v=20260912-outfit-loader-v5";
+} from "./garment-progress.mjs?v=20260912-outfit-loader-v6";
 
 function safeUrl(value = "") {
   try {

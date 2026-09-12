@@ -1,5 +1,5 @@
 # ==============================================================================
-# ⚡ CLOTHMATICS 3D GHOST MANNEQUIN - SAFE BASELINE PIPELINE (v8.3.3)
+# CLOTHMATICS 3D GHOST MANNEQUIN - APPEARANCE V2 PIPELINE (v9.0.0)
 # ==============================================================================
 # Architecture:
 # 1. 🛡️ Safe Baseline: Non-destructive raw FLUX generation, high-speed FP16 compute.

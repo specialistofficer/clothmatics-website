@@ -24,11 +24,15 @@ test('OUTFIT_BUILD_STEPS defines exactly 4 progressive stages with valid metadat
     'Finding the perfect pieces…',
     'Style looks good on you.'
   ];
+  const expectedPercents = [25, 50, 75, 100];
+  const expectedPercentLabels = ['25%', '50%', '75%', '100%'];
 
   for (let i = 0; i < 4; i++) {
     const step = OUTFIT_BUILD_STEPS[i];
     assert.equal(step.step, i + 1);
     assert.equal(step.num, String(i + 1));
+    assert.equal(step.percent, expectedPercents[i]);
+    assert.equal(step.percentLabel, expectedPercentLabels[i]);
     assert.equal(step.title, expectedTitles[i]);
     assert.equal(step.desc, expectedDescs[i]);
     assert(step.image.includes('outfit-build-step-' + (i + 1) + '.png'));
@@ -40,7 +44,7 @@ test('OUTFIT_BUILD_STEPS defines exactly 4 progressive stages with valid metadat
   }
 });
 
-test('outfitBuildLoaderMarkup renders complete 4-step cards, chevrons, and bottom pill', () => {
+test('outfitBuildLoaderMarkup renders complete 4-step cards, chevrons, progress bar, and bottom pill', () => {
   const html = outfitBuildLoaderMarkup({
     title: 'Outfit Build',
     subtitle: 'TURNING YOUR STYLE INTO SOMETHING GREAT…',
@@ -56,10 +60,17 @@ test('outfitBuildLoaderMarkup renders complete 4-step cards, chevrons, and botto
   assert(html.includes('class="outfit-loader-showcase"'), 'Contains single-stage showcase container');
   for (let i = 1; i <= 4; i++) {
     assert(html.includes('data-step=\"' + i + '\"'), 'Card for step ' + i + ' must exist');
+    assert(html.includes('data-percent=\"' + (i * 25) + '\"'), 'Card percent attribute for step ' + i + ' must exist');
     assert(html.includes('outfit-build-step-' + i + '.png'), 'Image for step ' + i + ' must exist');
     assert(html.includes('outfit-stage-slide'), 'Must have stage slide class');
     assert(html.includes('outfit-stage-badge'), 'Must have stage badge');
+    assert(html.includes((i * 25) + '% Complete'), 'Must display stage percent badge');
   }
+
+  assert(html.includes('class="outfit-progress-bar-wrap"'), 'Must contain progress bar wrap');
+  assert(html.includes('class="outfit-progress-bar-track"'), 'Must contain progress bar track');
+  assert(html.includes('class="outfit-progress-bar-fill"'), 'Must contain progress bar fill');
+  assert(html.includes('class="outfit-progress-bar-ticks"'), 'Must contain progress bar ticks');
 
   const chevronCount = (html.match(/class=\"outfit-loader-chevron\"/g) || []).length;
   assert.equal(chevronCount, 3, 'Must have exactly 3 chevrons between 4 cards');
@@ -81,13 +92,25 @@ test('hangerLoaderMarkup acts as backwards-compatible alias with hidden default'
   assert(html.includes('hidden'), 'Defaults to hidden for initial modal injection');
 });
 
-test('updateHangerLoader progresses across steps 1 through 4 with DOM updates', () => {
+test('updateHangerLoader progresses across steps 1 through 4 with DOM updates and progress bar', () => {
   const root = {
     dataset: { phase: 'prepare', activeStep: '1' },
     hidden: true,
     _titleEl: { textContent: '' },
     _msgEl: { textContent: '' },
     _stepsEl: { attributes: {}, setAttribute(k, v) { this.attributes[k] = v; } },
+    _progressFill: { style: { width: '' } },
+    _ticks: [1, 2, 3, 4].map(s => {
+      const tickClasses = new Set(s === 1 ? ['active'] : []);
+      return {
+        classList: {
+          add(c) { tickClasses.add(c); },
+          remove(...args) { args.forEach(c => tickClasses.delete(c)); },
+          contains(c) { return tickClasses.has(c); },
+          toggle(c, force) { if (force) tickClasses.add(c); else tickClasses.delete(c); }
+        }
+      };
+    }),
     _cards: [1, 2, 3, 4].map(s => {
       const cardClasses = new Set(s === 1 ? ['active'] : []);
       return {
@@ -115,11 +138,13 @@ test('updateHangerLoader progresses across steps 1 through 4 with DOM updates', 
       if (sel === '[data-hanger-title]') return this._titleEl;
       if (sel === '[data-hanger-message]') return this._msgEl;
       if (sel === '.outfit-loader-steps') return this._stepsEl;
+      if (sel === '.outfit-progress-bar-fill') return this._progressFill;
       return null;
     },
     querySelectorAll(sel) {
       if (sel === '.outfit-loader-card') return this._cards;
       if (sel === '.outfit-loader-dots .dot') return this._dots;
+      if (sel === '.outfit-progress-bar-ticks .tick') return this._ticks;
       return [];
     }
   };
@@ -130,21 +155,33 @@ test('updateHangerLoader progresses across steps 1 through 4 with DOM updates', 
   assert.equal(root._titleEl.textContent, 'Finding every detail');
   assert.equal(root._msgEl.textContent, 'Inspecting color, fabric and construction…');
   assert.equal(root._cards[0].classList.contains('active'), true);
+  assert.equal(root._progressFill.style.width, '25%');
+  assert.equal(root._ticks[0].classList.contains('active'), true);
+  assert.equal(root._ticks[1].classList.contains('active'), false);
 
   updateHangerLoader(root, 'Creating your 3D garment…', true);
   assert.equal(root.dataset.activeStep, '2');
   assert.equal(root._cards[0].classList.contains('completed'), true);
   assert.equal(root._cards[1].classList.contains('active'), true);
+  assert.equal(root._progressFill.style.width, '50%');
+  assert.equal(root._ticks[0].classList.contains('active'), true);
+  assert.equal(root._ticks[1].classList.contains('active'), true);
+  assert.equal(root._ticks[2].classList.contains('active'), false);
 
   updateHangerLoader(root, 'Finding the perfect shoes and accessories…', true);
   assert.equal(root.dataset.activeStep, '3');
   assert.equal(root._cards[1].classList.contains('completed'), true);
   assert.equal(root._cards[2].classList.contains('active'), true);
+  assert.equal(root._progressFill.style.width, '75%');
+  assert.equal(root._ticks[2].classList.contains('active'), true);
+  assert.equal(root._ticks[3].classList.contains('active'), false);
 
   updateHangerLoader(root, 'Saving the checked 3D image alongside your original…', true);
   assert.equal(root.dataset.activeStep, '4');
   assert.equal(root._cards[2].classList.contains('completed'), true);
   assert.equal(root._cards[3].classList.contains('active'), true);
+  assert.equal(root._progressFill.style.width, '100%');
+  assert.equal(root._ticks[3].classList.contains('active'), true);
   assert.equal(root.dataset.phase, 'save');
 });
 

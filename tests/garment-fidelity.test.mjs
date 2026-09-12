@@ -50,6 +50,12 @@ test('median RGB comes from fabric pixels and ignores transparency plus isolated
   for(let i=3;i<pixels.length;i+=4)pixels[i]=0;
   assert.equal(samplePatchHex(pixels,5,5,[500,500]),'');
 });
+test('validated sample coordinates survive repeated metadata normalization before photo sampling',()=>{
+  const profile=normalizeVisualProfile({colors:[{role:'base',name:'teal',point:[200,400],confidence:'high',hex:'#FFFFFF'}]});
+  assert.deepEqual(normalizeVisualProfile(profile),profile);
+  assert.equal(profile.colors.length,1);
+  assert.equal(profile.colors[0].hex,undefined);
+});
 const verdict={sameGarment:true,colorMatch:true,textureMatch:true,constructionMatch:true,graphicsMatch:true,emptyOpenings:true,confidence:.95,issues:[]};
 test('quality acceptance requires every comparison to pass without uncertainty',()=>{
   assert.equal(parseGhostQuality(encoded(verdict)).passed,true);

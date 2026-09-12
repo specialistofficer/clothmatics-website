@@ -41,7 +41,7 @@ export function normalizeVisualProfile(value = {}) {
       ['base','secondary','print','trim','hardware','wash'].includes(color?.role) &&
       color.confidence === 'high' && Array.isArray(color.point) && color.point.length === 2 &&
       color.point.every(n => typeof n === 'number' && Number.isFinite(n) && n > 0 && n < 1000)
-    ).slice(0, 7).map(color => ({role: color.role, name: text(color.name, 60), point: color.point.map(Math.round)})),
+    ).slice(0, 7).map(color => ({role: color.role, name: text(color.name, 60), point: color.point.map(Math.round), confidence: 'high'})),
   };
 }
 

@@ -1,6 +1,6 @@
 import {analyzeGhostGarment,buildGhostAnalysisFromItem,hasReusableGhostMetadata,generateGhostGarment,getGhostSource,verifyGhostResult,ghostStorageBlob,downloadGhostGarment} from './ghost-mannequin.mjs';
 import {uploadGarmentImage,deleteGarmentUpload} from './garment-upload.mjs';
-import {hangerLoaderMarkup,updateHangerLoader} from './garment-progress.mjs?v=20260912-outfit-loader-v5';
+import {hangerLoaderMarkup,updateHangerLoader} from './garment-progress.mjs?v=20260912-outfit-loader-v6';
 
 export function createGhostStudio({getUser,getItem,save,onSaved,onQuota,onRequestAdmin,onDelete,escapeHtml,safeUrl,services={}}){
   const api={analyzeGhostGarment,generateGhostGarment,getGhostSource,verifyGhostResult,ghostStorageBlob,downloadGhostGarment,uploadGarmentImage,deleteGarmentUpload,...services};

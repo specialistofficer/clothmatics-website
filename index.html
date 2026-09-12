@@ -27,7 +27,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=20260912-outfit-loader-v6" />
     <link rel="stylesheet" href="./companion.css?v=20260906-garment-dialog-1" />
     <link rel="stylesheet" href="./install-prompt.css" />
     <link rel="stylesheet" href="./wardrobe-assistant.css" />
@@ -39,8 +39,8 @@
     <!-- ClothMatics Affiliate Networks: Awin | Admitad | Optimise Media -->
     <meta name="affiliate-networks" content="Awin, Admitad, Optimise Media" />
     <meta name="mitgo-verification" content="13dabed9-6ec3-4acb-8ebf-815604226289" />
-      <link rel="stylesheet" href="./complete-look.css?v=20260912-outfit-loader-v5" />
-      <link rel="stylesheet" href="./garment-studio.css?v=20260912-outfit-loader-v5" />
+      <link rel="stylesheet" href="./complete-look.css?v=20260912-outfit-loader-v6" />
+      <link rel="stylesheet" href="./garment-studio.css?v=20260912-outfit-loader-v6" />
   </head>
   <body>
     <div class="noise"></div>
@@ -176,7 +176,20 @@
             <div class="user-chip"><span id="user-initial">C</span><div><b id="user-name">ClothMatics user</b><small id="user-email"></small></div></div>
           </div>
         </header>
-        <div id="dashboard-loading" class="dashboard-loading"><span class="spinner"></span><p>Preparing your wardrobe…</p></div>
+        <div id="dashboard-loading" class="dashboard-loading">
+          <div class="dashboard-progress-stage">
+            <div class="dashboard-ambient-glow" aria-hidden="true"></div>
+            <div class="dashboard-stage-box">
+              <img id="dashboard-loader-img" src="./assets/loader/outfit-build-step-1.png" alt="Loading wardrobe" width="220" height="220" />
+            </div>
+            <div class="outfit-progress-bar-wrap" style="max-width: 320px;">
+              <div class="outfit-progress-bar-track">
+                <div id="dashboard-progress-fill" class="outfit-progress-bar-fill" style="width: 25%;"></div>
+              </div>
+            </div>
+            <p id="dashboard-loader-msg" class="dashboard-loader-text">Preparing your wardrobe…</p>
+          </div>
+        </div>
         <div id="panel-overview" class="panel hidden">
           <div class="stat-grid companion-stats"><article><span>WARDROBE</span><b id="stat-items">0</b><small>garments</small></article><article><span>FAVORITES</span><b id="stat-favorites">0</b><small>saved pieces</small></article><article><span>LOOKBOOK</span><b id="stat-lookbook">0</b><small>items & looks</small></article><article><span>PLANNED</span><b id="stat-planned">0</b><small>upcoming looks</small></article><article><span>WEARS</span><b id="stat-wears">0</b><small>recorded</small></article><article><span>QUEST POINTS</span><b id="stat-points">0</b><small>earned</small></article></div>
           <div class="dashboard-split"><div class="dash-card"><div class="dash-title"><div><span>RECENTLY ADDED</span><h3>Your latest pieces</h3></div><button data-go-panel="wardrobe">View all →</button></div><div class="closet-grid compact" id="recent-grid"></div></div><div class="stylist-promo"><span>WARDROBE COMPANION</span><h3>Review your closet.<br />Plan with confidence.</h3><p>Add garments, run a Style Check, browse saved outfits, and understand your wardrobe rotation here.</p><button data-go-panel="camera">Add or check a photo →</button></div></div>
@@ -228,7 +241,7 @@
       <symbol id="icon-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></symbol>
     </svg>
     <script src="./install-prompt.js" defer></script>
-    <script type="module" src="./app.js?v=20260912-outfit-loader-v5"></script>
+    <script type="module" src="./app.js?v=20260912-outfit-loader-v6"></script>
   </body>
 </html>
 
