@@ -1,5 +1,5 @@
 # ==============================================================================
-# CLOTHMATICS 3D GHOST MANNEQUIN - APPEARANCE V2 PIPELINE (v9.0.0)
+# CLOTHMATICS 3D GHOST MANNEQUIN - APPEARANCE V2 PIPELINE (v9.1.0)
 # ==============================================================================
 # Architecture:
 # 1. 🛡️ Safe Baseline: Non-destructive raw FLUX generation, high-speed FP16 compute.
@@ -13,7 +13,7 @@
 import os, sys, json, time, re, socket, subprocess, textwrap, urllib.request, shutil
 from pathlib import Path
 
-print("Starting ClothMatics appearance v2 engine (v9.0.0)...\n")
+print("Starting ClothMatics appearance v2 engine (v9.1.0)...\n")
 
 def read_kaggle_secret(name):
     value = os.environ.get(name, '').strip()
@@ -274,7 +274,7 @@ try:
             data=sync_payload,
             headers={
                 'Content-Type': 'application/json',
-                'User-Agent': 'ClothMatics-Kaggle-Node/9.0.0',
+                'User-Agent': 'ClothMatics-Kaggle-Node/9.1.0',
                 'X-Sync-Token': SYNC_TOKEN
             },
             method='POST'
@@ -294,7 +294,7 @@ except Exception as e:
 # FINISHED!
 # ------------------------------------------------------------------------------
 print("\n" + "="*80)
-print("CLOTHMATICS v9.0.0 APPEARANCE V2 ENGINE IS LIVE")
+print("CLOTHMATICS v9.1.0 GHOST VOLUME ENGINE IS LIVE")
 print("="*80)
 print(f"👉 PERMANENT WEBSITE ENDPOINT : https://clothmatics-ghost.chiragsharma376.workers.dev/generate")
 print(f"👉 ACTIVE KAGGLE TUNNEL       : {PUBLIC_API_URL}")

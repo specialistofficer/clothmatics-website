@@ -17,7 +17,7 @@ from fastapi.responses import Response
 # ==============================================================================
 # 1. CONSTANTS, PROFILES & COLOR MANAGEMENT
 # ==============================================================================
-PIPELINE_VERSION = "9.0.0-appearance-v2"
+PIPELINE_VERSION = "9.1.0-ghost-volume-v2"
 MAX_UPLOAD_BYTES = 20 * 1024 * 1024  # 20 MB
 MAX_INPUT_PIXELS = 24_000_000        # 24 Mpx
 SRGB_PROFILE = ImageCms.ImageCmsProfile(ImageCms.createProfile("sRGB"))

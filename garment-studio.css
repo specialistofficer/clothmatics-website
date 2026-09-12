@@ -268,6 +268,41 @@ html:has(dialog[open]),body:has(dialog[open]){overflow:hidden}
   display: none !important;
 }
 
+.outfit-moving-progress-bar {
+  width: 100%;
+  max-width: 320px;
+  height: 6px;
+  background: rgba(108, 63, 242, 0.12);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+  margin: 6px auto 0;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.outfit-moving-progress-runner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 42%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #6c3ff2 0%, #ec4899 50%, #8b5cf6 100%);
+  box-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
+  animation: outfit-runner-move 1.6s ease-in-out infinite alternate;
+}
+
+@keyframes outfit-runner-move {
+  0% {
+    left: 0%;
+    transform: translateX(0%);
+  }
+  100% {
+    left: 100%;
+    transform: translateX(-100%);
+  }
+}
+
 .outfit-loader-chevron {
   display: none !important;
 }

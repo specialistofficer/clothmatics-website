@@ -92,6 +92,10 @@ export function outfitBuildLoaderMarkup({
         </div>
       </div>
 
+      <div class="outfit-moving-progress-bar" aria-hidden="true">
+        <div class="outfit-moving-progress-runner"></div>
+      </div>
+
       <div class="outfit-progress-bar-wrap" aria-hidden="true">
         <div class="outfit-progress-bar-track">
           <div class="outfit-progress-bar-fill" style="width: ${initialStep * 25}%;"></div>

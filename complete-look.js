@@ -15,11 +15,11 @@ import {
   getCategoryFallbackImage,
   getUserProfileSizes,
   getUserProfilePreferences
-} from "./complete-look-helpers.js?v=20260912-outfit-loader-v7";
+} from "./complete-look-helpers.js?v=20260912-outfit-loader-v8";
 import {
   outfitBuildLoaderMarkup,
   updateHangerLoader
-} from "./garment-progress.mjs?v=20260912-outfit-loader-v7";
+} from "./garment-progress.mjs?v=20260912-outfit-loader-v8";
 
 function safeUrl(value = "") {
   try {
@@ -184,11 +184,15 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
 
     currentQuery = "";
 
-    render();
-
     if (dialog && !dialog.open) {
       dialog.showModal();
     }
+    if (dialog) {
+      dialog.scrollTop = 0;
+    }
+
+    // Immediately trigger search so the top moving loader shows and results load directly
+    executeSearch();
   }
 
   async function executeSearch() {
@@ -197,6 +201,9 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
     isSearching = true;
     searchError = "";
     searchStep = 1;
+    if (dialog) {
+      dialog.scrollTop = 0;
+    }
     render();
 
     const searchTimer = setInterval(() => {
@@ -300,6 +307,22 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
       activeItem.fit
     ].filter(Boolean).join(" · ");
 
+    // 0. Top moving loader placed at the very top of the dialog
+    const topLoaderHtml = isSearching ? `
+      <div class="complete-look-top-progress-wrap" aria-hidden="true">
+        <div class="complete-look-top-progress-indicator"></div>
+      </div>
+      <div class="complete-look-top-loader">
+        ${outfitBuildLoaderMarkup({
+          kicker: "CLOTHMATICS AI STYLIST",
+          title: "Outfit Build",
+          subtitle: "TURNING YOUR STYLE INTO SOMETHING GREAT…",
+          initialStep: searchStep,
+          hidden: false
+        })}
+      </div>
+    ` : "";
+
     // 1. Hero banner
     const heroHtml = `
       <div class="complete-look-hero">
@@ -397,19 +420,7 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
     // 4. Results or states
     let resultsBodyHtml = "";
 
-    if (isSearching) {
-      resultsBodyHtml = `
-        <div class="complete-look-loading">
-          ${outfitBuildLoaderMarkup({
-            kicker: "CLOTHMATICS AI STYLIST",
-            title: "Outfit Build",
-            subtitle: "TURNING YOUR STYLE INTO SOMETHING GREAT…",
-            initialStep: searchStep,
-            hidden: false
-          })}
-        </div>
-      `;
-    } else if (searchError) {
+    if (searchError) {
       resultsBodyHtml = `
         <div class="complete-look-empty">
           <div class="complete-look-empty-icon">⚠️</div>
@@ -420,19 +431,10 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
           </div>
         </div>
       `;
-    } else if (!hasSearched) {
-      // User has opened modal, set choices, but not clicked search yet
-      resultsBodyHtml = `
-        <div class="complete-look-ready">
-          <div class="complete-look-ready-icon">✨</div>
-          <h3>Ready to Style Your Complete Outfit</h3>
-          <p>Our AI Stylist will generate a complete, coordinated 4-piece look (Tops, Footwear, Layering, and Accessories) tailored to your ${escapeHtml(activeItem.title || "garment")}.</p>
-          <button type="button" class="button button-primary complete-look-start-btn" id="complete-look-start-search-btn">
-            ✨ Generate Complete Outfit
-          </button>
-        </div>
-      `;
-    } else if (searchResults.length === 0) {
+    } else if (isSearching) {
+      // Loader is placed prominently at the top of the dialog, no duplicate loader needed below
+      resultsBodyHtml = "";
+    } else if (searchResults.length === 0 && hasSearched) {
       resultsBodyHtml = `
         <div class="complete-look-empty">
           <div class="complete-look-empty-icon">🔍</div>
@@ -443,7 +445,7 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
           </div>
         </div>
       `;
-    } else {
+    } else if (searchResults.length > 0) {
       // Display AI Stylist Vision Banner
       const outfitTitle = outfitData?.title || stylingIntent?.outfitTitle || "Curated Coordinated Outfit";
       const stylistAdvice = outfitData?.stylingAdvice || stylingIntent?.overallStylingAdvice || stylingIntent?.stylingReason || "";
@@ -530,6 +532,7 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
     `;
 
     container.innerHTML = `
+      ${topLoaderHtml}
       ${heroHtml}
       ${categoryTabsHtml}
       ${filterBoxHtml}
@@ -612,17 +615,13 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
         if (!tabId || tabId === activeTab) return;
         activeTab = tabId;
 
-        if (hasSearched && outfitData) {
+        if (hasSearched && outfitData && tabId !== "all" && outfitData.categories?.some((c) => c.id === tabId)) {
           // If we already have the full outfit loaded, filter client-side smoothly!
           render();
         } else {
           const profile = getProfile();
           currentQuery = tabId === "all" ? "" : buildSmartShoppingQuery(activeItem, tabId, profile);
-          if (hasSearched) {
-            executeSearch();
-          } else {
-            render();
-          }
+          executeSearch();
         }
       });
     });
@@ -637,10 +636,8 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
           render();
           const input = document.getElementById("complete-look-custom-min");
           if (input) input.focus();
-        } else if (hasSearched) {
-          executeSearch();
         } else {
-          render();
+          executeSearch();
         }
       });
     });
@@ -670,9 +667,7 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
     if (aboveCheck) {
       aboveCheck.addEventListener("change", (e) => {
         allowAboveBudget = e.target.checked;
-        if (hasSearched) {
-          executeSearch();
-        }
+        executeSearch();
       });
     }
 

@@ -36,7 +36,7 @@ reviewable. No global histogram recoloring is applied to fabric or logos.
    pinned dependencies, loads the same pinned FLUX.2-klein-4B revision, warms the
    model, starts the tunnel and registers the new target. Leave the cell running.
 4. Check the permanent Worker's `/health` response. Its backend must report
-   `pipeline_version: 9.0.0-appearance-v2`, `ghost_contract_version: 2`, and
+   `pipeline_version: 9.1.0-ghost-volume-v2`, `ghost_contract_version: 2`, and
    `ready: true`.
 5. The website and permanent Worker were deployed on 2026-09-11. Reload the
    website after your v9 backend is ready. Website and GPU notebook are separate
@@ -75,6 +75,8 @@ was rejected by the user. No v9 GPU generation was run.
 Published downloads:
 - https://clothmatics.pages.dev/downloads/clothmatics_ghost_v9.py
 - https://clothmatics.pages.dev/downloads/clothmatics_ghost_v9.ipynb
+- https://clothmatics.pages.dev/downloads/clothmatics_ghost_v9.txt (use this
+  text endpoint from a direct Kaggle cell; Pages serves it as a static asset)
 
 The server keeps a bounded ten-minute result cache keyed by source/evidence/seed
 so a transport retry can reuse completed inference. New user attempts receive a
@@ -93,7 +95,7 @@ caller cannot release it while inference is still running.
   replacement preservation, retry-save, credential isolation, stale edits and
   the generated notebook's Python syntax.
 - Actual GPU inference and the user's original-photo corpus have **not** been
-  run with v9.0.0 here. Screenshots show failures but cannot substitute for the
+  run with v9.1.0 here. Screenshots show failures but cannot substitute for the
   original uploaded photo bytes in a color-fidelity benchmark.
 - Visual comparison is model-based screening, not a guarantee. Reference
   lighting affects measured colors; photographs cannot establish fibre content.

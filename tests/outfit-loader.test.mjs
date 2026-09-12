@@ -259,6 +259,8 @@ test('createCompleteLookController open() initializes and opens dialog without R
   const content = document.getElementById('complete-look-content');
   assert(content.innerHTML.length > 50, 'Content must be rendered');
   assert(content.innerHTML.includes('Dark Wash Denim Jeans'), 'Must include active garment title');
-  assert(content.innerHTML.includes('Generate Complete Outfit'), 'Must include generate outfit button');
+  assert(content.innerHTML.includes('complete-look-top-loader'), 'Must render moving loader at top of screen');
+  assert(content.innerHTML.includes('outfit-build-loader'), 'Must include 3D progression outfit build loader');
+  assert(!content.innerHTML.includes('complete-look-ready'), 'Must not have separate intermediate ready section');
 });
 

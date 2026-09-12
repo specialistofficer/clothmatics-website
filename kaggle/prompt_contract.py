@@ -44,8 +44,9 @@ def invariant_prompt(category):
     lower = category in {"trousers", "trackpants", "cargo", "shorts"}
     shape = ("Lower garment only, waistband to leg hems. No upper garment or jumpsuit. " if lower else "Keep the reference garment's observed sleeves, neckline and hem. ")
     return (
-        f"Edit the reference photograph: the SAME single {category}, floating with natural clothing volume and empty openings. "
-        "Only garment and white background. No visible mannequin, person, head, neck stump, torso, limbs or hanger. "
+        f"Create a clean studio ghost-mannequin product render of the SAME single {category}; no visible mannequin or human body. Use a completely invisible, anatomically neutral garment support. "
+        "Keep the support hidden while giving the clothing believable three-dimensional volume: inner edge depth at the collar or waistband, natural shoulder or seat shape, sidewall thickness, fold gradients, contact shadows and subtle product-camera perspective. "
+        "Never make a flat front cutout, technical drawing or 2D icon. No visible mannequin, person, skin, head, neck cylinder, torso, limbs, stand or hanger; only garment and white background may be visible. "
         + shape +
         "Reference garment pixels override text color names. Preserve photographed hue, saturation, brightness, white balance, "
         "texture, cut, pockets, fasteners and lettering. No recoloring, redesign or invented hidden details. "

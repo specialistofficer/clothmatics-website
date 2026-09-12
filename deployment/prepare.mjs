@@ -14,4 +14,7 @@ for(const name of ['clothmatics_ghost_v9.py','clothmatics_ghost_v9.ipynb']){
  await writeFile(join(target,'downloads',name),bytes);
  console.log(`${name} SHA256 ${createHash('sha256').update(bytes).digest('hex')}`);
 }
+const python=await readFile(join(root,'kaggle','clothmatics_ghost_v9.py'));
+await writeFile(join(target,'downloads','clothmatics_ghost_v9.txt'),python);
+console.log(`clothmatics_ghost_v9.txt SHA256 ${createHash('sha256').update(python).digest('hex')}`);
 console.log('Prepared website assets and Pages Functions in '+target);

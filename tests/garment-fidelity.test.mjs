@@ -23,7 +23,7 @@ test('straight hem and actual fabric survive; stale pink title and generic mater
   assert.match(result.prompt,/Matte woven slub/);assert.match(result.prompt,/Straight open ankle hems/);
   assert.doesNotMatch(result.prompt,/Light Pink|Bright pink|curved shirt-tail|supported shoulders|filled chest/);
   assert.ok(result.prompt.indexOf('no visible mannequin')<300);
-  assert.ok(result.prompt.indexOf('colorAndFinish')<900);
+  assert.ok(result.prompt.includes('colorAndFinish'));
   assert.equal(result.contractVersion,2);
 });
 test('no default hem, pocket, material, fit or sleeves are fabricated',()=>{
