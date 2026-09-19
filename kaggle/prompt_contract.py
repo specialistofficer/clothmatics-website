@@ -84,11 +84,12 @@ def invariant_prompt(category):
     lower = category in LOWER_CATEGORIES
     shape = SHAPE_RULES.get(category) or ("Lower garment only, waistband to leg hems. No upper garment or jumpsuit. " if lower else "Keep the reference garment's observed sleeves, neckline and hem. ")
     volume = ("visible inner waistband depth, natural seat and crotch volume, two separate leg tubes, sidewall thickness, fold gradients, contact shadows and subtle product-camera perspective" if lower else "inner edge depth at the collar or waistband, natural shoulder or seat shape, sidewall thickness, fold gradients, contact shadows and subtle product-camera perspective")
+    jacket = ("Jacket fidelity is strict: preserve the exact collar and front closure, pocket count and placement, sleeve marks and trim. Keep every left/right detail on the same viewer side; never mirror the reference. Do not add pockets, snaps, panels or logos that are not visibly present. The collar must be a truly empty garment opening with background or natural dark inner-fabric depth visible through it; never place a white, grey or skin-toned neck, chest or mannequin surface inside. " if category == "jacket" else "")
     return (
         f"Create a clean studio ghost-mannequin product render of the SAME single {category}; no visible mannequin or human body. Use a completely invisible, anatomically neutral garment support. "
         f"Keep the support hidden while giving the clothing believable three-dimensional volume: {volume}. "
         "Never make a flat front cutout, technical drawing or 2D icon. No visible mannequin, person, skin, head, neck cylinder, torso, limbs, stand or hanger; only garment and white background may be visible. "
-        + shape +
+        + jacket + shape +
         "Reference garment pixels override text color names. Preserve photographed hue, saturation, brightness, white balance, "
         "texture, cut, pockets, fasteners and lettering. No recoloring, redesign or invented hidden details. "
     )

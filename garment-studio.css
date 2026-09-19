@@ -9,30 +9,66 @@ html:has(dialog[open]),body:has(dialog[open]){overflow:hidden}
 .ghost-content{position:relative;overflow-y:auto;overscroll-behavior:contain;min-height:360px;padding:20px 28px}
 .garment-upload-dialog{position:relative}
 
-/* Full-area overlay loader on top of the content */
+/* Full-display overlay loader covering entire screen display */
+.ghost-studio:has(> .hanger-loader:not([hidden])),
+.ghost-studio:has(> .outfit-orbit-loader:not([hidden])),
+.ghost-studio:has(.ghost-content > .hanger-loader:not([hidden])),
+.ghost-studio:has(.ghost-content > .outfit-orbit-loader:not([hidden])),
+.ghost-studio.is-busy,
+.garment-upload-dialog:has(> .hanger-loader:not([hidden])),
+.garment-upload-dialog:has(> .outfit-orbit-loader:not([hidden])) {
+  overflow: visible !important;
+}
+
+.garment-upload-dialog:has(> .hanger-loader:not([hidden])),
+.garment-upload-dialog:has(> .outfit-orbit-loader:not([hidden])) {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.garment-upload-dialog:has(> .hanger-loader:not([hidden]))::backdrop,
+.garment-upload-dialog:has(> .outfit-orbit-loader:not([hidden]))::backdrop,
+.ghost-studio:has(> .hanger-loader:not([hidden]))::backdrop,
+.ghost-studio:has(> .outfit-orbit-loader:not([hidden]))::backdrop,
+.ghost-studio:has(.ghost-content > .hanger-loader:not([hidden]))::backdrop,
+.ghost-studio:has(.ghost-content > .outfit-orbit-loader:not([hidden]))::backdrop {
+  background: rgba(19, 18, 41, 0.22) !important;
+  backdrop-filter: blur(3px) !important;
+  -webkit-backdrop-filter: blur(3px) !important;
+}
+
+.ghost-studio > .hanger-loader,
+.ghost-studio > .outfit-build-loader,
+.ghost-studio > .outfit-orbit-loader,
 .ghost-content > .hanger-loader,
 .ghost-content > .outfit-build-loader,
 .ghost-content > .outfit-orbit-loader,
 .garment-upload-dialog > .hanger-loader,
 .garment-upload-dialog > .outfit-build-loader,
 .garment-upload-dialog > .outfit-orbit-loader {
-  position: absolute !important;
+  position: fixed !important;
   inset: 0 !important;
-  z-index: 55 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 100000 !important;
   margin: 0 !important;
   border: none !important;
-  border-radius: inherit !important;
-  background: rgba(255, 255, 255, 0.95) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
+  border-radius: 0 !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
   box-sizing: border-box !important;
-  overflow-y: auto !important;
+  box-shadow: none !important;
 }
 
+.ghost-studio > .hanger-loader[hidden],
+.ghost-studio > .outfit-build-loader[hidden],
+.ghost-studio > .outfit-orbit-loader[hidden],
 .ghost-content > .hanger-loader[hidden],
 .ghost-content > .outfit-build-loader[hidden],
 .ghost-content > .outfit-orbit-loader[hidden],
@@ -74,16 +110,16 @@ html:has(dialog[open]),body:has(dialog[open]){overflow:hidden}
 .ghost-confirm form{display:flex;justify-content:flex-end;gap:10px;margin-top:24px}.ghost-confirm button{padding:12px 15px;border-radius:11px;border:1px solid #ded7f3;background:#fff;font-weight:700;cursor:pointer}
 .ghost-confirm button:focus-visible{outline:3px solid #6c63ff;outline-offset:3px}
 .garment-review-preview{align-self:start;position:sticky;top:0;min-height:0}.garment-review-preview img{max-height:420px;object-fit:contain}
-.garment-evidence-fields{grid-column:1/-1;border:1px solid #e5e1f2;border-radius:14px;padding:14px;background:#faf9fe}
-.garment-evidence-fields summary{cursor:pointer;font-size:13px;font-weight:800;color:#574485}
-.garment-evidence-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
-.garment-evidence-grid label{display:flex;flex-direction:column;gap:6px;font-size:12px}.garment-evidence-grid textarea{min-height:70px;resize:vertical;width:100%;padding:10px;border:1px solid #ded7f3;border-radius:10px;font:inherit;background:#fff}
-.garment-color-evidence{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;font-size:11px;color:#746a91}.garment-color-evidence span{display:inline-flex;align-items:center;gap:5px}.garment-color-evidence i{width:13px;height:13px;border:1px solid #0002;border-radius:50%}
+.garment-evidence-fields{display:none!important}
+.garment-evidence-fields summary{display:none!important}
+.garment-evidence-grid{display:none!important}
+.garment-color-evidence{display:none!important}
+.evidence-note{display:none!important}
 @keyframes hanger-orbit{to{transform:rotate(360deg)}}
 @keyframes hanger-float{50%{transform:translateY(-4px) rotate(2deg)}}
 @keyframes hanger-shimmer{0%,100%{opacity:.4}50%{opacity:1}}
 @keyframes hanger-assemble{0%,12%,100%{opacity:0;transform:translateY(6px) scale(.95)}30%,85%{opacity:1;transform:none}}
-@media(max-width:620px){.ghost-studio{width:calc(100vw - 16px);max-height:calc(100dvh - 16px);border-radius:18px}.ghost-header{padding:18px 18px 14px}.ghost-content{padding:16px 18px}.ghost-footer{padding:12px 18px 16px}.ghost-comparison{grid-template-columns:1fr 1fr;gap:8px}.ghost-comparison figure{padding:8px}.ghost-comparison img,.ghost-comparison [data-ghost-placeholder]{height:190px}.ghost-comparison figcaption{font-size:10px}.ghost-actions .button{flex:1 1 42%;padding:9px;font-size:11px}.ghost-actions [data-ghost-close]{margin-left:0}.hanger-loader{gap:12px;padding:12px}.hanger-art{flex-basis:88px;height:96px}.hanger-art svg{width:88px;height:88px}.hanger-copy b{font-size:15px}.garment-evidence-grid{grid-template-columns:1fr}.garment-review-preview{position:static}.garment-review-preview img{max-height:260px}.ghost-confirm{padding:22px}}
+@media(max-width:620px){.ghost-studio{width:calc(100vw - 16px);max-height:calc(100dvh - 16px);border-radius:18px}.ghost-header{padding:18px 18px 14px}.ghost-content{padding:16px 18px}.ghost-footer{padding:12px 18px 16px}.ghost-comparison{grid-template-columns:1fr 1fr;gap:8px}.ghost-comparison figure{padding:8px}.ghost-comparison img,.ghost-comparison [data-ghost-placeholder]{height:190px}.ghost-comparison figcaption{font-size:10px}.ghost-actions .button{flex:1 1 42%;min-height:42px;padding:9px;font-size:11px}.ghost-actions [data-ghost-close]{margin-left:0}.hanger-loader{gap:12px;padding:12px}.hanger-art{flex-basis:88px;height:96px}.hanger-art svg{width:88px;height:88px}.hanger-copy b{font-size:15px}.garment-evidence-grid{grid-template-columns:1fr}.garment-review-preview{position:static}.garment-review-preview img{max-height:260px}.ghost-confirm{padding:22px}.garment-upload-dialog{width:calc(100vw - 16px);max-height:calc(100dvh - 16px);padding:18px 14px;border-radius:20px}.upload-dialog-heading{padding-right:32px}#process-garment{width:100%;min-width:0;min-height:48px}#garment-upload-form .card-actions button{flex:1 1 130px;min-height:44px}}
 @media(prefers-reduced-motion:reduce){.hanger-loader *{animation:none!important}.hanger-clothes,.hanger-sparkles{opacity:1}.hanger-ring{transform:rotate(-60deg)}}
 
 /* Outfit Build 4-Step Sequence Loader */
@@ -389,17 +425,21 @@ html:has(dialog[open]),body:has(dialog[open]){overflow:hidden}
   flex-direction: column !important;
   align-items: center !important;
   gap: 14px !important;
-  margin: 12px 0 16px !important;
-  padding: 22px 18px 20px !important;
-  border: 1px solid #e7e0fc !important;
-  border-radius: 24px !important;
-  background: radial-gradient(ellipse at top right, rgba(255, 234, 250, 0.55), transparent 70%), #faf9fe !important;
-  box-shadow: 0 12px 40px rgba(45, 27, 105, 0.05) !important;
-  width: 100% !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  width: auto !important;
+  max-width: 100% !important;
   box-sizing: border-box !important;
   text-align: center;
   position: relative;
-  overflow: hidden;
+  overflow: visible !important;
 }
 
 .outfit-orbit-stage {
@@ -517,6 +557,7 @@ html:has(dialog[open]),body:has(dialog[open]){overflow:hidden}
   z-index: 4;
   transform-origin: center center;
   animation: outfit-orbit-spin 18s linear infinite;
+  will-change: transform;
 }
 
 .outfit-orbit-node {
@@ -529,6 +570,7 @@ html:has(dialog[open]),body:has(dialog[open]){overflow:hidden}
   display: flex;
   align-items: center;
   justify-content: center;
+  will-change: transform;
 }
 
 .outfit-orbit-bubble {
@@ -543,6 +585,7 @@ html:has(dialog[open]),body:has(dialog[open]){overflow:hidden}
   justify-content: center;
   overflow: hidden;
   position: relative;
+  contain: paint;
 }
 
 .outfit-orbit-bubble img {
@@ -553,6 +596,7 @@ html:has(dialog[open]),body:has(dialog[open]){overflow:hidden}
   filter: drop-shadow(0 4px 8px rgba(45, 27, 105, 0.12));
   transform-origin: center center;
   animation: outfit-orbit-counter-spin 18s linear infinite;
+  will-change: transform;
 }
 
 .outfit-orbit-loader .outfit-loader-head {

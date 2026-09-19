@@ -14,6 +14,16 @@ export const COMPLETE_LOOK_BUDGETS = [
 export function getAnchorCategories(item = {}) {
   const text = `${item.category || ""} ${item.subCategory || ""} ${item.title || ""}`.toLowerCase();
 
+  // Outerwear / Jackets / Coats / Blazers / Cardigans -> NEVER recommend jackets/layers!
+  if (/jacket|coat|blazer|outer|cardigan|shrug|vest|bomber|parka|windbreaker|anorak|trench|overcoat/.test(text)) {
+    return [
+      { id: "tops", label: "Tops & Shirts", icon: "👕", searchTerms: "crew neck t-shirt casual shirt polo" },
+      { id: "bottoms", label: "Pants & Trousers", icon: "👖", searchTerms: "tailored trousers chinos pants jeans" },
+      { id: "shoes", label: "Footwear", icon: "👟", searchTerms: "casual sneakers loafers shoes" },
+      { id: "accessories", label: "Accessories", icon: "👜", searchTerms: "leather belt watch sunglasses" }
+    ];
+  }
+
   // Bottoms (pants, trousers, jeans, chinos) -> NEVER recommend pants!
   if (/bottom|pant|trouser|jean|skirt|short|chino|legging|palazzo|culotte/.test(text)) {
     return [
@@ -51,16 +61,6 @@ export function getAnchorCategories(item = {}) {
       { id: "tops", label: "Tops & Shirts", icon: "👕", searchTerms: "cotton shirt polo t-shirt" },
       { id: "layering", label: "Jackets & Layers", icon: "🧥", searchTerms: "overshirt jacket blazer" },
       { id: "accessories", label: "Accessories", icon: "⌚", searchTerms: "watch belt" }
-    ];
-  }
-
-  // Outerwear / Jackets -> NEVER recommend jackets!
-  if (/jacket|coat|blazer|outer|cardigan|shrug|vest/.test(text)) {
-    return [
-      { id: "tops", label: "Inner Tops", icon: "👕", searchTerms: "crew neck t-shirt shirt polo" },
-      { id: "bottoms", label: "Trousers & Jeans", icon: "👖", searchTerms: "tailored trousers pants jeans" },
-      { id: "shoes", label: "Footwear", icon: "👞", searchTerms: "shoes loafers sneakers" },
-      { id: "accessories", label: "Accessories", icon: "🧣", searchTerms: "scarf leather belt watch" }
     ];
   }
 

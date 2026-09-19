@@ -1,5 +1,7 @@
+// Rollback release: worn clothing uses the established extractor and only footwear requests outlines.
 import { callAiGateway, ClothmaticsApiError, readAiCache, writeAiCache } from "./web-api.mjs";
 import { APPEARANCE_PROMPT, normalizeVisualProfile, attachPhotoEvidence, imageFingerprint } from './garment-appearance.mjs';
+import {normalizeFootwearOutline} from './footwear-outline.mjs';
 
 export const GARMENT_FILE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 export const MAX_GARMENT_FILE_BYTES = 6 * 1024 * 1024;
@@ -99,6 +101,7 @@ Return ONLY valid JSON.
 Schema:
 
 {
+  "photoContext": "",
   "overallScore": 0,
   "confidence": 0,
   "style": "",
@@ -137,6 +140,12 @@ Schema:
         "garmentLengthAndHem": "",
         "graphicsAndLogos": "",
         "openingsAndHollowStructure": ""
+      },
+      "footwearOutline": {
+        "confidence": "",
+        "visibleShoes": 0,
+        "polygons": [],
+        "holes": []
       },
       "boundingBox": [0, 0, 0, 0],
       "visibility": "",
@@ -345,11 +354,11 @@ export function normalizeGarmentMetadata(value = {}) {
   const pocketLayout = cleanText(rawTech.pocketLayout, 220);
   const hasTech = Boolean(fabricWeave || collarOrWaistband || closuresAndHardware || pocketsAndDetails || garmentLengthAndHem || graphicsAndLogos || openingsAndHollowStructure || waistbandAndRise || flyAndClosure || crotchAndInseam || legSilhouette || hemAndCuffs || pocketLayout);
   const technical3DDetails = hasTech ? {
-    fabricWeave,
-    collarOrWaistband,
-    closuresAndHardware,
-    pocketsAndDetails,
-    garmentLengthAndHem,
+    fabricWeave: fabricWeave || cleanText(value.fabricTexture, 200) || "Standard fabric weave",
+    collarOrWaistband: collarOrWaistband || cleanText(value.neckline, 200) || "Standard collar or waistband",
+    closuresAndHardware: closuresAndHardware || "No visible fasteners or hardware",
+    pocketsAndDetails: pocketsAndDetails || "No visible exterior pockets",
+    garmentLengthAndHem: garmentLengthAndHem || "Standard garment length and hem",
     graphicsAndLogos,
     openingsAndHollowStructure,
     waistbandAndRise,
@@ -369,11 +378,11 @@ export function normalizeGarmentMetadata(value = {}) {
     secondaryColors: Array.isArray(value.secondaryColors)
       ? value.secondaryColors.map(colorNameFromValue).filter(Boolean).slice(0, 5)
       : [],
-    colorDetail: cleanText(value.colorDetail, 300),
+    colorDetail: cleanText(value.colorDetail, 300) || colorNameFromValue(value.primaryColor) || "Natural garment color",
     pattern: cleanText(value.pattern, 40) || "Solid",
     fit: cleanText(value.fit, 40),
     material: cleanText(value.material, 60),
-    fabricTexture: cleanText(value.fabricTexture, 300),
+    fabricTexture: cleanText(value.fabricTexture, 300) || cleanText(value.material, 60) || "Standard fabric texture",
     sleeveType: cleanText(value.sleeveType, 50),
     neckline: cleanText(value.neckline, 50),
     season: cleanText(value.season, 30),
@@ -383,6 +392,7 @@ export function normalizeGarmentMetadata(value = {}) {
     technical3DDetails,
     visualProfile: normalizeVisualProfile(value.visualProfile),
     boundingBox: usableBox(value.boundingBox),
+    footwearOutline: normalizeFootwearOutline(value.footwearOutline,usableBox(value.boundingBox)),
     visibility: ["full", "partial", "mostly_hidden"].includes(String(value.visibility))
       ? String(value.visibility)
       : "",
@@ -436,6 +446,7 @@ export function parseStyleCheckAnalysis(body) {
   catch { throw new Error("The Style Check returned an invalid response. Please try again."); }
   return {
     id: String(Date.now()),
+    photoContext: ['worn','flat_lay','hanging'].includes(parsed?.photoContext)?parsed.photoContext:'unknown',
     overallScore: boundedNumber(parsed?.overallScore),
     confidence: boundedNumber(parsed?.confidence),
     style: cleanText(parsed?.style, 80) || "Outfit analysis",
@@ -708,19 +719,41 @@ export async function analyzeGarment(user,imageBlob,options={}) {
   return result;
 }
 
-export async function analyzeStyleCheck(user, imageBlob, { signal, fresh = false } = {}) {
+export const OUTFIT_INTAKE_PROMPT = `
+For wardrobe Auto Extract, ALSO return photoContext: "worn", "flat_lay",
+"hanging", or "unknown". A selfie or clothes worn by a visible person is worn.
+For worn photos, return each separable garment as its own clothing entry,
+including the top, bottom and visible footwear. Keep a matching pair of shoes
+as ONE Shoes entry with a box containing both shoes. Do not include socks,
+skin, watches, phones or sports equipment as clothing. Do not omit footwear
+because it cannot be rendered on a ghost mannequin: it will only be extracted.
+Preserve separate visible color panels and gradients on each garment.
+For each Shoes entry, ALSO return footwearOutline: {confidence:"high|low",
+visibleShoes:1 or 2, polygons:[[[y,x],...]], holes:[[[y,x],...]]}.
+Trace one tight external silhouette per visible shoe with 12-40 vertices,
+including its complete sole, toe, heel, tongue and visible laces. Coordinates
+are [y,x] in 0..1000 on the WHOLE image. Exclude legs, bare ankles and socks
+from each silhouette. Any visible sock/skin enclosed by the shoe opening is
+a separate hole polygon. Keep both shoes in ONE clothing entry with TWO
+polygons when a pair is visible. Return confidence high only when the entire
+visible footwear boundary is clear; otherwise low and do not invent edges.
+If no garment is reliably detected in a worn photo, return an empty clothing
+array and photoContext worn; never label the whole person as one garment.
+`;
+
+export async function analyzeStyleCheck(user, imageBlob, { signal, fresh = false, intake = false } = {}) {
   if (!user) throw new ClothmaticsApiError("Sign in required.", {status:401, code:"unauthenticated"});
   if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
   const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", await imageBlob.arrayBuffer()));
   const fingerprint = Array.from(digest, byte => byte.toString(16).padStart(2, "0")).join("");
   if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
-  const cacheKey = `clothmatics:web-ai:${user.uid}:style_check:v11:${fingerprint}`;
+  const cacheKey = `clothmatics:web-ai:${user.uid}:${intake?'outfit_intake:v1':'style_check:v11'}:${fingerprint}`;
   const cached = fresh ? null : readAiCache(cacheKey);
   if (cached?.analysis) return cached;
   const data = await blobToBase64(imageBlob);
   const { body, response } = await callVisionGateway(user, {
     contents: [{ parts: [
-      { text: STYLE_CHECK_PROMPT + APPEARANCE_PROMPT },
+      { text: STYLE_CHECK_PROMPT + APPEARANCE_PROMPT + (intake?OUTFIT_INTAKE_PROMPT:'') },
       { inlineData: { mimeType: imageBlob.type || "image/jpeg", data } },
     ] }],
     generationConfig: {

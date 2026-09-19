@@ -1,7 +1,8 @@
 const fields={fabricWeave:'Fabric weave / grain',collarOrWaistband:'Collar / waistband',closuresAndHardware:'Fasteners / hardware',pocketsAndDetails:'Pockets / placement',garmentLengthAndHem:'Length / hem',graphicsAndLogos:'Graphics / exact lettering'};
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-export function renderGarmentEvidence(form,item,{editable=true}={}){
+export function renderGarmentEvidence(form,item,{editable=true,visible=false}={}){
   form.querySelector('.garment-evidence-fields')?.remove();
+  if(!visible)return;
   const tech=item.technical3DDetails||{},profile=item.visualProfile||{};
   const palette=(profile.colors||[]).filter(c=>/^#[a-f0-9]{6}$/i.test(c.hex||''));
   const section=document.createElement('details');section.className='garment-evidence-fields';section.open=true;

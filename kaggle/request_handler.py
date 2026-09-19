@@ -18,7 +18,8 @@ async def log_request(request: Request, call_next):
         return await call_next(request)
     context = REQUEST_ID.set(str(uuid.uuid4()))
     started = time.perf_counter()
-    request_log('request_received', route='generate' if request.url.path == '/generate' else 'other')
+    route = 'generate' if request.url.path == '/generate' else ('outfit' if request.url.path == '/outfit' else ('full_look' if request.url.path == '/full-look' else 'other'))
+    request_log('request_received', route=route)
     try:
         response = await call_next(request)
         response.headers['X-Request-Id'] = REQUEST_ID.get()

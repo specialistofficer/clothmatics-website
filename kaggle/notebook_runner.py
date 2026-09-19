@@ -231,34 +231,84 @@ print("🎉 MODEL IS WARM & PERMANENTLY LOADED IN VRAM!")
 # STEP 6: Cloudflare Tunnel & Worker Auto-Registration
 # ------------------------------------------------------------------------------
 CLOUDFLARED = PROJECT / 'cloudflared'
-if not CLOUDFLARED.exists():
-    print("Downloading Cloudflare Tunnel binary...")
-    subprocess.run([
-        'wget', '-q',
-        'https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64',
-        '-O', str(CLOUDFLARED)
-    ], check=True)
+# Cloudflared binary is ~40-60MB. If missing or corrupted (<10MB), download it.
+if not CLOUDFLARED.exists() or CLOUDFLARED.stat().st_size < 10_000_000:
+    print("Downloading Cloudflare Tunnel binary...", flush=True)
+    if CLOUDFLARED.exists():
+        try:
+            CLOUDFLARED.unlink()
+        except Exception:
+            pass
+    dl_url = 'https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64'
+    subprocess.run(['wget', '-q', '--tries=3', '--timeout=30', dl_url, '-O', str(CLOUDFLARED)], check=True)
+
+try:
     subprocess.run(['chmod', '+x', str(CLOUDFLARED)], check=True)
+except Exception:
+    import os
+    os.chmod(str(CLOUDFLARED), 0o755)
 
 TUNNEL_LOG = PROJECT / 'tunnel.log'
-TUNNEL_LOG_FILE = open(TUNNEL_LOG, 'w', encoding='utf-8', buffering=1)
-TUNNEL_PROCESS = subprocess.Popen([
-    str(CLOUDFLARED), 'tunnel', '--no-autoupdate', '--url', f'http://127.0.0.1:{API_PORT}'
-], stdout=TUNNEL_LOG_FILE, stderr=subprocess.STDOUT)
 
-PUBLIC_API_URL = None
-print("Connecting Cloudflare Tunnel...")
-for _ in range(40):
-    time.sleep(0.5)
-    if TUNNEL_LOG.exists():
-        text = TUNNEL_LOG.read_text(encoding='utf-8', errors='replace')
-        matches = re.findall(r'https://[a-zA-Z0-9-]+\.trycloudflare\.com', text)
-        if matches:
-            PUBLIC_API_URL = matches[0]
-            break
+def start_cloudflare_tunnel(max_attempts=3):
+    global TUNNEL_PROCESS, TUNNEL_LOG_FILE
+    tunnel_url = None
 
-if not PUBLIC_API_URL:
-    raise RuntimeError("Failed to obtain Cloudflare tunnel URL within 20s. Check tunnel.log.")
+    for attempt in range(1, max_attempts + 1):
+        print(f"Connecting Cloudflare Tunnel (attempt {attempt}/{max_attempts})...", flush=True)
+        if 'TUNNEL_PROCESS' in globals() and globals()['TUNNEL_PROCESS'] and globals()['TUNNEL_PROCESS'].poll() is None:
+            try:
+                globals()['TUNNEL_PROCESS'].terminate()
+                globals()['TUNNEL_PROCESS'].wait(timeout=3)
+            except Exception:
+                globals()['TUNNEL_PROCESS'].kill()
+
+        if 'TUNNEL_LOG_FILE' in globals() and globals()['TUNNEL_LOG_FILE']:
+            try:
+                globals()['TUNNEL_LOG_FILE'].close()
+            except Exception:
+                pass
+
+        TUNNEL_LOG_FILE = open(TUNNEL_LOG, 'w', encoding='utf-8', buffering=1)
+        # Kaggle blocks UDP/QUIC (port 7844); --protocol http2 forces TCP port 443 which connects immediately.
+        cmd = [
+            str(CLOUDFLARED), 'tunnel',
+            '--no-autoupdate',
+            '--protocol', 'http2',
+            '--edge-ip-version', '4',
+            '--url', f'http://127.0.0.1:{API_PORT}'
+        ]
+        TUNNEL_PROCESS = subprocess.Popen(cmd, stdout=TUNNEL_LOG_FILE, stderr=subprocess.STDOUT)
+
+        # Poll up to 45 seconds per attempt (90 ticks of 0.5s)
+        for sec in range(90):
+            time.sleep(0.5)
+            ret = TUNNEL_PROCESS.poll()
+            if ret is not None:
+                log_tail = TUNNEL_LOG.read_text(encoding='utf-8', errors='replace')[-3000:] if TUNNEL_LOG.exists() else "No log"
+                print(f"⚠️ Tunnel process exited unexpectedly with code {ret}:\n{log_tail}", flush=True)
+                break
+
+            if TUNNEL_LOG.exists():
+                text = TUNNEL_LOG.read_text(encoding='utf-8', errors='replace')
+                matches = re.findall(r'https://[a-zA-Z0-9-]+\.trycloudflare\.com', text)
+                if matches:
+                    tunnel_url = matches[0]
+                    print(f"✅ Cloudflare Tunnel established: {tunnel_url}", flush=True)
+                    return tunnel_url
+
+            if (sec + 1) % 10 == 0:
+                elapsed_sec = (sec + 1) // 2
+                print(f"⏳ Waiting for Cloudflare quick tunnel assignment... ({elapsed_sec}s/45s)", flush=True)
+
+        if attempt < max_attempts:
+            print("Retrying tunnel creation in 3 seconds...", flush=True)
+            time.sleep(3)
+
+    log_tail = TUNNEL_LOG.read_text(encoding='utf-8', errors='replace')[-4000:] if TUNNEL_LOG.exists() else "No log file found."
+    raise RuntimeError(f"Failed to obtain Cloudflare tunnel URL after {max_attempts} attempts.\n--- Cloudflare Tunnel Log Tail ---\n{log_tail}")
+
+PUBLIC_API_URL = start_cloudflare_tunnel()
 
 # Register active tunnel with permanent Cloudflare Worker via POST with X-Sync-Token header
 WORKER_SYNC_URL = "https://clothmatics-ghost.chiragsharma376.workers.dev/set-target"

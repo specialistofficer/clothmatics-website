@@ -102,5 +102,5 @@ export function hasCompleteAppearance(item) {
   const profile = item?.visualProfile, tech = item?.technical3DDetails;
   return profile?.version === APPEARANCE_VERSION && /^[a-f0-9]{64}$/.test(profile.sourceFingerprint || '') &&
     profile.colors?.some(color=>color.role==='base' && /^#[A-Fa-f0-9]{6}$/.test(color.hex || '')) &&
-    Boolean(item.colorDetail && item.fabricTexture && tech?.collarOrWaistband && tech?.garmentLengthAndHem && tech?.closuresAndHardware && tech?.pocketsAndDetails);
+    Boolean((item.colorDetail || item.primaryColor) && (item.fabricTexture || item.material) && (tech?.collarOrWaistband || item.neckline) && (tech?.garmentLengthAndHem || tech?.crotchAndInseam));
 }

@@ -56,7 +56,7 @@ html,body{max-width:100%;overflow-x:hidden}
 .section-title>div:first-child{min-width:220px}
 .section-title p{max-width:760px;margin:7px 0 0;color:var(--muted);line-height:1.55}
 .user-tools,.activity-filters{max-width:100%;justify-content:flex-end}
-.table-wrap{width:100%;max-width:100%;overflow:auto;overscroll-behavior-inline:contain;scrollbar-width:thin;scrollbar-color:#c9c3dd transparent}
+.table-wrap{width:100%;max-width:100%;overflow-x:auto;overscroll-behavior-inline:contain;scrollbar-width:thin;scrollbar-color:#c9c3dd transparent;-webkit-overflow-scrolling:touch}
 .table-wrap table{min-width:980px}
 #deletion-requests .table-wrap table{min-width:720px}
 .activity-feed{max-width:100%;overflow:hidden}
@@ -99,8 +99,9 @@ html,body{max-width:100%;overflow-x:hidden}
   .admin-brand{justify-content:flex-start}
   .admin-brand img{width:40px;height:40px}
   .admin-brand span{display:flex;font-size:15px}
-  .admin-sidebar nav{display:flex;flex-direction:row;gap:5px;margin:0;padding:0 2px 3px;overflow-x:auto;overflow-y:hidden}
-  .admin-sidebar nav a{flex:0 0 auto;min-height:44px;justify-content:flex-start;padding:10px 12px;font-size:11px}
+  .admin-sidebar nav{display:flex;flex-direction:row;gap:5px;margin:0;padding:0 2px 3px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .admin-sidebar nav::-webkit-scrollbar{display:none}
+  .admin-sidebar nav a{flex:0 0 auto;min-height:44px;justify-content:flex-start;padding:10px 12px;font-size:11px;touch-action:manipulation}
   .admin-sidebar nav a span{display:inline}
   .admin-sidebar nav a::first-letter{font-size:inherit}
   .admin-sidebar nav a svg{width:18px;height:18px;flex-basis:18px}

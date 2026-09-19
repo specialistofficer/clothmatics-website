@@ -193,10 +193,10 @@ export function outfitOrbitLoaderMarkup({
 }
 
 export function hangerLoaderMarkup(options = {}) {
-  if (options && options.type === "orbit") {
-    return outfitOrbitLoaderMarkup(options);
+  if (options && options.type === "build") {
+    return outfitBuildLoaderMarkup(options);
   }
-  return outfitBuildLoaderMarkup(options);
+  return outfitOrbitLoaderMarkup(options);
 }
 
 export function updateHangerLoader(root, message, active = true, explicitStep = null) {

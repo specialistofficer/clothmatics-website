@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {normalizeVisualProfile,samplePatchHex,hasCompleteAppearance} from '../garment-appearance.mjs';
-import {ghostCategory,compileUniversalManifest,buildGhostAnalysisFromItem,parseGhostQuality,ghostDeletePatch,hasReusableGhostMetadata} from '../ghost-contract.mjs';
+import {ghostCategory,compileUniversalManifest,buildGhostAnalysisFromItem,parseGhostQuality,ghostDeletePatch,hasReusableGhostMetadata,ghostGenerationAttempts,refineGhostAnalysis} from '../ghost-contract.mjs';
 import {onRequestPost} from '../functions/api/wardrobe/ghost.js';
 
 const encoded=value=>({candidates:[{content:{parts:[{text:JSON.stringify(value)}]}}]});
@@ -32,11 +32,33 @@ test('no default hem, pocket, material, fit or sleeves are fabricated',()=>{
   assert.equal(result.manifest.fit,'');assert.equal(result.manifest.sleeveType,'');
   assert.doesNotMatch(result.prompt,/shirt-tail|tapered|cotton|below waist/);
 });
+test('jacket contract forbids mirrored details, invented pockets and visible neck support',()=>{
+  const result=compileUniversalManifest({category:'jacket',colorAndFinish:'Muted dark navy',surfaceTextureAndWeave:'Natural matte weave',externalCompartments:'No visible exterior pockets',hardwareAndClosures:'Collar snap on viewer right'});
+  assert.match(result.prompt,/never mirror the reference/i);
+  assert.match(result.prompt,/Do not add pockets/i);
+  assert.match(result.prompt,/truly empty garment opening/i);
+  assert.match(result.prompt,/never place a white, grey or skin-toned neck/i);
+  assert.equal(ghostGenerationAttempts('jacket'),2);
+  assert.equal(ghostGenerationAttempts('shirt'),1);
+});
+test('photo-comparison retry routes jacket failures into the matching evidence fields',()=>{
+  const analysis=compileUniversalManifest({category:'jacket',colorAndFinish:'Muted navy',surfaceTextureAndWeave:'Natural weave',externalCompartments:'No visible pockets',hardwareAndClosures:'One collar snap',graphicsOrText:'White sleeve tab'});
+  const refined=refineGhostAnalysis(analysis,{issues:['Color mismatch: generated blue is too vibrant.','Fabric texture mismatch: generated fabric is smooth.','Construction mismatch: invented front pockets.','Snap button was mirrored left to right.','White sleeve detail is missing.','Visible white mannequin neck and upper chest.']});
+  assert.match(refined.manifest.colorAndFinish,/too vibrant/);
+  assert.match(refined.manifest.surfaceTextureAndWeave,/smooth/);
+  assert.match(refined.manifest.externalCompartments,/invented front pockets/);
+  assert.match(refined.manifest.hardwareAndClosures,/mirrored left to right/);
+  assert.match(refined.manifest.graphicsOrText,/sleeve detail is missing/);
+  assert.match(refined.manifest.necklineOrWaistband,/mannequin neck and upper chest/);
+});
 test('legacy and mismatched-source evidence requires a fresh photo analysis',()=>{
   assert.equal(hasCompleteAppearance(complete),true);assert.equal(hasReusableGhostMetadata(complete),true);
   assert.equal(hasReusableGhostMetadata({...complete,image:'changed'}),false);
   assert.equal(hasReusableGhostMetadata({...complete,image:'same',visualProfile:{...complete.visualProfile,sourceImage:'same'}}),true);
   for(const profile of [{},{...complete.visualProfile,version:0},{...complete.visualProfile,colors:[]}])assert.equal(hasCompleteAppearance({...complete,visualProfile:profile}),false);
+  const plainTee={category:'Top',subCategory:'T-shirt',colorDetail:'Solid Black',fabricTexture:'Cotton jersey',technical3DDetails:{collarOrWaistband:'Crew neck',garmentLengthAndHem:'Straight waist hem'},visualProfile:{version:2,sourceFingerprint:'b'.repeat(64),colors:[{role:'base',hex:'#111111',name:'Black'}]}};
+  assert.equal(hasCompleteAppearance(plainTee),true);
+  assert.equal(hasReusableGhostMetadata(plainTee),true);
 });
 test('color point validation rejects bad coordinates and never trusts model-provided hex',()=>{
   const valid={role:'base',name:'teal',point:[500,500],confidence:'high',hex:'#FFFFFF'};

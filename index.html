@@ -27,8 +27,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=20260912-outfit-loader-v10" />
-    <link rel="stylesheet" href="./companion.css?v=20260912-stylist-loader-v11" />
+    <link rel="stylesheet" href="./styles.css?v=20260913-responsive-v1" />
+    <link rel="stylesheet" href="./companion.css?v=20260915-stylist-actions-v1" />
     <link rel="stylesheet" href="./install-prompt.css" />
     <link rel="stylesheet" href="./wardrobe-assistant.css" />
     <link rel="stylesheet" href="./brand.css" />
@@ -36,11 +36,9 @@
     <script type="application/ld+json">
       {"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://clothmatics.pages.dev/#organization","name":"ClothMatics","url":"https://clothmatics.pages.dev/","logo":{"@type":"ImageObject","url":"https://clothmatics.pages.dev/assets/clothmatics-logo.png"},"sameAs":["https://play.google.com/store/apps/details?id=com.clothmatics.app"]},{"@type":"WebSite","@id":"https://clothmatics.pages.dev/#website","url":"https://clothmatics.pages.dev/","name":"ClothMatics","description":"A digital wardrobe and personal outfit planning companion.","publisher":{"@id":"https://clothmatics.pages.dev/#organization"}},{"@type":"SoftwareApplication","@id":"https://clothmatics.pages.dev/#app","name":"ClothMatics","url":"https://clothmatics.pages.dev/","downloadUrl":"https://play.google.com/store/apps/details?id=com.clothmatics.app","installUrl":"https://play.google.com/store/apps/details?id=com.clothmatics.app","image":"https://clothmatics.pages.dev/assets/clothmatics-social.png","applicationCategory":"LifestyleApplication","applicationSubCategory":"Digital wardrobe and outfit planner","operatingSystem":"Android, Web","isAccessibleForFree":true,"description":"ClothMatics organizes the clothes you own, helps you plan complete outfits, tracks wears, and gives personal wardrobe insights.","featureList":["Digital wardrobe","Personal outfit recommendations","Outfit planner","Wear history","Cost-per-wear insights","Closet Quest","Smart Purchase comparison"],"publisher":{"@id":"https://clothmatics.pages.dev/#organization"}}]}
     </script>
-    <!-- ClothMatics Affiliate Networks: Awin | Admitad | Optimise Media -->
-    <meta name="affiliate-networks" content="Awin, Admitad, Optimise Media" />
     <meta name="mitgo-verification" content="13dabed9-6ec3-4acb-8ebf-815604226289" />
-      <link rel="stylesheet" href="./complete-look.css?v=20260912-outfit-loader-v10" />
-      <link rel="stylesheet" href="./garment-studio.css?v=20260912-stylist-loader-v11" />
+      <link rel="stylesheet" href="./complete-look.css?v=20260913-responsive-v1" />
+      <link rel="stylesheet" href="./garment-studio.css?v=20260913-responsive-v1" />
   </head>
   <body>
     <div class="noise"></div>
@@ -148,17 +146,17 @@
     <main id="app-view" class="app-view hidden">
       <aside class="app-sidebar">
         <a class="brand brand-light" href="./" aria-label="ClothMatics home"><img class="brand-logo" src="./assets/clothmatics-logo.png" alt="" /><span>ClothMatics</span></a>
-        <nav>
-          <button class="active" data-panel="overview"><svg class="nav-icon" aria-hidden="true"><use href="#icon-home"></use></svg><span>Overview</span></button>
-          <button data-panel="wardrobe"><svg class="nav-icon" aria-hidden="true"><use href="#icon-wardrobe"></use></svg><span>Wardrobe</span></button>
-          <button data-panel="lookbook"><svg class="nav-icon" aria-hidden="true"><use href="#icon-lookbook"></use></svg><span>Lookbook</span></button>
-          <button data-panel="outfits"><svg class="nav-icon" aria-hidden="true"><use href="#icon-outfit"></use></svg><span>Outfits</span></button>
-          <button data-panel="planner"><svg class="nav-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg><span>Planner</span></button>
-          <button data-panel="insights"><svg class="nav-icon" aria-hidden="true"><use href="#icon-chart"></use></svg><span>Insights</span></button>
-          <button data-panel="quest"><svg class="nav-icon" aria-hidden="true"><use href="#icon-award"></use></svg><span>Closet Quest</span></button>
-          <button data-panel="profile"><svg class="nav-icon" aria-hidden="true"><use href="#icon-user"></use></svg><span>Profile</span></button>
-          <button data-panel="purchase"><svg class="nav-icon" aria-hidden="true"><use href="#icon-bag"></use></svg><span>Smart Purchase</span></button>
-          <a id="admin-link" class="hidden" href="./admin.html"><svg class="nav-icon" aria-hidden="true"><use href="#icon-shield"></use></svg><span>Admin</span></a>
+        <nav aria-label="Wardrobe navigation">
+          <button class="active" data-panel="overview" title="Overview" aria-label="Overview"><svg class="nav-icon" aria-hidden="true"><use href="#icon-home"></use></svg><span>Overview</span></button>
+          <button data-panel="wardrobe" title="Wardrobe" aria-label="Wardrobe"><svg class="nav-icon" aria-hidden="true"><use href="#icon-wardrobe"></use></svg><span>Wardrobe</span></button>
+          <button data-panel="lookbook" title="Lookbook" aria-label="Lookbook"><svg class="nav-icon" aria-hidden="true"><use href="#icon-lookbook"></use></svg><span>Lookbook</span></button>
+          <button data-panel="outfits" title="Outfits" aria-label="Outfits"><svg class="nav-icon" aria-hidden="true"><use href="#icon-outfit"></use></svg><span>Outfits</span></button>
+          <button data-panel="planner" title="Planner" aria-label="Planner"><svg class="nav-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg><span>Planner</span></button>
+          <button data-panel="insights" title="Insights" aria-label="Insights"><svg class="nav-icon" aria-hidden="true"><use href="#icon-chart"></use></svg><span>Insights</span></button>
+          <button data-panel="quest" title="Closet Quest" aria-label="Closet Quest"><svg class="nav-icon" aria-hidden="true"><use href="#icon-award"></use></svg><span>Closet Quest</span></button>
+          <button data-panel="profile" title="Profile" aria-label="Profile"><svg class="nav-icon" aria-hidden="true"><use href="#icon-user"></use></svg><span>Profile</span></button>
+          <button data-panel="purchase" title="Smart Purchase" aria-label="Smart Purchase"><svg class="nav-icon" aria-hidden="true"><use href="#icon-bag"></use></svg><span>Smart Purchase</span></button>
+          <a id="admin-link" class="hidden" href="./admin.html" title="Admin" aria-label="Admin"><svg class="nav-icon" aria-hidden="true"><use href="#icon-shield"></use></svg><span>Admin</span></a>
         </nav>
         <button class="signout" id="signout-button">↗ Sign out</button>
       </aside>
@@ -176,13 +174,32 @@
             <div class="user-chip"><span id="user-initial">C</span><div><b id="user-name">ClothMatics user</b><small id="user-email"></small></div></div>
           </div>
         </header>
-        <div id="dashboard-loading" class="dashboard-loading">
-          <div class="dashboard-progress-stage">
-            <div class="dashboard-ambient-glow" aria-hidden="true"></div>
-            <div class="dashboard-stage-box">
-              <img id="dashboard-loader-img" src="./assets/loader/outfit-build-step-1.png" alt="Loading wardrobe" width="220" height="220" />
+        <div id="dashboard-loading" class="dashboard-loading hidden">
+          <div class="hanger-loader outfit-orbit-loader" data-phase="prepare">
+            <div class="outfit-orbit-stage" role="progressbar" aria-label="Personal Wardrobe" aria-valuetext="Connecting to your wardrobe…">
+              <div class="outfit-orbit-ambient-glow" aria-hidden="true"></div>
+              <div class="outfit-orbit-track" aria-hidden="true">
+                <span class="outfit-orbit-sparkle s-top" aria-hidden="true">✦</span>
+                <span class="outfit-orbit-sparkle s-right" aria-hidden="true">✦</span>
+                <span class="outfit-orbit-sparkle s-bottom" aria-hidden="true">✦</span>
+                <span class="outfit-orbit-sparkle s-left" aria-hidden="true">✦</span>
+              </div>
+              <div class="outfit-orbit-center-card">
+                <img id="dashboard-loader-img" src="./assets/loader/orbit/center-outfit.png" alt="Wardrobe ready" loading="lazy" decoding="async" width="140" height="140" />
+                <span class="outfit-orbit-center-sparkle" aria-hidden="true">✦</span>
+              </div>
+              <div class="outfit-orbit-ring" aria-hidden="true">
+                <div class="outfit-orbit-node" style="--node-x: 50%; --node-y: 0%;"><div class="outfit-orbit-bubble"><img src="./assets/loader/orbit/orbit-tshirt.png" alt="T-Shirt" loading="lazy" decoding="async" width="50" height="50" /></div></div>
+                <div class="outfit-orbit-node" style="--node-x: 98%; --node-y: 35%;"><div class="outfit-orbit-bubble"><img src="./assets/loader/orbit/orbit-dress.png" alt="Dress" loading="lazy" decoding="async" width="50" height="50" /></div></div>
+                <div class="outfit-orbit-node" style="--node-x: 79%; --node-y: 90%;"><div class="outfit-orbit-bubble"><img src="./assets/loader/orbit/orbit-bag.png" alt="Handbag" loading="lazy" decoding="async" width="50" height="50" /></div></div>
+                <div class="outfit-orbit-node" style="--node-x: 21%; --node-y: 90%;"><div class="outfit-orbit-bubble"><img src="./assets/loader/orbit/orbit-sneakers.png" alt="Sneakers" loading="lazy" decoding="async" width="50" height="50" /></div></div>
+                <div class="outfit-orbit-node" style="--node-x: 2%; --node-y: 35%;"><div class="outfit-orbit-bubble"><img src="./assets/loader/orbit/orbit-jacket.png" alt="Jacket" loading="lazy" decoding="async" width="50" height="50" /></div></div>
+              </div>
             </div>
-            <p id="dashboard-loader-msg" class="dashboard-loader-text">Preparing your wardrobe…</p>
+            <div class="outfit-orbit-status">
+              <span class="outfit-orbit-status-dot" aria-hidden="true"></span>
+              <span id="dashboard-loader-msg" class="outfit-orbit-status-text" data-hanger-message>Preparing your wardrobe…</span>
+            </div>
           </div>
         </div>
         <div id="panel-overview" class="panel hidden">
@@ -200,9 +217,9 @@
       </section>
     </main>
 
-    <footer><a class="brand" href="#top"><img class="brand-logo" src="./assets/clothmatics-logo.png" alt="" /><span>ClothMatics</span></a><p>© <span id="year"></span> ClothMatics. Your wardrobe, intelligently styled.</p><div><a href="./about">About</a><a href="./photo-guide">Photo guide</a><a href="./privacy">Privacy</a><a href="./terms">Terms</a><a href="./faq">FAQ</a><a href="./affiliate-disclosure">Affiliate Disclosure</a><a href="./contact">Help</a></div></footer>
+    <footer><a class="brand" href="#top"><img class="brand-logo" src="./assets/clothmatics-logo.png" alt="" /><span>ClothMatics</span></a><p>© <span id="year"></span> ClothMatics. Your wardrobe, intelligently styled.</p><div><a href="./about">About</a><a href="./photo-guide">Photo guide</a><a href="./privacy">Privacy</a><a href="./terms">Terms</a><a href="./faq">FAQ</a><a href="./contact">Help</a></div></footer>
 
-    <dialog id="auth-dialog"><button class="dialog-close" id="close-auth" aria-label="Close">×</button><img class="auth-logo" src="./assets/clothmatics-logo.png" alt="ClothMatics" /><span class="app-kicker">WELCOME BACK</span><h2>Open your ClothMatics</h2><p>Use the same account as the mobile app.</p><form id="auth-form"><label>Email<input id="auth-email" type="email" autocomplete="email" required /></label><label>Password<input id="auth-password" type="password" autocomplete="current-password" required /></label><button class="button button-primary" id="email-signin" type="submit">Sign in</button></form><div class="auth-divider"><span>or continue with</span></div><button class="google-button" id="google-signin" type="button"><svg class="google-mark" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.9h5.4a4.6 4.6 0 0 1-2 3v2.5h3.3c1.9-1.8 2.9-4.4 2.9-7.4Z"/><path fill="#34A853" d="M12 22c2.7 0 5-.9 6.7-2.4l-3.3-2.5c-.9.6-2 1-3.4 1-2.6 0-4.8-1.8-5.6-4.2H3v2.6A10 10 0 0 0 12 22Z"/><path fill="#FBBC05" d="M6.4 13.9a6 6 0 0 1 0-3.8V7.5H3a10 10 0 0 0 0 9l3.4-2.6Z"/><path fill="#EA4335" d="M12 5.9c1.5 0 2.8.5 3.8 1.5l2.9-2.8A9.7 9.7 0 0 0 12 2a10 10 0 0 0-9 5.5l3.4 2.6c.8-2.4 3-4.2 5.6-4.2Z"/></svg><span>Continue with Google</span></button><p class="auth-message" id="auth-message"></p></dialog>
+    <dialog id="auth-dialog"><button class="dialog-close" id="close-auth" aria-label="Close">×</button><img class="auth-logo" src="./assets/clothmatics-logo.png" alt="ClothMatics" /><span class="app-kicker">WELCOME BACK</span><h2>Open your ClothMatics</h2><p>Sign in with your Google account to access your digital wardrobe across web and mobile.</p><button class="google-button" id="google-signin" type="button"><svg class="google-mark" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.9h5.4a4.6 4.6 0 0 1-2 3v2.5h3.3c1.9-1.8 2.9-4.4 2.9-7.4Z"/><path fill="#34A853" d="M12 22c2.7 0 5-.9 6.7-2.4l-3.3-2.5c-.9.6-2 1-3.4 1-2.6 0-4.8-1.8-5.6-4.2H3v2.6A10 10 0 0 0 12 22Z"/><path fill="#FBBC05" d="M6.4 13.9a6 6 0 0 1 0-3.8V7.5H3a10 10 0 0 0 0 9l3.4-2.6Z"/><path fill="#EA4335" d="M12 5.9c1.5 0 2.8.5 3.8 1.5l2.9-2.8A9.7 9.7 0 0 0 12 2a10 10 0 0 0-9 5.5l3.4 2.6c.8-2.4 3-4.2 5.6-4.2Z"/></svg><span>Continue with Google</span></button><p class="auth-message" id="auth-message"></p></dialog>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <dialog id="garment-dialog" class="garment-dialog"><button id="close-garment" class="dialog-close" aria-label="Close">×</button><div id="garment-detail"></div></dialog>
     <dialog id="outfit-dialog" class="garment-dialog outfit-dialog"><button id="close-outfit" class="dialog-close" aria-label="Close complete outfit">×</button><div id="outfit-detail"></div></dialog>
@@ -236,7 +253,7 @@
       <symbol id="icon-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></symbol>
     </svg>
     <script src="./install-prompt.js" defer></script>
-    <script type="module" src="./app.js?v=20260912-stylist-loader-v11"></script>
+    <script type="module" src="./app.js?v=20260915-stylist-actions-v1"></script>
   </body>
 </html>
 

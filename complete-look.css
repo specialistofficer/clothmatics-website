@@ -411,6 +411,24 @@
   color: #065f46;
   font-weight: 800;
 }
+.complete-look-badge-top-rated {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: rgba(255, 251, 235, 0.95);
+  border: 1px solid #fde68a;
+  color: #b45309;
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(180, 83, 9, 0.08);
+  backdrop-filter: blur(4px);
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
 
 /* Card Body */
 .complete-look-card-body {
@@ -430,7 +448,7 @@
   min-height: 36px;
 }
 .complete-look-card-rating {
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 700;
   color: #d97706;
   margin-bottom: 8px;
@@ -438,9 +456,14 @@
   align-items: center;
   gap: 4px;
 }
+.complete-look-card-rating-star {
+  color: #f59e0b;
+  font-size: 12px;
+}
 .complete-look-card-rating small {
   color: var(--muted);
   font-weight: 500;
+  font-size: 10.5px;
 }
 
 /* Price Row */
@@ -569,20 +592,58 @@
   }
 }
 
-/* Floating Orbit Loader on Complete the Look — Transparent background, no dialogue box container */
+/* Full-Screen Transparent Orbit Loader on Complete the Look — Matches 3D generator styling */
 .complete-look-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 10000;
-  background: transparent !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  pointer-events: none;
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  z-index: 999999 !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 16px !important;
+  pointer-events: all !important;
+  touch-action: none !important;
+  cursor: wait !important;
+  overflow: hidden !important;
   animation: completeLookFadeIn 0.22s ease-out;
+}
+
+/* While searching, make dialog transparent and hide background elements so cards and borders don't leak behind loader */
+.complete-look-dialog.is-searching {
+  overflow: hidden !important;
+  touch-action: none !important;
+  user-select: none !important;
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.complete-look-dialog.is-searching::backdrop {
+  background: rgba(19, 18, 41, 0.22) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+}
+
+.complete-look-dialog.is-searching #close-complete-look {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+
+.complete-look-dialog.is-searching .complete-look-hero,
+.complete-look-dialog.is-searching .complete-look-section-head,
+.complete-look-dialog.is-searching .complete-look-category-tabs,
+.complete-look-dialog.is-searching .complete-look-filter-box,
+.complete-look-dialog.is-searching .complete-look-disclosure,
+.complete-look-dialog.is-searching .complete-look-empty {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
 }
 
 .complete-look-overlay-card {
@@ -591,18 +652,26 @@
   max-height: none !important;
   overflow: visible !important;
   background: transparent !important;
+  background-image: none !important;
   border-radius: 0 !important;
   border: none !important;
   padding: 0 !important;
   box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   animation: completeLookScaleUp 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: all !important;
 }
 
-.complete-look-overlay .outfit-orbit-loader {
+.complete-look-overlay .outfit-orbit-loader,
+.complete-look-overlay .hanger-loader {
   background: transparent !important;
+  background-image: none !important;
   border: none !important;
   border-radius: 0 !important;
   box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   padding: 0 !important;
   margin: 0 !important;
 }
@@ -969,6 +1038,7 @@
 }
 .complete-look-stylist-head {
   display: flex;
+  justify-content: space-between;
   align-items: center;
   gap: 10px;
   margin-bottom: 2px;
@@ -980,6 +1050,33 @@
   text-transform: uppercase;
   letter-spacing: 1px;
   display: inline-block;
+}
+.complete-look-shuffle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #d9d0ff;
+  border-radius: 999px;
+  padding: 5px 12px;
+  font: 700 11.5px "DM Sans", sans-serif;
+  color: var(--purple);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(108, 99, 255, 0.08);
+}
+.complete-look-shuffle-btn:hover {
+  background: #f4f0ff;
+  border-color: var(--purple);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(108, 99, 255, 0.16);
+}
+.complete-look-shuffle-icon {
+  font-size: 13px;
+  transition: transform 0.2s ease;
+}
+.complete-look-shuffle-btn:hover .complete-look-shuffle-icon {
+  transform: rotate(45deg);
 }
 .complete-look-outfit-title {
   font: 800 18px/1.3 "Manrope", sans-serif;
@@ -1072,6 +1169,39 @@
   color: var(--muted);
   margin: 0;
 }
+.complete-look-cat-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.complete-look-cat-shuffle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #f8f6ff;
+  border: 1px solid #e2dbfc;
+  border-radius: 999px;
+  padding: 4px 11px;
+  font: 700 11px "DM Sans", sans-serif;
+  color: var(--purple);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.complete-look-cat-shuffle-btn:hover {
+  background: #ede8ff;
+  border-color: var(--purple);
+  transform: translateY(-1px);
+}
+.complete-look-cat-shuffle-icon {
+  font-size: 12px;
+  display: inline-block;
+  transition: transform 0.25s ease;
+}
+.complete-look-cat-shuffle-btn:hover .complete-look-cat-shuffle-icon {
+  transform: rotate(180deg);
+}
 .complete-look-category-pill {
   background: #f0edff;
   color: var(--purple);
@@ -1125,17 +1255,21 @@
   flex-direction: column !important;
   align-items: center !important;
   gap: 14px !important;
-  margin: 12px 0 16px !important;
-  padding: 22px 18px 20px !important;
-  border: 1px solid #e7e0fc !important;
-  border-radius: 24px !important;
-  background: radial-gradient(ellipse at top right, rgba(255, 234, 250, 0.55), transparent 70%), #faf9fe !important;
-  box-shadow: 0 12px 40px rgba(45, 27, 105, 0.05) !important;
-  width: 100% !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  width: auto !important;
+  max-width: 100% !important;
   box-sizing: border-box !important;
   text-align: center;
   position: relative;
-  overflow: hidden;
+  overflow: visible !important;
 }
 
 .outfit-orbit-stage {
@@ -1253,6 +1387,7 @@
   z-index: 4;
   transform-origin: center center;
   animation: outfit-orbit-spin 18s linear infinite;
+  will-change: transform;
 }
 
 .outfit-orbit-node {
@@ -1265,6 +1400,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  will-change: transform;
 }
 
 .outfit-orbit-bubble {
@@ -1279,6 +1415,7 @@
   justify-content: center;
   overflow: hidden;
   position: relative;
+  contain: paint;
 }
 
 .outfit-orbit-bubble img {
@@ -1289,6 +1426,7 @@
   filter: drop-shadow(0 4px 8px rgba(45, 27, 105, 0.12));
   transform-origin: center center;
   animation: outfit-orbit-counter-spin 18s linear infinite;
+  will-change: transform;
 }
 
 @keyframes outfit-orbit-spin {
@@ -1368,3 +1506,109 @@
     animation: none !important;
   }
 }
+
+/* Responsive adjustments for tablet and mobile devices */
+@media (max-width: 860px) {
+  .complete-look-dialog {
+    width: min(960px, calc(100vw - 28px));
+    max-height: 92dvh;
+    padding: 22px 20px;
+    border-radius: 22px;
+  }
+  .complete-look-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+  }
+}
+
+@media (max-width: 620px) {
+  .complete-look-dialog {
+    width: calc(100vw - 16px);
+    max-height: calc(100dvh - 20px);
+    padding: 16px 14px;
+    border-radius: 20px;
+  }
+  .complete-look-hero {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px;
+    border-radius: 16px;
+  }
+  .complete-look-hero-img-wrap {
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
+  }
+  .complete-look-hero-info h2 {
+    font-size: 18px;
+    white-space: normal;
+  }
+  .complete-look-filter-box {
+    padding: 12px;
+    border-radius: 16px;
+    margin-bottom: 16px;
+  }
+  .complete-look-search-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .complete-look-search-submit {
+    width: 100%;
+    min-height: 44px;
+  }
+  .complete-look-category-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .complete-look-category-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .complete-look-tab {
+    flex: 0 0 auto;
+    min-height: 38px;
+  }
+  .complete-look-custom-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .complete-look-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .complete-look-category-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .complete-look-cat-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .complete-look-card {
+    border-radius: 16px;
+  }
+  .complete-look-card-img-wrap {
+    height: 150px;
+    padding: 8px;
+  }
+  .complete-look-card-info {
+    padding: 10px 12px 14px;
+  }
+  .complete-look-card-title {
+    font-size: 13px;
+  }
+  .complete-look-card-actions button,
+  .complete-look-card-actions a {
+    min-height: 42px;
+  }
+}
+
+@media (max-width: 360px) {
+  .complete-look-grid {
+    grid-template-columns: 1fr;
+  }
+}
+

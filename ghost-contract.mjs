@@ -35,7 +35,8 @@ export function compileUniversalManifest(manifest={}) {
   const details=Object.entries(safeManifest).filter(([key,value])=>key!=='category'&&value).map(([key,value])=>`${key}: ${value}.`).join(' ');
   const palette=normalizePalette(manifest.palette);
   if(palette.length)safeManifest.palette=palette;
-  return {category,prompt:rules+(SHAPE_RULES[category]||'')+' '+details,manifest:safeManifest,contractVersion:GHOST_CONTRACT_VERSION};
+  const jacketRules=category==='jacket'?'Jacket fidelity is strict: preserve the exact collar and front closure, pocket count and placement, sleeve marks and trim. Keep every left/right detail on the same viewer side; never mirror the reference. Do not add pockets, snaps, panels or logos that are not visibly present. The collar must be a truly empty garment opening with background or natural dark inner-fabric depth visible through it; never place a white, grey or skin-toned neck, chest or mannequin surface inside. ':'';
+  return {category,prompt:rules+jacketRules+(SHAPE_RULES[category]||'')+' '+details,manifest:safeManifest,contractVersion:GHOST_CONTRACT_VERSION};
 }
 export function buildGhostAnalysisFromItem(item={}) {
   const tech=item.technical3DDetails||{};
@@ -52,14 +53,23 @@ export function buildGhostAnalysisFromItem(item={}) {
   });
 }
 export const isLowerGhostCategory=value=>LOWER_CATEGORIES.includes(ghostCategory(value));
+export const ghostGenerationAttempts=value=>isLowerGhostCategory(value)||ghostCategory(value)==='jacket'?2:1;
 export function refineGhostAnalysis(analysis={},quality={}){
-  const issue=Array.isArray(quality.issues)?quality.issues.map(v=>clean(v,120)).filter(Boolean).slice(0,3).join(' '):'';
-  if(!analysis.manifest||!issue)return analysis;
-  const colorAndFinish=clean(`${analysis.manifest.colorAndFinish}. Retry correction from direct photo comparison: ${issue}`,400);
-  return compileUniversalManifest({...analysis.manifest,colorAndFinish});
+  const issues=Array.isArray(quality.issues)?quality.issues.map(v=>clean(v,150)).filter(Boolean).slice(0,8):[];
+  if(!analysis.manifest||!issues.length)return analysis;
+  const matching=pattern=>issues.filter(issue=>pattern.test(issue)).join(' ');
+  const append=(value,label,correction,max)=>correction?clean(`${value||''}. ${label}: ${correction}`,max):value;
+  const manifest={...analysis.manifest};
+  manifest.colorAndFinish=append(manifest.colorAndFinish,'Photo-comparison color correction',matching(/color|hue|saturat|bright|dark|palette/i),400);
+  manifest.surfaceTextureAndWeave=append(manifest.surfaceTextureAndWeave,'Photo-comparison texture correction',matching(/texture|fabric|weave|grain|sheen|smooth|flat/i),300);
+  manifest.externalCompartments=append(manifest.externalCompartments,'Photo-comparison pocket correction',matching(/pocket|compartment/i),240);
+  manifest.hardwareAndClosures=append(manifest.hardwareAndClosures,'Photo-comparison closure and side correction',matching(/snap|button|zip|closure|fastener|mirror|wearer.?s (?:left|right)|viewer.?s (?:left|right)/i),220);
+  manifest.graphicsOrText=append(manifest.graphicsOrText,'Photo-comparison visible-detail correction',matching(/sleeve|logo|graphic|letter|mark|detail|trim/i),300);
+  manifest.necklineOrWaistband=append(manifest.necklineOrWaistband,'Mandatory empty-opening correction',matching(/empty|mannequin|human|skin|neck|chest|body|support/i),200);
+  return compileUniversalManifest(manifest);
 }
-export const hasReusableGhostMetadata=item=>hasCompleteAppearance(item)&&Boolean(ghostCategory(item))&&(!item.image||item.visualProfile.sourceImage===item.image);
-export const hasGhostPhotoEvidence=(item,fingerprint)=>hasReusableGhostMetadata(item)&&item.visualProfile.sourceFingerprint===fingerprint;
+export const hasReusableGhostMetadata=item=>hasCompleteAppearance(item)&&Boolean(ghostCategory(item))&&(!item.image||item.visualProfile?.sourceImage===item.image);
+export const hasGhostPhotoEvidence=(item,fingerprint)=>hasReusableGhostMetadata(item)&&item.visualProfile?.sourceFingerprint===fingerprint;
 export function ghostImageForMode(item={},mode){const has3d=Boolean(item?.ghostMannequin?.image),eff=mode?mode:(has3d?'3d':'normal');return eff==='3d'&&has3d?item.ghostMannequin.image:item.image||'';}
 export function ghostSavePatch(current,userId,sourceImage,value,createdAt,{allowOverwrite=false,expectedImage}={}){
   if(!current||current.userId!==userId)throw Error('This garment is no longer available.');

@@ -15,12 +15,12 @@ import {
   getCategoryFallbackImage,
   getUserProfileSizes,
   getUserProfilePreferences
-} from "./complete-look-helpers.js?v=20260912-outfit-loader-v10";
+} from "./complete-look-helpers.js?v=20260912-site-orbit-loader-v1";
 import {
   outfitBuildLoaderMarkup,
   outfitOrbitLoaderMarkup,
   updateHangerLoader
-} from "./garment-progress.mjs?v=20260912-outfit-loader-v10";
+} from "./garment-progress.mjs?v=20260912-site-orbit-loader-v1";
 
 function safeUrl(value = "") {
   try {
@@ -54,6 +54,9 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
   let hasSearched = false;
   let searchError = "";
   let searchStep = 1;
+  let shuffleIndex = 0;
+  let sessionSeed = "";
+  let categoryOffsets = {};
 
   const dialog = document.getElementById("complete-look-dialog");
   const container = document.getElementById("complete-look-content");
@@ -142,6 +145,9 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
     searchResults = [];
     outfitData = null;
     stylingIntent = null;
+    shuffleIndex = 0;
+    sessionSeed = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+    categoryOffsets = {};
 
     // Check if user has saved budget in profile
     const profile = getProfile();
@@ -192,8 +198,8 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
       dialog.scrollTop = 0;
     }
 
-    // Immediately trigger search so the top moving loader shows and results load directly
-    executeSearch();
+    // Render initial ready state so user can configure budget, category, and search options first
+    render();
   }
 
   async function executeSearch() {
@@ -203,6 +209,9 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
     searchError = "";
     searchStep = 1;
     if (dialog) {
+      if (dialog.classList?.add) {
+        dialog.classList.add("is-searching");
+      }
       dialog.scrollTop = 0;
     }
     render();
@@ -241,6 +250,9 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
     if (min != null && max != null && min > max) {
       clearInterval(searchTimer);
       isSearching = false;
+      if (dialog && dialog.classList?.remove) {
+        dialog.classList.remove("is-searching");
+      }
       searchError = "Minimum budget cannot be greater than maximum budget.";
       render();
       return;
@@ -253,7 +265,12 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
     try {
       const response = await fetch("/api/shopping/complete-look", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+          "Pragma": "no-cache",
+          "Cache-Control": "no-cache, no-store, must-revalidate"
+        },
         body: JSON.stringify({
           item: activeItem,
           profile,
@@ -261,6 +278,10 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
           allowAboveBudget,
           targetCategory: targetCategoryParam,
           customQuery,
+          shuffleIndex,
+          sessionSeed,
+          providerPreference: "serpapi",
+          nonce: Date.now(),
           gl: "in",
           hl: "en"
         })
@@ -269,6 +290,9 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
       const data = await response.json();
 
       if (data.ok) {
+        if (data.sessionSeed) {
+          sessionSeed = data.sessionSeed;
+        }
         outfitData = data.outfit || null;
         searchResults = data.products || [];
         stylingIntent = data.intent || null;
@@ -276,6 +300,7 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
         sampleNotice = data.notice || "";
         hasSearched = true;
         searchError = "";
+        categoryOffsets = {};
       } else {
         searchError = data.error || "Unable to find matching products. Please try again.";
         searchResults = [];
@@ -292,6 +317,9 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
     } finally {
       clearInterval(searchTimer);
       isSearching = false;
+      if (dialog && dialog.classList?.remove) {
+        dialog.classList.remove("is-searching");
+      }
       render();
     }
   }
@@ -448,6 +476,17 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
     } else if (isSearching) {
       // Loader is placed prominently at the top of the dialog, no duplicate loader needed below
       resultsBodyHtml = "";
+    } else if (!hasSearched) {
+      resultsBodyHtml = `
+        <div class="complete-look-ready">
+          <div class="complete-look-ready-icon">✨</div>
+          <h3>Style with your ${escapeHtml(activeItem.title || "Garment")}</h3>
+          <p>Select your preferred outfit coordinates or budget above, then click <b>Search</b> to find real in-stock pieces styled to match.</p>
+          <button type="button" class="button button-primary complete-look-start-btn" id="complete-look-start-search-btn">
+            Find Coordinated Pieces ↗
+          </button>
+        </div>
+      `;
     } else if (searchResults.length === 0 && hasSearched) {
       resultsBodyHtml = `
         <div class="complete-look-empty">
@@ -478,6 +517,10 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
         <div class="complete-look-stylist-banner">
           <div class="complete-look-stylist-head">
             <span class="complete-look-stylist-badge">✨ AI Stylist Vision</span>
+            <button type="button" class="complete-look-shuffle-btn" id="complete-look-shuffle-btn" title="Generate a fresh coordinated style mix">
+              <span class="complete-look-shuffle-icon">🔀</span>
+              <span>New Style Mix</span>
+            </button>
           </div>
           <h3 class="complete-look-outfit-title">${escapeHtml(outfitTitle)}</h3>
           <p class="complete-look-stylist-reason">${escapeHtml(stylistAdvice)}</p>
@@ -494,7 +537,9 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
           : outfitData.categories.filter((c) => c.id === activeTab && c.products && c.products.length > 0);
 
         if (displayedCats.length > 0) {
-          sectionsHtml = displayedCats.map((cat) => `
+          sectionsHtml = displayedCats.map((cat) => {
+            const hasMore = cat.allAvailableProducts && cat.allAvailableProducts.length > 3;
+            return `
             <section class="complete-look-category-section" data-cat-id="${escapeHtml(cat.id)}">
               <div class="complete-look-category-header">
                 <div class="complete-look-category-title-group">
@@ -504,13 +549,22 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
                     <p class="complete-look-category-reason">${escapeHtml(cat.stylingReason || "")}</p>
                   </div>
                 </div>
-                <span class="complete-look-category-pill">${cat.products.length} Best Picks</span>
+                <div class="complete-look-cat-actions">
+                  ${hasMore ? `
+                    <button type="button" class="complete-look-cat-shuffle-btn" data-cat-shuffle="${escapeHtml(cat.id)}" title="Rotate to see different curated options">
+                      <span class="complete-look-cat-shuffle-icon">↻</span>
+                      <span>Different options</span>
+                    </button>
+                  ` : ""}
+                  <span class="complete-look-category-pill">${cat.products.length} Best Picks</span>
+                </div>
               </div>
               <div class="complete-look-grid">
                 ${cat.products.map((product, idx) => renderProductCard(product, idx, activeItem, cat, gender)).join("")}
               </div>
             </section>
-          `).join("");
+          `;
+          }).join("");
         } else {
           // If active tab has 0 products
           sectionsHtml = `
@@ -562,9 +616,15 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
 
     const ratingHtml = product.rating ? `
       <div class="complete-look-card-rating">
-        <span>★ ${product.rating.toFixed(1)}</span>
-        ${product.reviews ? `<small>(${product.reviews.toLocaleString("en-IN")} reviews)</small>` : ""}
+        <span class="complete-look-card-rating-star">★</span>
+        <span>${product.rating.toFixed(1)}</span>
+        ${product.reviews ? `<small>(${product.reviews.toLocaleString("en-IN")} reviews)</small>` : `<small>(Community Choice)</small>`}
       </div>
+    ` : "";
+
+    const isTopRated = Boolean(product.rating && product.rating >= 4.4);
+    const topRatedBadgeHtml = isTopRated ? `
+      <span class="complete-look-badge-top-rated">★ Top Rated</span>
     ` : "";
 
     const priceHtml = `
@@ -600,6 +660,7 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
         <div class="complete-look-card-img-wrap">
           <span class="complete-look-badge-retailer">${escapeHtml(retailerName)}</span>
           ${sizeBadgeHtml}
+          ${topRatedBadgeHtml}
           <span class="complete-look-badge-match ${isBestMatch ? "complete-look-badge-best" : ""}">
             ${isBestMatch ? "★ Best Match" : `${matchPercent}% Match`}
           </span>
@@ -632,10 +693,15 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
         if (hasSearched && outfitData && tabId !== "all" && outfitData.categories?.some((c) => c.id === tabId)) {
           // If we already have the full outfit loaded, filter client-side smoothly!
           render();
-        } else {
+        } else if (hasSearched) {
           const profile = getProfile();
           currentQuery = tabId === "all" ? "" : buildSmartShoppingQuery(activeItem, tabId, profile);
           executeSearch();
+        } else {
+          // Initial selection state: update tab and smart query placeholder, let user review options before searching
+          const profile = getProfile();
+          currentQuery = tabId === "all" ? "" : buildSmartShoppingQuery(activeItem, tabId, profile);
+          render();
         }
       });
     });
@@ -646,10 +712,12 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
         const budgetKey = chipBtn.dataset.budget;
         if (!budgetKey) return;
         activeBudget = budgetKey;
-        if (budgetKey === "custom") {
+        if (!hasSearched || budgetKey === "custom") {
           render();
-          const input = document.getElementById("complete-look-custom-min");
-          if (input) input.focus();
+          if (budgetKey === "custom") {
+            const input = document.getElementById("complete-look-custom-min");
+            if (input) input.focus();
+          }
         } else {
           executeSearch();
         }
@@ -681,7 +749,9 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
     if (aboveCheck) {
       aboveCheck.addEventListener("change", (e) => {
         allowAboveBudget = e.target.checked;
-        executeSearch();
+        if (hasSearched) {
+          executeSearch();
+        }
       });
     }
 
@@ -730,9 +800,38 @@ export function createCompleteLookController({ getState, onToast = () => {} }) {
         executeSearch();
       });
     }
+
+    // AI Stylist Shuffle button (New Style Mix)
+    const shuffleBtn = document.getElementById("complete-look-shuffle-btn");
+    if (shuffleBtn) {
+      shuffleBtn.addEventListener("click", () => {
+        shuffleIndex += 1;
+        categoryOffsets = {};
+        executeSearch();
+      });
+    }
+
+    // Category-level item rotation (Different options)
+    container.querySelectorAll("[data-cat-shuffle]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const catId = btn.dataset.catShuffle;
+        const cat = outfitData?.categories?.find((c) => c.id === catId);
+        if (!cat || !cat.allAvailableProducts || cat.allAvailableProducts.length <= 3) return;
+        const pool = cat.allAvailableProducts;
+        categoryOffsets[catId] = ((categoryOffsets[catId] || 0) + 3) % pool.length;
+        const offset = categoryOffsets[catId];
+        const rotated = [];
+        for (let i = 0; i < Math.min(3, pool.length); i++) {
+          rotated.push(pool[(offset + i) % pool.length]);
+        }
+        cat.products = rotated;
+        render();
+      });
+    });
   }
 
   return {
-    open
+    open,
+    executeSearch
   };
 }

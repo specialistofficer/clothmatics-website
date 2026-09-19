@@ -6,7 +6,9 @@ import {
   filterByBudget,
   handleShoppingSearch,
   fetchSerperShopping,
-  fetchShoppingWithFallback
+  fetchShoppingWithFallback,
+  buildQueryLatticeFromIntent,
+  fetchShoppingLattice
 } from "../functions/api/shopping/search.js";
 import {
   getFallbackStylingPlan,
@@ -21,7 +23,11 @@ import {
   deduplicateAndRankProducts,
   detectProductSubtype,
   pickDiverseProductSet,
-  createItemStylingReason
+  createItemStylingReason,
+  normalizePieceIntent,
+  validateProduct,
+  scoreProductRelevance,
+  hashString
 } from "../functions/api/shopping/complete-look.js";
 import {
   getAnchorCategories,
@@ -1020,6 +1026,581 @@ test("shopping status endpoint accurately reports provider configuration and str
   assert.equal(emptyData.providers.serpapi.configured, false);
   assert(emptyData.activeStrategy.includes("Sample Data"));
 });
+
+test("getFallbackStylingPlan dynamically creates individualized search queries for different garments in same category", () => {
+  // Test 1: Black Cargos vs Olive Cargos
+  const blackCargoPlan = getFallbackStylingPlan({
+    item: { title: "Men Black Relaxed Utility Cargo Pants", category: "Bottoms", subCategory: "Cargo", primaryColor: "Black" },
+    profile: { gender: "men" }
+  });
+  const oliveCargoPlan = getFallbackStylingPlan({
+    item: { title: "Men Olive Green Heavyweight Tactical Cargo Pants", category: "Bottoms", subCategory: "Cargo", primaryColor: "Olive" },
+    profile: { gender: "men" }
+  });
+
+  assert(blackCargoPlan.pieces.length > 0);
+  assert(oliveCargoPlan.pieces.length > 0);
+
+  const blackTopPiece = blackCargoPlan.pieces.find(p => p.category === "tops");
+  const oliveTopPiece = oliveCargoPlan.pieces.find(p => p.category === "tops");
+
+  assert(blackTopPiece && oliveTopPiece);
+  // Black cargos should never recommend a black top; olive cargos should never recommend an olive top.
+  // And the two distinct cargo garments must receive completely distinct search terms.
+  assert.notEqual(blackTopPiece.searchTerm, oliveTopPiece.searchTerm);
+  assert(!blackTopPiece.searchTerm.toLowerCase().includes("black"));
+  assert(!oliveTopPiece.searchTerm.toLowerCase().includes("olive"));
+
+  // Test 2: Navy Chinos vs Beige Chinos
+  const navyChinoPlan = getFallbackStylingPlan({
+    item: { title: "Men Navy Blue Slim Fit Stretch Chinos", category: "Bottoms", subCategory: "Chinos", primaryColor: "Navy Blue" },
+    profile: { gender: "men" }
+  });
+  const beigeChinoPlan = getFallbackStylingPlan({
+    item: { title: "Men Beige Khaki Cotton Chino Trousers", category: "Bottoms", subCategory: "Chinos", primaryColor: "Beige" },
+    profile: { gender: "men" }
+  });
+
+  const navyTopPiece = navyChinoPlan.pieces.find(p => p.category === "tops");
+  const beigeTopPiece = beigeChinoPlan.pieces.find(p => p.category === "tops");
+
+  assert(navyTopPiece && beigeTopPiece);
+  // Navy chinos must never recommend navy tops; beige chinos must never recommend beige tops.
+  // And both garments must receive distinct tailored search queries.
+  assert.notEqual(navyTopPiece.searchTerm, beigeTopPiece.searchTerm);
+  assert(!navyTopPiece.searchTerm.toLowerCase().includes("navy"));
+  assert(!beigeTopPiece.searchTerm.toLowerCase().includes("beige"));
+});
+
+test("deduplicateAndRankProducts prioritizes contrasting items and recommended colors", () => {
+  const mockCandidates = [
+    { id: "1", title: "Men Pure White Knitted Regular Fit Polo T-Shirt", extractedPrice: 899, source: "Zara", thumbnail: "https://example.com/1.jpg" },
+    { id: "2", title: "Men Dark Navy Blue Solid Knitted Cotton Polo T-Shirt", extractedPrice: 899, source: "Highlander", thumbnail: "https://example.com/2.jpg" },
+    { id: "3", title: "Men Jet Black Heavyweight Oversized T-Shirt", extractedPrice: 799, source: "Snitch", thumbnail: "https://example.com/3.jpg" }
+  ];
+
+  // When anchor is Navy Pants and recommended color is "white"
+  const rankedForNavy = deduplicateAndRankProducts(mockCandidates, {
+    anchorItem: { title: "Navy Chinos", primaryColor: "Navy Blue", category: "Bottoms" },
+    recommendedColors: ["white"],
+    category: "tops"
+  });
+
+  // White polo should be ranked #1
+  assert.equal(rankedForNavy[0].id, "1");
+
+  // When anchor is White Linen Pants and recommended color is "navy"
+  const rankedForWhite = deduplicateAndRankProducts(mockCandidates, {
+    anchorItem: { title: "White Linen Trousers", primaryColor: "White", category: "Bottoms" },
+    recommendedColors: ["navy", "black"],
+    category: "tops"
+  });
+
+  // Navy polo or black t-shirt should be ranked above white polo
+  assert.notEqual(rankedForWhite[0].id, "1");
+  assert(rankedForWhite[0].id === "2" || rankedForWhite[0].id === "3");
+});
+
+test("deduplicateAndRankProducts prioritizes high user ratings and review volumes over low-rated items", () => {
+  const mockCandidates = [
+    {
+      id: "low-rated",
+      title: "Men Casual Cotton Crew Neck T-Shirt White",
+      extractedPrice: 499,
+      source: "UnknownBrand",
+      thumbnail: "https://example.com/low.jpg",
+      rating: 3.4,
+      reviews: 12
+    },
+    {
+      id: "top-rated",
+      title: "Men Premium Supima Cotton Crew Neck T-Shirt Off-White",
+      extractedPrice: 699,
+      source: "Marks & Spencer",
+      thumbnail: "https://example.com/top.jpg",
+      rating: 4.7,
+      reviews: 820
+    },
+    {
+      id: "moderate-rated",
+      title: "Men Regular Fit Cotton T-Shirt Beige",
+      extractedPrice: 599,
+      source: "Zara",
+      thumbnail: "https://example.com/mod.jpg",
+      rating: 4.1,
+      reviews: 45
+    }
+  ];
+
+  const ranked = deduplicateAndRankProducts(mockCandidates, {
+    anchorItem: { title: "Navy Chinos", primaryColor: "Navy Blue", category: "Bottoms" },
+    recommendedColors: ["white", "off-white", "beige"],
+    category: "tops"
+  });
+
+  // Top rated (4.7 rating, 820 reviews) must be ranked #1
+  assert.equal(ranked[0].id, "top-rated", "Highest rated product with substantial reviews should rank first");
+  assert.equal(ranked[ranked.length - 1].id, "low-rated", "Low rated product (<3.8) should be penalized and ranked last");
+});
+
+test("getFallbackStylingPlan dynamically creates individualized coordinates for shoes (sneakers vs boots vs dress shoes)", () => {
+  const sneakerPlan = getFallbackStylingPlan({
+    item: { title: "Men White Minimal Leather Low-Top Sneakers", category: "Shoes", subCategory: "Sneakers", primaryColor: "White" },
+    profile: { gender: "men" }
+  });
+
+  const bootPlan = getFallbackStylingPlan({
+    item: { title: "Men Rugged Brown Leather Chelsea Boots", category: "Shoes", subCategory: "Boots", primaryColor: "Brown" },
+    profile: { gender: "men" }
+  });
+
+  const dressShoePlan = getFallbackStylingPlan({
+    item: { title: "Men Formal Black Leather Oxford Dress Shoes", category: "Shoes", subCategory: "Dress Shoes", primaryColor: "Black" },
+    profile: { gender: "men" }
+  });
+
+  // All 3 shoe types must produce coordinate pieces
+  assert(sneakerPlan.pieces.length >= 2, "Sneakers plan has complementary pieces");
+  assert(bootPlan.pieces.length >= 2, "Boots plan has complementary pieces");
+  assert(dressShoePlan.pieces.length >= 2, "Dress shoes plan has complementary pieces");
+
+  const sneakerBottom = sneakerPlan.pieces.find(p => p.category === "bottoms");
+  const bootBottom = bootPlan.pieces.find(p => p.category === "bottoms");
+  const dressBottom = dressShoePlan.pieces.find(p => p.category === "bottoms");
+
+  assert(sneakerBottom && bootBottom && dressBottom);
+
+  // Sneaker bottoms, boot bottoms, and dress shoe bottoms should be tailored to their style
+  assert.notEqual(sneakerBottom.searchTerm, bootBottom.searchTerm, "Sneakers and boots must recommend distinct bottoms");
+  assert.notEqual(sneakerBottom.searchTerm, dressBottom.searchTerm, "Sneakers and dress shoes must recommend distinct bottoms");
+
+  // Dress shoe bottom should recommend formal/tailored trousers
+  assert(dressBottom.searchTerm.toLowerCase().includes("trouser") || dressBottom.searchTerm.toLowerCase().includes("formal") || dressBottom.searchTerm.toLowerCase().includes("chinos"));
+
+  // Boot bottom should recommend rugged denim or chinos
+  assert(bootBottom.searchTerm.toLowerCase().includes("jean") || bootBottom.searchTerm.toLowerCase().includes("denim") || bootBottom.searchTerm.toLowerCase().includes("chino"));
+});
+
+test("DIVERSE_SAMPLE_PRODUCTS includes authentic ratings and verified image URLs without repetition", () => {
+  assert(DIVERSE_SAMPLE_PRODUCTS.length >= 40, "DIVERSE_SAMPLE_PRODUCTS must have at least 40 products");
+
+  const ids = new Set();
+  const urls = new Set();
+
+  for (const product of DIVERSE_SAMPLE_PRODUCTS) {
+    // Unique IDs
+    assert(!ids.has(product.id), `Product ID must be unique: ${product.id}`);
+    ids.add(product.id);
+
+    // Valid HTTPS images
+    assert(product.thumbnail && product.thumbnail.startsWith("https://"), `Thumbnail must be valid HTTPS URL: ${product.id}`);
+    assert(!urls.has(product.thumbnail), `Thumbnail image URL must not be duplicated: ${product.thumbnail}`);
+    urls.add(product.thumbnail);
+
+    // Customer ratings and reviews
+    assert(typeof product.rating === "number" && product.rating >= 4.0, `Rating must be >= 4.0 for high quality: ${product.id}`);
+    assert(typeof product.reviews === "number" && product.reviews >= 50, `Reviews must be >= 50: ${product.id}`);
+
+    // Valid price
+    assert((product.extractedPrice || product.extracted_price) > 0, `extractedPrice must be positive: ${product.id}`);
+  }
+});
+
+test("getFallbackStylingPlan with shuffleIndex produces varied styling plans and distinct pieces", () => {
+  const item = { title: "Men Navy Blue Slim Fit Stretch Chinos", category: "Bottoms", subCategory: "Chinos", primaryColor: "Navy Blue" };
+  const profile = { gender: "men" };
+
+  const plan0 = getFallbackStylingPlan({ item, profile, shuffleIndex: 0 });
+  const plan1 = getFallbackStylingPlan({ item, profile, shuffleIndex: 1 });
+  const plan2 = getFallbackStylingPlan({ item, profile, shuffleIndex: 2 });
+
+  assert(plan0.pieces.length > 0);
+  assert(plan1.pieces.length > 0);
+  assert(plan2.pieces.length > 0);
+
+  // At least one piece's searchTerm should differ between shuffleIndex 0 and 1
+  const searchTerms0 = plan0.pieces.map(p => p.searchTerm).join(" | ");
+  const searchTerms1 = plan1.pieces.map(p => p.searchTerm).join(" | ");
+  const searchTerms2 = plan2.pieces.map(p => p.searchTerm).join(" | ");
+
+  assert.notEqual(searchTerms0, searchTerms1, "shuffleIndex 0 and 1 should produce different styling plan search terms");
+  assert.notEqual(searchTerms1, searchTerms2, "shuffleIndex 1 and 2 should produce different styling plan search terms");
+});
+
+test("pickDiverseProductSet with offset parameter rotates product selection", () => {
+  const products = [
+    { id: "p1", title: "White Linen Button-Down Casual Shirt", category: "tops", extractedPrice: 899 },
+    { id: "p2", title: "Beige Knit Polo Shirt", category: "tops", extractedPrice: 799 },
+    { id: "p3", title: "Black Oversized Crew T-Shirt", category: "tops", extractedPrice: 599 },
+    { id: "p4", title: "Navy Oxford Long Sleeve Shirt", category: "tops", extractedPrice: 999 },
+    { id: "p5", title: "Grey Ribbed Henley Shirt", category: "tops", extractedPrice: 699 },
+    { id: "p6", title: "Olive Green Textured Overshirt", category: "tops", extractedPrice: 1199 }
+  ];
+
+  const set0 = pickDiverseProductSet(products, "tops", 3, 0);
+  const set3 = pickDiverseProductSet(products, "tops", 3, 3);
+
+  assert.equal(set0.length, 3);
+  assert.equal(set3.length, 3);
+
+  // The first item of set3 should come from the rotated offset
+  assert.equal(set0[0].id, "p1");
+  assert.equal(set3[0].id, "p4");
+  assert.notEqual(set0[0].id, set3[0].id);
+});
+
+test("handleCompleteLook returns shuffleIndex and attaches allAvailableProducts for on-demand rotation", async () => {
+  const mockItem = {
+    id: "wardrobe-chino-1",
+    title: "Men Beige Chino Trousers",
+    category: "Bottoms",
+    subCategory: "Chinos",
+    primaryColor: "Beige"
+  };
+
+  const res = await handleCompleteLook({
+    item: mockItem,
+    profile: { gender: "men" },
+    budget: { min: 0, max: 5000 },
+    shuffleIndex: 1
+  });
+
+  assert.equal(res.ok, true);
+  assert.equal(res.shuffleIndex, 1);
+  assert(res.outfit && Array.isArray(res.outfit.categories));
+
+  for (const cat of res.outfit.categories) {
+    if (cat.products && cat.products.length > 0) {
+      assert(Array.isArray(cat.allAvailableProducts), `Category ${cat.id} should have allAvailableProducts array`);
+      assert(typeof cat.totalAvailable === "number", `Category ${cat.id} should have totalAvailable count`);
+      assert(cat.allAvailableProducts.length >= cat.products.length, `allAvailableProducts should have at least as many items as cat.products`);
+    }
+  }
+});
+
+test("getAnchorCategories recognizes jackets even when category is Tops and never recommends layering", () => {
+  const trackJacket = {
+    category: "Tops",
+    subCategory: "Jackets",
+    title: "Light Grey Performance Track Jacket"
+  };
+  const categories = getAnchorCategories(trackJacket);
+  const ids = categories.map((c) => c.id);
+
+  assert.deepEqual(ids, ["tops", "bottoms", "shoes", "accessories"]);
+  assert(!ids.includes("layering"), "Jacket anchor must NEVER recommend layering/jackets");
+});
+
+test("getFallbackStylingPlan for jacket anchors produces inner tops, bottoms, shoes, and accessories without layering", () => {
+  const trackJacket = {
+    category: "Tops",
+    subCategory: "Jackets",
+    title: "Light Grey Performance Track Jacket",
+    primaryColor: "Light Grey",
+    fit: "Regular"
+  };
+
+  const plan = getFallbackStylingPlan({
+    item: trackJacket,
+    profile: { gender: "men" },
+    shuffleIndex: 0
+  });
+
+  assert(plan && Array.isArray(plan.pieces));
+  const pieceCats = plan.pieces.map((p) => p.category);
+
+  assert(pieceCats.includes("tops"), "Plan must include an inner top for the jacket");
+  assert(pieceCats.includes("bottoms"), "Plan must include bottoms");
+  assert(pieceCats.includes("shoes"), "Plan must include footwear");
+  assert(pieceCats.includes("accessories"), "Plan must include accessories");
+  assert(!pieceCats.includes("layering"), "Plan must NEVER include layering when styling a jacket");
+});
+
+test("filterProductsStrict excludes all jackets/layering pieces when anchor is a jacket", () => {
+  const candidateProducts = [
+    {
+      id: "prod_tee",
+      title: "Puma Men Pure White Performance Crew Neck Athletic T-Shirt",
+      category: "tops",
+      gender: "men",
+      extractedPrice: 1199,
+      thumbnail: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500&q=80"
+    },
+    {
+      id: "prod_bomber",
+      title: "Campus Sutra Men Black Lightweight Utility Bomber Jacket",
+      category: "layering",
+      gender: "men",
+      extractedPrice: 1199,
+      thumbnail: "https://images.unsplash.com/photo-1544441893-675973e31985?w=500&q=80"
+    },
+    {
+      id: "prod_overshirt",
+      title: "Mast & Harbour Men Navy Blue Casual Cotton Overshirt Jacket",
+      category: "layering",
+      gender: "men",
+      extractedPrice: 1299,
+      thumbnail: "https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?w=500&q=80"
+    },
+    {
+      id: "prod_chinos",
+      title: "Highlander Men Beige Slim Fit Stretch Chino Trousers",
+      category: "bottoms",
+      gender: "men",
+      extractedPrice: 1199,
+      thumbnail: "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=500&q=80"
+    }
+  ];
+
+  const filtered = filterProductsStrict({
+    products: candidateProducts,
+    minPrice: 1000,
+    maxPrice: 2000,
+    gender: "men",
+    anchorCategory: "Light Grey Performance Track Jacket"
+  });
+
+  const ids = filtered.map((p) => p.id);
+  assert(ids.includes("prod_tee"), "Inner tee should be allowed");
+  assert(ids.includes("prod_chinos"), "Chinos should be allowed");
+  assert(!ids.includes("prod_bomber"), "Bomber jacket must be strictly excluded for a jacket anchor");
+  assert(!ids.includes("prod_overshirt"), "Overshirt must be strictly excluded for a jacket anchor");
+});
+
+test("pickDiverseProductSet ensures accessory subtype diversity (never 3 watches)", () => {
+  const accessoriesWithManyWatches = [
+    {
+      id: "watch_1",
+      title: "Fastrack Men Matte Black Digital Tactical Sports Watch",
+      source: "Amazon.in",
+      category: "accessories",
+      extractedPrice: 1295
+    },
+    {
+      id: "watch_2",
+      title: "Titan Men Black Leather Analog Minimalist Watch",
+      source: "Tata CLiQ",
+      category: "accessories",
+      extractedPrice: 1995
+    },
+    {
+      id: "watch_3",
+      title: "Men Fastrack Stunners Dial Metal Strap Watch",
+      source: "LifestyleStores.com",
+      category: "accessories",
+      extractedPrice: 1495
+    },
+    {
+      id: "belt_1",
+      title: "Tommy Hilfiger Men Tan Brown Braided Genuine Leather Belt",
+      source: "Amazon.in",
+      category: "accessories",
+      extractedPrice: 1199
+    },
+    {
+      id: "shades_1",
+      title: "Vincent Chase Men Polarized Classic Aviator Sunglasses",
+      source: "Amazon.in",
+      category: "accessories",
+      extractedPrice: 1199
+    }
+  ];
+
+  const diversePicks = pickDiverseProductSet(accessoriesWithManyWatches, "accessories", 3, 0);
+  assert.equal(diversePicks.length, 3);
+
+  const watchCount = diversePicks.filter((p) => /watch/i.test(p.title)).length;
+  assert.equal(watchCount, 1, "There should be at most 1 watch when other accessory subtypes are available");
+
+  const subtypes = diversePicks.map((p) => detectProductSubtype(p, "accessories"));
+  const uniqueSubtypes = new Set(subtypes);
+  assert.equal(uniqueSubtypes.size, 3, "All 3 accessory picks must belong to distinct subtypes");
+});
+
+test("buildQueryLatticeFromIntent generates 3 to 4 clean, deduplicated search queries", () => {
+  const intent = {
+    category: "shoes",
+    subtypes: ["court sneakers", "low top sneakers"],
+    allowedColors: ["white", "off-white"],
+    materials: ["leather"],
+    styleTags: ["minimalist", "clean"],
+    brandPreferences: ["Puma", "Comet"],
+    mustHaveTerms: ["men", "white", "sneakers"],
+    excludeTerms: ["loafer", "boot"]
+  };
+
+  const queries = buildQueryLatticeFromIntent(intent, "men");
+  assert(Array.isArray(queries), "Must return an array of queries");
+  assert(queries.length >= 2 && queries.length <= 4, `Expected 2-4 queries, got ${queries.length}`);
+
+  for (const q of queries) {
+    assert(typeof q === "string" && q.length > 5, `Query must be non-empty string: ${q}`);
+    assert(!q.includes("(") && !q.includes(")"), `Query should not contain parentheses: ${q}`);
+    assert(!q.includes(" OR "), `Query should not contain boolean OR operators: ${q}`);
+    assert(q.toLowerCase().includes("men"), `Men's query must include gender prefix: ${q}`);
+  }
+
+  // Q1 should target specific color + material + subtype
+  assert(queries.some((q) => q.toLowerCase().includes("white") && q.toLowerCase().includes("court sneakers")), "Should include specific subtype query");
+});
+
+test("validateProduct strictly enforces budget lower-bound invariance (NEVER allows price < minPrice)", () => {
+  const cheapItem = {
+    id: "cheap_1",
+    title: "Highlander Men Navy Blue Solid Knitted Cotton Polo T-Shirt",
+    extractedPrice: 549,
+    thumbnail: "https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=500&q=80",
+    category: "tops"
+  };
+
+  const validItem = {
+    id: "valid_1",
+    title: "Marks & Spencer Men Pure Linen Regular Fit Casual Shirt",
+    extractedPrice: 1799,
+    thumbnail: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=500&q=80",
+    category: "tops"
+  };
+
+  const cheapCheck = validateProduct(cheapItem, {
+    minPrice: 1000,
+    maxPrice: 2000,
+    gender: "men"
+  });
+  assert.equal(cheapCheck.valid, false, "Product priced at 549 must be rejected when minPrice is 1000");
+  assert(cheapCheck.reason.includes("price_below_min"), "Reason should indicate price is below minimum");
+
+  const validCheck = validateProduct(validItem, {
+    minPrice: 1000,
+    maxPrice: 2000,
+    gender: "men"
+  });
+  assert.equal(validCheck.valid, true, "Product priced at 1799 should pass within 1000-2000 budget");
+});
+
+test("validateProduct rejects anchor jacket leakage, wrong gender, and excluded subtypes", () => {
+  const jacketAnchor = {
+    title: "Light Grey Performance Track Jacket",
+    category: "Tops",
+    subCategory: "Jackets"
+  };
+
+  const overshirtItem = {
+    id: "leak_1",
+    title: "Mast & Harbour Men Olive Casual Cotton Overshirt Jacket",
+    category: "layering",
+    extractedPrice: 1499,
+    thumbnail: "https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?w=500&q=80"
+  };
+
+  const leakCheck = validateProduct(overshirtItem, {
+    anchorItem: jacketAnchor,
+    gender: "men"
+  });
+  assert.equal(leakCheck.valid, false, "Outerwear/overshirt must be rejected when anchor is already a jacket");
+
+  const womenItem = {
+    id: "w_1",
+    title: "Women Floral Printed Cotton Top",
+    category: "tops",
+    extractedPrice: 1299,
+    thumbnail: "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=500&q=80"
+  };
+  const genderCheck = validateProduct(womenItem, {
+    gender: "men"
+  });
+  assert.equal(genderCheck.valid, false, "Women's item must be rejected when target gender is men");
+
+  const loaferItem = {
+    id: "loafer_1",
+    title: "Red Tape Men Classic Tan Leather Casual Loafers",
+    category: "shoes",
+    extractedPrice: 1699,
+    thumbnail: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=500&q=80"
+  };
+  const excludeCheck = validateProduct(loaferItem, {
+    intent: {
+      category: "shoes",
+      subtypes: ["sneakers"],
+      excludeTerms: ["loafer", "boot"]
+    },
+    gender: "men"
+  });
+  assert.equal(excludeCheck.valid, false, "Loafers must be rejected when intent excludes 'loafer'");
+});
+
+test("scoreProductRelevance ensures intended sneaker subtype outranks higher-rated skate or loafer", () => {
+  const intent = {
+    category: "shoes",
+    subtypes: ["court sneakers", "low top sneakers"],
+    allowedColors: ["white", "off-white"],
+    materials: ["leather"],
+    styleTags: ["minimalist", "clean"]
+  };
+
+  const whiteCourtSneaker = {
+    id: "court_1",
+    title: "Puma Men Clean Minimalist White Leather Court Sneakers",
+    category: "shoes",
+    rating: 4.2,
+    reviews: 65,
+    extractedPrice: 1899
+  };
+
+  const skateShoe = {
+    id: "skate_1",
+    title: "Comet Men Retro Red Brown Chunky Skate Sneakers",
+    category: "shoes",
+    rating: 4.6,
+    reviews: 940,
+    extractedPrice: 1899
+  };
+
+  const scoreCourt = scoreProductRelevance(whiteCourtSneaker, { intent });
+  const scoreSkate = scoreProductRelevance(skateShoe, { intent });
+
+  assert(scoreCourt.score > scoreSkate.score, `White court sneaker score (${scoreCourt.score}) must exceed skate shoe score (${scoreSkate.score})`);
+  assert(scoreCourt.breakdown.colorMatch === 25, "White sneaker should receive color match bonus");
+});
+
+test("handleCompleteLook returns requestId, sessionSeed, variationIndex, and debug telemetry without budget leaks", async () => {
+  const trackJacket = {
+    id: "track_jacket_123",
+    title: "Light Grey Performance Track Jacket",
+    category: "Tops",
+    subCategory: "Jackets",
+    primaryColor: "Light Grey"
+  };
+
+  const res = await handleCompleteLook({
+    item: trackJacket,
+    profile: { gender: "men" },
+    budget: { min: 1000, max: 2000 },
+    sessionSeed: "test_seed_abc",
+    shuffleIndex: 0
+  });
+
+  assert.equal(res.ok, true);
+  assert(typeof res.requestId === "string" && res.requestId.startsWith("req_"), "Must return a unique requestId");
+  assert.equal(res.sessionSeed, "test_seed_abc", "Must preserve sessionSeed");
+  assert(typeof res.variationIndex === "number", "Must return numeric variationIndex");
+  assert(res.debug && Array.isArray(res.debug.searches), "Must return debug.searches array");
+
+  // Verify all returned products strictly obey budget >= 1000 and <= 2300 (or max)
+  for (const cat of res.outfit.categories) {
+    for (const prod of cat.products) {
+      const price = Number(prod.extractedPrice ?? prod.extracted_price ?? 0);
+      if (price > 0) {
+        assert(price >= 1000, `Product '${prod.title}' priced at ₹${price} violates lower bound minPrice of 1000!`);
+      }
+      assert(prod.meta, `Product '${prod.title}' must contain provenance meta`);
+      assert(typeof prod.meta.fallbackUsed === "boolean", "meta.fallbackUsed must be boolean");
+      assert(typeof prod.meta.source === "string", "meta.source must be string ('live' or 'sample')");
+    }
+  }
+});
+
+
+
 
 
 

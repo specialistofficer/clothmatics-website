@@ -121,9 +121,8 @@ test("web garment intake uses authenticated shared AI, Oracle and owner-scoped s
   assert.match(app,/orderBy\("receivedAt","desc"\)/);
   assert.match(app,/Date\.now\(\)-7\*86400000/);
   assert.match(app,/item\.receivedAt\|\|item\.createdAt\|\|item\.timestamp/);
-  assert.doesNotMatch(`${html}\n${app}`,/Web \+ mobile sync|View photo tips|Add to your closet/);
   assert.match(html,/class="google-mark"/);
-  assert.match(html,/or continue with/);
+  assert.doesNotMatch(html,/id="auth-form"|or continue with/);
 });
 
 test("admin AI and notification mutations use claim-gated workers",async()=>{

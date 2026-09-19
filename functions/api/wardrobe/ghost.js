@@ -101,8 +101,11 @@ async function handle({request,env}){
       return json({error:{message:'The connected Kaggle engine needs the latest multicolor update. Restart it with the updated notebook, then retry. Your original photo is safe.',code:'backend_upgrade_required'}},503);
     }
     const output=await boundedBytes(result,20*1024*1024);
-    if(!(result.headers.get('content-type')||'').toLowerCase().startsWith('image/png')||output.length<500||!PNG.every((v,i)=>output[i]===v))throw Error('The generator returned an invalid PNG.');
-    return new Response(output,{headers:{'Content-Type':'image/png','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','X-Ghost-Generation-Attempts':String(attempts),'X-Ghost-Contract-Version':result.headers.get('X-Ghost-Contract-Version')||'legacy','X-Ghost-Seed':String(seed),'X-Ghost-Request-Id':result.headers.get('X-Request-Id')||''}});
+    const isPng = output.length >= 8 && PNG.every((v,i)=>output[i]===v);
+    const isJpeg = output.length >= 3 && output[0] === 0xFF && output[1] === 0xD8 && output[2] === 0xFF;
+    if((!isPng && !isJpeg) || output.length < 500) throw Error('The generator returned an invalid image.');
+    const outMime = isPng ? 'image/png' : 'image/jpeg';
+    return new Response(output,{headers:{'Content-Type':outMime,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','X-Ghost-Generation-Attempts':String(attempts),'X-Ghost-Contract-Version':result.headers.get('X-Ghost-Contract-Version')||'legacy','X-Ghost-Seed':String(seed),'X-Ghost-Request-Id':result.headers.get('X-Request-Id')||''}});
   }catch(error){return json({error:{message:controller.signal.aborted?'3D generation timed out. Please retry.':error.message||'3D generation is unavailable.'}},controller.signal.aborted?504:502);}
   finally{clearTimeout(timer);request.signal?.removeEventListener('abort',abort);}
 }

@@ -3,5 +3,6 @@ Content-Signal: search=yes, ai-input=yes, ai-train=no
 Allow: /
 Disallow: /admin
 Disallow: /api/
+Disallow: /affiliate-disclosure
 
 Sitemap: https://clothmatics.pages.dev/sitemap.xml

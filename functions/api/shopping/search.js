@@ -224,7 +224,8 @@ export async function fetchSerpApiShopping({ query, gl = "in", hl = "en", apiKey
   url.searchParams.set("api_key", apiKey);
 
   const response = await fetch(url.toString(), {
-    headers: { "Accept": "application/json" }
+    headers: { "Accept": "application/json" },
+    signal: AbortSignal.timeout(12000)
   });
 
   if (!response.ok) {
@@ -252,7 +253,8 @@ export async function fetchSerperShopping({ query, gl = "in", hl = "en", apiKey 
       q: query,
       gl,
       hl
-    })
+    }),
+    signal: AbortSignal.timeout(5000)
   });
 
   if (!response.ok) {
@@ -366,6 +368,153 @@ export async function fetchShoppingWithFallback({
     provider: null,
     error: fallbackError || primaryError,
     hasKey: Boolean(serpApiKey || serperApiKey)
+  };
+}
+
+/**
+ * Converts a structured fashion intent into a 3-4 query search lattice.
+ * Avoids single brittle parenthetical search terms.
+ */
+export function buildQueryLatticeFromIntent(intent = {}, gender = "men", customQuery = "") {
+  const g = String(gender || "men").toLowerCase() === "women" ? "women" : "men";
+  const queries = [];
+
+  if (customQuery && typeof customQuery === "string" && customQuery.trim()) {
+    queries.push(customQuery.trim());
+  }
+
+  const subtypes = Array.isArray(intent.subtypes) && intent.subtypes.length > 0 ? intent.subtypes : [intent.category || "item"];
+  const allowedColors = Array.isArray(intent.allowedColors) && intent.allowedColors.length > 0 ? intent.allowedColors : [];
+  const materials = Array.isArray(intent.materials) && intent.materials.length > 0 ? intent.materials : [];
+  const styleTags = Array.isArray(intent.styleTags) && intent.styleTags.length > 0 ? intent.styleTags : [];
+  const brandPrefs = Array.isArray(intent.brandPreferences) && intent.brandPreferences.length > 0 ? intent.brandPreferences : [];
+
+  const sub = subtypes[0] || "";
+  const color = allowedColors[0] || "";
+  const mat = materials[0] || "";
+  const style = styleTags[0] || "";
+  const brand = brandPrefs[0] || "";
+
+  const cleanQ = (parts) => parts.filter(Boolean).map((p) => String(p).trim()).filter(Boolean).join(" ").replace(/\s+/g, " ").trim();
+
+  // Q1: Specific subtype + color + material
+  const q1 = cleanQ([g, color, mat, sub]);
+  if (q1) queries.push(q1);
+
+  // Q2: Subtype + color + style tag
+  const q2 = cleanQ([g, color, style, sub]);
+  if (q2) queries.push(q2);
+
+  // Q3: Brand-targeted (subtype + gender + brand)
+  if (brand) {
+    const q3 = cleanQ([g, brand, color, sub]);
+    if (q3) queries.push(q3);
+  }
+
+  // Q4: Clean broad fallback (gender + color + subtype)
+  const q4 = cleanQ([g, color, sub]);
+  if (q4) queries.push(q4);
+
+  // Q5: Broader color fallback if color was compound (e.g. "slate grey" -> "grey")
+  const baseColor = color.includes(" ") ? color.split(/\s+/).pop() : "";
+  if (baseColor && baseColor !== color) {
+    const qBase = cleanQ([g, baseColor, sub]);
+    if (qBase) queries.push(qBase);
+  }
+
+  // If we have a second subtype or second color, add an alternative variation
+  if (subtypes.length > 1) {
+    const qAlt = cleanQ([g, color, subtypes[1]]);
+    if (qAlt) queries.push(qAlt);
+  } else if (allowedColors.length > 1) {
+    const qAlt = cleanQ([g, allowedColors[1], sub]);
+    if (qAlt) queries.push(qAlt);
+  }
+
+  // Deduplicate and cap at 4 queries
+  const seen = new Set();
+  const result = [];
+  for (const q of queries) {
+    const lower = q.toLowerCase();
+    if (!seen.has(lower) && lower.length >= 3) {
+      seen.add(lower);
+      result.push(q);
+      if (result.length >= 4) break;
+    }
+  }
+
+  return result.length > 0 ? result : [cleanQ([g, sub]) || `${g} clothing`];
+}
+
+/**
+ * Fetches products across a multi-query lattice in parallel.
+ * Merges, deduplicates, and annotates candidates with query provenance.
+ */
+export async function fetchShoppingLattice({
+  queries = [],
+  gl = "in",
+  hl = "en",
+  env = {},
+  providerPreference = "",
+  maxCandidates = 30
+}) {
+  if (!Array.isArray(queries) || queries.length === 0) {
+    return { items: [], queriesExecuted: [], provider: null, error: null, hasKey: false };
+  }
+
+  const queriesExecuted = [];
+  const allItems = [];
+  const seenIds = new Set();
+  let activeProvider = null;
+  let lastError = null;
+  let hasKey = false;
+
+  const tasks = queries.map(async (q) => {
+    try {
+      const res = await fetchShoppingWithFallback({
+        query: q,
+        gl,
+        hl,
+        env,
+        providerPreference
+      });
+      return { query: q, ...res };
+    } catch (err) {
+      return { query: q, items: [], provider: null, error: err, hasKey: false };
+    }
+  });
+
+  const settled = await Promise.allSettled(tasks);
+
+  for (const s of settled) {
+    if (s.status !== "fulfilled") continue;
+    const { query, items, provider, error, hasKey: qHasKey } = s.value;
+    queriesExecuted.push(query);
+    if (qHasKey) hasKey = true;
+    if (provider) activeProvider = provider;
+    if (error) lastError = error;
+
+    for (const raw of items || []) {
+      const id = String(raw.product_id || raw.productId || raw.link || raw.title || "");
+      if (id && !seenIds.has(id)) {
+        seenIds.add(id);
+        allItems.push({
+          ...raw,
+          _originQuery: query,
+          _originProvider: provider || "unknown"
+        });
+        if (allItems.length >= maxCandidates) break;
+      }
+    }
+    if (allItems.length >= maxCandidates) break;
+  }
+
+  return {
+    items: allItems,
+    queriesExecuted,
+    provider: activeProvider,
+    error: lastError,
+    hasKey
   };
 }
 

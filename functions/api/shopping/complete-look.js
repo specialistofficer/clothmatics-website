@@ -3,7 +3,9 @@ import {
   normalizeProduct,
   fetchSerpApiShopping,
   fetchSerperShopping,
-  fetchShoppingWithFallback
+  fetchShoppingWithFallback,
+  buildQueryLatticeFromIntent,
+  fetchShoppingLattice
 } from "./search.js";
 
 function apiResponse(body, status = 200) {
@@ -11,7 +13,10 @@ function apiResponse(body, status = 200) {
     status,
     headers: {
       "Content-Type": "application/json",
-      "Cache-Control": "no-store",
+      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+      "Pragma": "no-cache",
+      "Expires": "0",
+      "Surrogate-Control": "no-store",
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type, Authorization"
@@ -78,7 +83,9 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 649,
     old_price: "₹1,499",
     extracted_old_price: 1499,
-    thumbnail: "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=400&q=80",
+    rating: 4.4,
+    reviews: 680,
+    thumbnail: "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=500&q=80",
     delivery: "Free delivery by Tomorrow",
     category: "tops",
     style: "streetwear",
@@ -95,7 +102,9 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 549,
     old_price: "₹1,099",
     extracted_old_price: 1099,
-    thumbnail: "https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=400&q=80",
+    rating: 4.5,
+    reviews: 1140,
+    thumbnail: "https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=500&q=80",
     delivery: "Free delivery",
     category: "tops",
     style: "smart_casual",
@@ -104,7 +113,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   {
     id: "m_top_linen",
     position: 3,
-    title: "Marks & Spencer Men Pure Linen Striped Casual Shirt",
+    title: "Marks & Spencer Men Pure Linen Regular Fit Casual Shirt",
     product_id: "m_top_linen",
     product_link: "https://www.ajio.com/search/?text=Marks+and+Spencer+Men+Pure+Linen+Shirt",
     source: "AJIO.com",
@@ -112,7 +121,9 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 1799,
     old_price: "₹2,999",
     extracted_old_price: 2999,
-    thumbnail: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=400&q=80",
+    rating: 4.6,
+    reviews: 840,
+    thumbnail: "https://images.unsplash.com/photo-1603252109303-2751441dd157?w=500&q=80",
     delivery: "Free delivery",
     category: "tops",
     style: "smart_casual",
@@ -129,7 +140,9 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 699,
     old_price: "₹1,849",
     extracted_old_price: 1849,
-    thumbnail: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&q=80",
+    rating: 4.3,
+    reviews: 920,
+    thumbnail: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=500&q=80",
     delivery: "Free delivery",
     category: "tops",
     style: "formal",
@@ -146,10 +159,69 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 799,
     old_price: "₹1,699",
     extracted_old_price: 1699,
-    thumbnail: "https://images.unsplash.com/photo-1578932750294-f5075e85f44a?w=400&q=80",
+    rating: 4.4,
+    reviews: 510,
+    thumbnail: "https://images.unsplash.com/photo-1578932750294-f5075e85f44a?w=500&q=80",
     delivery: "Free delivery",
     category: "tops",
     style: "rugged",
+    gender: "men"
+  },
+  {
+    id: "m_top_ecru_tee",
+    position: 6,
+    title: "Snitch Men Ecru Off-White Boxy Heavyweight Cotton T-Shirt",
+    product_id: "m_top_ecru_tee",
+    product_link: "https://www.amazon.in/s?k=Snitch+Men+Ecru+Boxy+Heavyweight+Tee",
+    source: "Amazon.in",
+    price: "₹799",
+    extracted_price: 799,
+    old_price: "₹1,499",
+    extracted_old_price: 1499,
+    rating: 4.6,
+    reviews: 730,
+    thumbnail: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=500&q=80",
+    delivery: "Free delivery",
+    category: "tops",
+    style: "streetwear",
+    gender: "men"
+  },
+  {
+    id: "m_top_crew_white",
+    position: 7,
+    title: "Puma Men Pure White Performance Crew Neck Athletic T-Shirt",
+    product_id: "m_top_crew_white",
+    product_link: "https://www.amazon.in/s?k=Puma+Men+White+Crew+Neck+Athletic+T-Shirt",
+    source: "Amazon.in",
+    price: "₹1,199",
+    extracted_price: 1199,
+    old_price: "₹1,999",
+    extracted_old_price: 1999,
+    rating: 4.5,
+    reviews: 1240,
+    thumbnail: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500&q=80",
+    delivery: "Free delivery",
+    category: "tops",
+    style: "athletic",
+    gender: "men"
+  },
+  {
+    id: "m_top_supima",
+    position: 8,
+    title: "Marks & Spencer Men Charcoal Grey Premium Supima Cotton T-Shirt",
+    product_id: "m_top_supima",
+    product_link: "https://www.ajio.com/search/?text=Marks+Spencer+Men+Charcoal+Supima+T-Shirt",
+    source: "AJIO.com",
+    price: "₹1,299",
+    extracted_price: 1299,
+    old_price: "₹1,999",
+    extracted_old_price: 1999,
+    rating: 4.6,
+    reviews: 890,
+    thumbnail: "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=501&q=80",
+    delivery: "Free delivery",
+    category: "tops",
+    style: "smart_casual",
     gender: "men"
   },
 
@@ -158,7 +230,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   // -------------------------------------------------------------
   {
     id: "m_bot_cargo",
-    position: 6,
+    position: 7,
     title: "Campus Sutra Men Black Baggy Relaxed Utility Cargo Pants",
     product_id: "m_bot_cargo",
     product_link: "https://www.amazon.in/s?k=Campus+Sutra+Men+Black+Baggy+Relaxed+Cargo+Pants",
@@ -167,15 +239,36 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 999,
     old_price: "₹2,199",
     extracted_old_price: 2199,
-    thumbnail: "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=400&q=80",
+    rating: 4.3,
+    reviews: 490,
+    thumbnail: "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=500&q=80",
     delivery: "Free delivery by Tomorrow",
     category: "bottoms",
     style: "streetwear",
     gender: "men"
   },
   {
+    id: "m_bot_olive_cargo",
+    position: 8,
+    title: "Snitch Men Dark Olive Relaxed Utility Cargo Trousers",
+    product_id: "m_bot_olive_cargo",
+    product_link: "https://www.amazon.in/s?k=Snitch+Men+Olive+Relaxed+Cargo+Trousers",
+    source: "Amazon.in",
+    price: "₹1,199",
+    extracted_price: 1199,
+    old_price: "₹2,499",
+    extracted_old_price: 2499,
+    rating: 4.5,
+    reviews: 820,
+    thumbnail: "https://images.unsplash.com/photo-1517445312882-bc9910d016b7?w=500&q=80",
+    delivery: "Free delivery",
+    category: "bottoms",
+    style: "streetwear",
+    gender: "men"
+  },
+  {
     id: "m_bot_chino",
-    position: 7,
+    position: 9,
     title: "Highlander Men Beige Slim Fit Stretch Chino Trousers",
     product_id: "m_bot_chino",
     product_link: "https://www.google.com/search?tbm=shop&q=buy+Highlander+Men+Beige+Slim+Fit+Chinos+myntra",
@@ -184,7 +277,9 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 749,
     old_price: "₹1,699",
     extracted_old_price: 1699,
-    thumbnail: "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=400&q=80",
+    rating: 4.4,
+    reviews: 1350,
+    thumbnail: "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=500&q=80",
     delivery: "Free delivery",
     category: "bottoms",
     style: "smart_casual",
@@ -192,7 +287,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   },
   {
     id: "m_bot_formal",
-    position: 8,
+    position: 10,
     title: "Peter England Men Charcoal Grey Slim Fit Formal Trousers",
     product_id: "m_bot_formal",
     product_link: "https://www.amazon.in/s?k=Peter+England+Men+Charcoal+Grey+Formal+Trousers",
@@ -201,7 +296,9 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 1099,
     old_price: "₹2,299",
     extracted_old_price: 2299,
-    thumbnail: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=400&q=80",
+    rating: 4.5,
+    reviews: 780,
+    thumbnail: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=500&q=80",
     delivery: "Free delivery",
     category: "bottoms",
     style: "formal",
@@ -209,7 +306,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   },
   {
     id: "m_bot_jean",
-    position: 9,
+    position: 11,
     title: "Levi's Men 511 Slim Fit Dark Indigo Stretch Jeans",
     product_id: "m_bot_jean",
     product_link: "https://www.ajio.com/search/?text=Levis+Men+511+Slim+Fit+Dark+Indigo+Jeans",
@@ -218,7 +315,9 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 1899,
     old_price: "₹3,799",
     extracted_old_price: 3799,
-    thumbnail: "https://images.unsplash.com/photo-1542272604-780c96856592?w=400&q=80",
+    rating: 4.6,
+    reviews: 1420,
+    thumbnail: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=500&q=80",
     delivery: "Free delivery",
     category: "bottoms",
     style: "casual",
@@ -230,7 +329,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   // -------------------------------------------------------------
   {
     id: "m_shoe_minimal",
-    position: 10,
+    position: 12,
     title: "Puma Men White Rebound Layup Minimalist Sneakers",
     product_id: "m_shoe_minimal",
     product_link: "https://www.amazon.in/s?k=Puma+Men+White+Rebound+Layup+Sneakers",
@@ -239,7 +338,9 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 1899,
     old_price: "₹3,999",
     extracted_old_price: 3999,
-    thumbnail: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&q=80",
+    rating: 4.5,
+    reviews: 1680,
+    thumbnail: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=500&q=80",
     delivery: "Free delivery",
     category: "shoes",
     style: "smart_casual",
@@ -247,7 +348,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   },
   {
     id: "m_shoe_skate",
-    position: 11,
+    position: 13,
     title: "Comet Men Retro Low-Top Chunky Skate Sneakers - Black & White",
     product_id: "m_shoe_skate",
     product_link: "https://www.amazon.in/s?k=Comet+Men+Retro+Low+Top+Chunky+Skate+Sneakers",
@@ -256,7 +357,9 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 1999,
     old_price: "₹3,999",
     extracted_old_price: 3999,
-    thumbnail: "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=400&q=80",
+    rating: 4.6,
+    reviews: 940,
+    thumbnail: "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=500&q=80",
     delivery: "Free delivery",
     category: "shoes",
     style: "streetwear",
@@ -264,7 +367,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   },
   {
     id: "m_shoe_loafer",
-    position: 12,
+    position: 14,
     title: "Red Tape Men Classic Tan Brown Leather Casual Loafers",
     product_id: "m_shoe_loafer",
     product_link: "https://www.amazon.in/s?k=Red+Tape+Men+Classic+Tan+Brown+Leather+Casual+Loafers",
@@ -273,7 +376,9 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 1499,
     old_price: "₹4,299",
     extracted_old_price: 4299,
-    thumbnail: "https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=400&q=80",
+    rating: 4.3,
+    reviews: 620,
+    thumbnail: "https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=500&q=80",
     delivery: "Free delivery",
     category: "shoes",
     style: "smart_casual",
@@ -281,7 +386,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   },
   {
     id: "m_shoe_boot",
-    position: 13,
+    position: 15,
     title: "Woodland Men Dark Brown Leather Chelsea Ankle Boots",
     product_id: "m_shoe_boot",
     product_link: "https://www.tatacliq.com/search/?searchCategory=all&text=Woodland+Men+Dark+Brown+Leather+Chelsea+Boots",
@@ -290,10 +395,50 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 2995,
     old_price: "₹4,995",
     extracted_old_price: 4995,
-    thumbnail: "https://images.unsplash.com/photo-1608256246200-53e635b5b65f?w=400&q=80",
+    rating: 4.7,
+    reviews: 1180,
+    thumbnail: "https://images.unsplash.com/photo-1608256246200-53e635b5b65f?w=500&q=80",
     delivery: "Free delivery",
     category: "shoes",
     style: "rugged",
+    gender: "men"
+  },
+  {
+    id: "m_shoe_runner",
+    position: 16,
+    title: "Asics Men Black & White Lightweight Gel Running Sneakers",
+    product_id: "m_shoe_runner",
+    product_link: "https://www.amazon.in/s?k=Asics+Men+Black+Lightweight+Running+Sneakers",
+    source: "Amazon.in",
+    price: "₹1,799",
+    extracted_price: 1799,
+    old_price: "₹3,499",
+    extracted_old_price: 3499,
+    rating: 4.6,
+    reviews: 1420,
+    thumbnail: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&q=80",
+    delivery: "Free delivery",
+    category: "shoes",
+    style: "athletic",
+    gender: "men"
+  },
+  {
+    id: "m_shoe_court",
+    position: 17,
+    title: "Adidas Men Advantage Clean White Low Court Sneakers",
+    product_id: "m_shoe_court",
+    product_link: "https://www.amazon.in/s?k=Adidas+Men+Advantage+Clean+White+Court+Sneakers",
+    source: "Amazon.in",
+    price: "₹1,899",
+    extracted_price: 1899,
+    old_price: "₹3,999",
+    extracted_old_price: 3999,
+    rating: 4.5,
+    reviews: 1980,
+    thumbnail: "https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb?w=500&q=80",
+    delivery: "Free delivery",
+    category: "shoes",
+    style: "smart_casual",
     gender: "men"
   },
 
@@ -302,7 +447,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   // -------------------------------------------------------------
   {
     id: "m_layer_overshirt",
-    position: 14,
+    position: 16,
     title: "Mast & Harbour Men Navy Blue Casual Cotton Overshirt Jacket",
     product_id: "m_layer_overshirt",
     product_link: "https://www.google.com/search?tbm=shop&q=buy+Mast+Harbour+Men+Navy+Blue+Casual+Overshirt+Jacket+myntra",
@@ -311,7 +456,9 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 1299,
     old_price: "₹2,799",
     extracted_old_price: 2799,
-    thumbnail: "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&q=80",
+    rating: 4.4,
+    reviews: 580,
+    thumbnail: "https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?w=500&q=80",
     delivery: "Free delivery",
     category: "layering",
     style: "smart_casual",
@@ -319,7 +466,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   },
   {
     id: "m_layer_bomber",
-    position: 15,
+    position: 17,
     title: "Campus Sutra Men Black Lightweight Utility Bomber Jacket",
     product_id: "m_layer_bomber",
     product_link: "https://www.amazon.in/s?k=Campus+Sutra+Men+Black+Lightweight+Bomber+Jacket",
@@ -328,7 +475,9 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 1199,
     old_price: "₹2,699",
     extracted_old_price: 2699,
-    thumbnail: "https://images.unsplash.com/photo-1544441893-675973e31985?w=400&q=80",
+    rating: 4.3,
+    reviews: 430,
+    thumbnail: "https://images.unsplash.com/photo-1544441893-675973e31985?w=500&q=80",
     delivery: "Free delivery",
     category: "layering",
     style: "streetwear",
@@ -336,7 +485,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   },
   {
     id: "m_layer_blazer",
-    position: 16,
+    position: 18,
     title: "Van Heusen Men Navy Blue Slim Fit Structured Formal Blazer",
     product_id: "m_layer_blazer",
     product_link: "https://www.tatacliq.com/search/?searchCategory=all&text=Van+Heusen+Men+Navy+Blue+Formal+Blazer",
@@ -345,27 +494,31 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 3499,
     old_price: "₹6,999",
     extracted_old_price: 6999,
-    thumbnail: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=400&q=80",
+    rating: 4.6,
+    reviews: 860,
+    thumbnail: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=500&q=80",
     delivery: "Free delivery",
     category: "layering",
     style: "formal",
     gender: "men"
   },
   {
-    id: "m_layer_denim",
-    position: 17,
-    title: "Roadster Men Blue Washed Denim Trucker Jacket",
-    product_id: "m_layer_denim",
-    product_link: "https://www.google.com/search?tbm=shop&q=buy+Roadster+Men+Blue+Washed+Denim+Trucker+Jacket+myntra",
-    source: "Myntra",
-    price: "₹1,499",
-    extracted_price: 1499,
-    old_price: "₹2,999",
-    extracted_old_price: 2999,
-    thumbnail: "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=500&q=80",
+    id: "m_layer_beige_chore",
+    position: 19,
+    title: "Zara Men Beige Relaxed Fit Cotton Chore Overshirt",
+    product_id: "m_layer_beige_chore",
+    product_link: "https://www.amazon.in/s?k=Zara+Men+Beige+Relaxed+Cotton+Chore+Overshirt",
+    source: "Amazon.in",
+    price: "₹2,290",
+    extracted_price: 2290,
+    old_price: "₹4,590",
+    extracted_old_price: 4590,
+    rating: 4.5,
+    reviews: 410,
+    thumbnail: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=500&q=80",
     delivery: "Free delivery",
     category: "layering",
-    style: "rugged",
+    style: "smart_casual",
     gender: "men"
   },
 
@@ -374,7 +527,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   // -------------------------------------------------------------
   {
     id: "m_acc_formal",
-    position: 18,
+    position: 20,
     title: "Titan Men Black Leather Analog Minimalist Watch",
     product_id: "m_acc_formal",
     product_link: "https://www.tatacliq.com/search/?searchCategory=all&text=Titan+Men+Black+Leather+Watch",
@@ -383,7 +536,9 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 1995,
     old_price: "₹2,495",
     extracted_old_price: 2495,
-    thumbnail: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=400&q=80",
+    rating: 4.6,
+    reviews: 1450,
+    thumbnail: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=500&q=80",
     delivery: "Free delivery",
     category: "accessories",
     style: "formal",
@@ -391,7 +546,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   },
   {
     id: "m_acc_tactical",
-    position: 19,
+    position: 21,
     title: "Fastrack Men Matte Black Digital Tactical Sports Watch",
     product_id: "m_acc_tactical",
     product_link: "https://www.amazon.in/s?k=Fastrack+Men+Matte+Black+Digital+Sports+Watch",
@@ -400,7 +555,9 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 1295,
     old_price: "₹1,795",
     extracted_old_price: 1795,
-    thumbnail: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=400&q=80",
+    rating: 4.4,
+    reviews: 890,
+    thumbnail: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=500&q=80",
     delivery: "Free delivery",
     category: "accessories",
     style: "streetwear",
@@ -408,16 +565,18 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   },
   {
     id: "m_acc_belt",
-    position: 20,
+    position: 22,
     title: "Tommy Hilfiger Men Tan Brown Braided Genuine Leather Belt",
     product_id: "m_acc_belt",
     product_link: "https://www.amazon.in/s?k=Tommy+Hilfiger+Men+Tan+Brown+Braided+Leather+Belt",
     source: "Amazon.in",
-    price: "₹899",
-    extracted_price: 899,
+    price: "₹1,199",
+    extracted_price: 1199,
     old_price: "₹1,999",
     extracted_old_price: 1999,
-    thumbnail: "https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=400&q=80",
+    rating: 4.5,
+    reviews: 640,
+    thumbnail: "https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=500&q=80",
     delivery: "Free delivery",
     category: "accessories",
     style: "smart_casual",
@@ -425,19 +584,78 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   },
   {
     id: "m_acc_shades",
-    position: 21,
+    position: 23,
     title: "Vincent Chase Men Polarized Classic Aviator Sunglasses",
     product_id: "m_acc_shades",
     product_link: "https://www.amazon.in/s?k=Vincent+Chase+Men+Polarized+Classic+Aviator+Sunglasses",
     source: "Amazon.in",
-    price: "₹999",
-    extracted_price: 999,
+    price: "₹1,199",
+    extracted_price: 1199,
     old_price: "₹1,999",
     extracted_old_price: 1999,
+    rating: 4.4,
+    reviews: 950,
     thumbnail: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=500&q=80",
     delivery: "Free delivery",
     category: "accessories",
     style: "smart_casual",
+    gender: "men"
+  },
+  {
+    id: "m_acc_bag",
+    position: 24,
+    title: "Wildcraft Men Black Urban Utility Crossbody Sling Bag",
+    product_id: "m_acc_bag",
+    product_link: "https://www.amazon.in/s?k=Wildcraft+Men+Black+Crossbody+Sling+Bag",
+    source: "Amazon.in",
+    price: "₹1,149",
+    extracted_price: 1149,
+    old_price: "₹1,899",
+    extracted_old_price: 1899,
+    rating: 4.5,
+    reviews: 780,
+    thumbnail: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=501&q=80",
+    delivery: "Free delivery",
+    category: "accessories",
+    style: "streetwear",
+    gender: "men"
+  },
+  {
+    id: "m_acc_leather_belt",
+    position: 25,
+    title: "Woodland Men Dark Brown Genuine Leather Rugged Casual Belt",
+    product_id: "m_acc_leather_belt",
+    product_link: "https://www.tatacliq.com/search/?searchCategory=all&text=Woodland+Men+Dark+Brown+Leather+Belt",
+    source: "Tata CLiQ",
+    price: "₹1,299",
+    extracted_price: 1299,
+    old_price: "₹2,495",
+    extracted_old_price: 2495,
+    rating: 4.6,
+    reviews: 820,
+    thumbnail: "https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=501&q=80",
+    delivery: "Free delivery",
+    category: "accessories",
+    style: "rugged",
+    gender: "men"
+  },
+  {
+    id: "m_acc_sports_cap",
+    position: 26,
+    title: "Puma Men Black Adjustable Moisture-Wicking Running Sports Cap",
+    product_id: "m_acc_sports_cap",
+    product_link: "https://www.amazon.in/s?k=Puma+Men+Black+Adjustable+Running+Sports+Cap",
+    source: "Amazon.in",
+    price: "₹899",
+    extracted_price: 899,
+    old_price: "₹1,499",
+    extracted_old_price: 1499,
+    rating: 4.4,
+    reviews: 610,
+    thumbnail: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=500&q=80",
+    delivery: "Free delivery",
+    category: "accessories",
+    style: "athletic",
     gender: "men"
   },
 
@@ -446,7 +664,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   // -------------------------------------------------------------
   {
     id: "w_top_formal",
-    position: 20,
+    position: 24,
     title: "Tokyo Talkies Women White Regular Fit Solid Formal Shirt",
     product_id: "w_top_formal",
     product_link: "https://www.google.com/search?tbm=shop&q=buy+Tokyo+Talkies+Women+White+Regular+Fit+Solid+Formal+Shirt+myntra",
@@ -455,7 +673,9 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 499,
     old_price: "₹1,199",
     extracted_old_price: 1199,
-    thumbnail: "https://images.unsplash.com/photo-1598554747436-c9293d6a588f?w=400&q=80",
+    rating: 4.4,
+    reviews: 720,
+    thumbnail: "https://images.unsplash.com/photo-1598554747436-c9293d6a588f?w=500&q=80",
     delivery: "Free delivery",
     category: "tops",
     style: "smart_casual",
@@ -463,7 +683,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   },
   {
     id: "w_top_rib",
-    position: 21,
+    position: 25,
     title: "Zara Women Black Sleeveless Ribbed High-Neck Knit Top",
     product_id: "w_top_rib",
     product_link: "https://www.ajio.com/search/?text=Zara+Women+Black+Sleeveless+Ribbed+Top",
@@ -472,7 +692,9 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 690,
     old_price: "₹1,290",
     extracted_old_price: 1290,
-    thumbnail: "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=400&q=80",
+    rating: 4.6,
+    reviews: 980,
+    thumbnail: "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=500&q=80",
     delivery: "Free delivery",
     category: "tops",
     style: "formal",
@@ -480,7 +702,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   },
   {
     id: "w_top_crop",
-    position: 22,
+    position: 26,
     title: "Bonkers Corner Women White Oversized Graphic Drop-Shoulder Crop Tee",
     product_id: "w_top_crop",
     product_link: "https://www.amazon.in/s?k=Bonkers+Corner+Women+White+Oversized+Graphic+Crop+Tee",
@@ -489,7 +711,9 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 599,
     old_price: "₹1,299",
     extracted_old_price: 1299,
-    thumbnail: "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=400&q=80",
+    rating: 4.5,
+    reviews: 840,
+    thumbnail: "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=500&q=80",
     delivery: "Free delivery",
     category: "tops",
     style: "streetwear",
@@ -497,7 +721,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   },
   {
     id: "w_top_wrap",
-    position: 23,
+    position: 27,
     title: "ONLY Women Beige Ribbed Long Sleeve Fitted Knit Top",
     product_id: "w_top_wrap",
     product_link: "https://www.ajio.com/search/?text=ONLY+Women+Beige+Ribbed+Long+Sleeve+Top",
@@ -506,6 +730,8 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 799,
     old_price: "₹1,699",
     extracted_old_price: 1699,
+    rating: 4.3,
+    reviews: 490,
     thumbnail: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=500&q=80",
     delivery: "Free delivery",
     category: "tops",
@@ -518,7 +744,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   // -------------------------------------------------------------
   {
     id: "w_bot_beige",
-    position: 24,
+    position: 28,
     title: "KOTTY Women's Beige High Waist Wide Leg Straight Trouser",
     product_id: "w_bot_beige",
     product_link: "https://www.amazon.in/s?k=KOTTY+Womens+Beige+High+Waist+Wide+Leg+Straight+Trouser",
@@ -527,7 +753,9 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 470,
     old_price: "₹1,000",
     extracted_old_price: 1000,
-    thumbnail: "https://images.unsplash.com/photo-1506629082955-511b1aa562c8?w=400&q=80",
+    rating: 4.4,
+    reviews: 1560,
+    thumbnail: "https://images.unsplash.com/photo-1506629082955-511b1aa562c8?w=500&q=80",
     delivery: "Free delivery",
     category: "bottoms",
     style: "smart_casual",
@@ -535,7 +763,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   },
   {
     id: "w_bot_black",
-    position: 25,
+    position: 29,
     title: "Kotty Women Black High-Rise Flared Stretch Trousers",
     product_id: "w_bot_black",
     product_link: "https://www.amazon.in/s?k=Kotty+Women+Black+High+Rise+Flared+Trousers",
@@ -544,7 +772,9 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 599,
     old_price: "₹1,499",
     extracted_old_price: 1499,
-    thumbnail: "https://images.unsplash.com/photo-1551854838-212c50b4c184?w=400&q=80",
+    rating: 4.5,
+    reviews: 1220,
+    thumbnail: "https://images.unsplash.com/photo-1551854838-212c50b4c184?w=500&q=80",
     delivery: "Free delivery",
     category: "bottoms",
     style: "formal",
@@ -552,7 +782,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   },
   {
     id: "w_bot_denim",
-    position: 26,
+    position: 30,
     title: "Levi's Women 721 High Rise Dark Wash Skinny Stretch Jeans",
     product_id: "w_bot_denim",
     product_link: "https://www.amazon.in/s?k=Levis+Women+721+High+Rise+Dark+Wash+Jeans",
@@ -561,7 +791,9 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 1899,
     old_price: "₹3,999",
     extracted_old_price: 3999,
-    thumbnail: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=500&q=80",
+    rating: 4.6,
+    reviews: 1740,
+    thumbnail: "https://images.unsplash.com/photo-1582418702059-97ebafb35d09?w=500&q=80",
     delivery: "Free delivery",
     category: "bottoms",
     style: "casual",
@@ -569,7 +801,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   },
   {
     id: "w_bot_skirt",
-    position: 27,
+    position: 31,
     title: "H&M Women Black Pleated A-Line High Waist Midi Skirt",
     product_id: "w_bot_skirt",
     product_link: "https://www.google.com/search?tbm=shop&q=buy+HM+Women+Black+Pleated+Midi+Skirt",
@@ -578,6 +810,8 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 1299,
     old_price: "₹2,299",
     extracted_old_price: 2299,
+    rating: 4.4,
+    reviews: 630,
     thumbnail: "https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=500&q=80",
     delivery: "Free delivery",
     category: "bottoms",
@@ -590,7 +824,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   // -------------------------------------------------------------
   {
     id: "w_shoe_sneaker",
-    position: 28,
+    position: 32,
     title: "Bata Women White Chunky Casual Sneakers",
     product_id: "w_shoe_sneaker",
     product_link: "https://www.amazon.in/s?k=Bata+Women+White+Chunky+Casual+Sneakers",
@@ -599,7 +833,9 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 1299,
     old_price: "₹1,999",
     extracted_old_price: 1999,
-    thumbnail: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=400&q=80",
+    rating: 4.5,
+    reviews: 1380,
+    thumbnail: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=500&q=80",
     delivery: "Free delivery",
     category: "shoes",
     style: "streetwear",
@@ -607,7 +843,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   },
   {
     id: "w_shoe_heels",
-    position: 29,
+    position: 33,
     title: "Carlton London Women Nude Pointed-Toe Block Heels",
     product_id: "w_shoe_heels",
     product_link: "https://www.google.com/search?tbm=shop&q=buy+Carlton+London+Women+Nude+Pointed+Block+Heels+myntra",
@@ -616,7 +852,9 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 1495,
     old_price: "₹2,995",
     extracted_old_price: 2995,
-    thumbnail: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=400&q=80",
+    rating: 4.6,
+    reviews: 890,
+    thumbnail: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=500&q=80",
     delivery: "Free delivery",
     category: "shoes",
     style: "formal",
@@ -624,7 +862,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   },
   {
     id: "w_shoe_loafer",
-    position: 30,
+    position: 34,
     title: "Carlton London Women Black Chunky Lug-Sole Loafers",
     product_id: "w_shoe_loafer",
     product_link: "https://www.ajio.com/search/?text=Carlton+London+Women+Black+Chunky+Lug+Sole+Loafers",
@@ -633,6 +871,8 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 1695,
     old_price: "₹3,295",
     extracted_old_price: 3295,
+    rating: 4.4,
+    reviews: 540,
     thumbnail: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=500&q=80",
     delivery: "Free delivery",
     category: "shoes",
@@ -641,7 +881,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   },
   {
     id: "w_shoe_pumps",
-    position: 31,
+    position: 35,
     title: "DressBerry Women Classic Black Pointed-Toe Stiletto Pumps",
     product_id: "w_shoe_pumps",
     product_link: "https://www.amazon.in/s?k=DressBerry+Women+Classic+Black+Pointed+Toe+Pumps",
@@ -650,7 +890,9 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 1399,
     old_price: "₹2,799",
     extracted_old_price: 2799,
-    thumbnail: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=500&q=80",
+    rating: 4.3,
+    reviews: 710,
+    thumbnail: "https://images.unsplash.com/photo-1535043934128-cf0b28d52f95?w=500&q=80",
     delivery: "Free delivery",
     category: "shoes",
     style: "formal",
@@ -662,7 +904,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   // -------------------------------------------------------------
   {
     id: "w_layer_blazer",
-    position: 32,
+    position: 36,
     title: "Marks & Spencer Women Beige Double-Breasted Relaxed Blazer",
     product_id: "w_layer_blazer",
     product_link: "https://www.ajio.com/search/?text=Marks+and+Spencer+Women+Beige+Relaxed+Blazer",
@@ -671,7 +913,9 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 2999,
     old_price: "₹5,999",
     extracted_old_price: 5999,
-    thumbnail: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=400&q=80",
+    rating: 4.7,
+    reviews: 920,
+    thumbnail: "https://images.unsplash.com/photo-1554412933-514a83d2f3c8?w=500&q=80",
     delivery: "Free delivery",
     category: "layering",
     style: "formal",
@@ -679,7 +923,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   },
   {
     id: "w_layer_denim",
-    position: 33,
+    position: 37,
     title: "Vero Moda Women Light Blue Cropped Washed Denim Jacket",
     product_id: "w_layer_denim",
     product_link: "https://www.amazon.in/s?k=Vero+Moda+Women+Cropped+Denim+Jacket",
@@ -688,7 +932,9 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 1599,
     old_price: "₹3,499",
     extracted_old_price: 3499,
-    thumbnail: "https://images.unsplash.com/photo-1523381294911-8d3cead13475?w=400&q=80",
+    rating: 4.4,
+    reviews: 810,
+    thumbnail: "https://images.unsplash.com/photo-1523381294911-8d3cead13475?w=500&q=80",
     delivery: "Free delivery",
     category: "layering",
     style: "casual",
@@ -696,7 +942,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   },
   {
     id: "w_layer_cardigan",
-    position: 34,
+    position: 38,
     title: "Marks & Spencer Women Cream Ribbed Soft Knit Cardigan",
     product_id: "w_layer_cardigan",
     product_link: "https://www.ajio.com/search/?text=Marks+and+Spencer+Women+Cream+Ribbed+Knit+Cardigan",
@@ -705,6 +951,8 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 1999,
     old_price: "₹3,999",
     extracted_old_price: 3999,
+    rating: 4.5,
+    reviews: 640,
     thumbnail: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=500&q=80",
     delivery: "Free delivery",
     category: "layering",
@@ -713,7 +961,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   },
   {
     id: "w_layer_trench",
-    position: 35,
+    position: 39,
     title: "Mango Women Classic Double-Breasted Tailored Crepe Shrug",
     product_id: "w_layer_trench",
     product_link: "https://www.google.com/search?tbm=shop&q=buy+Mango+Women+Tailored+Crepe+Shrug+myntra",
@@ -722,6 +970,8 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 2490,
     old_price: "₹4,990",
     extracted_old_price: 4990,
+    rating: 4.5,
+    reviews: 580,
     thumbnail: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=500&q=80",
     delivery: "Free delivery",
     category: "layering",
@@ -734,7 +984,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   // -------------------------------------------------------------
   {
     id: "w_acc_tote",
-    position: 36,
+    position: 40,
     title: "Lavie Women Structured Black Faux Leather Laptop Tote Bag",
     product_id: "w_acc_tote",
     product_link: "https://www.ajio.com/search/?text=Lavie+Women+Structured+Black+Tote+Bag",
@@ -743,7 +993,9 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 1499,
     old_price: "₹3,499",
     extracted_old_price: 3499,
-    thumbnail: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&q=80",
+    rating: 4.6,
+    reviews: 1840,
+    thumbnail: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=500&q=80",
     delivery: "Free delivery",
     category: "accessories",
     style: "formal",
@@ -751,7 +1003,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   },
   {
     id: "w_acc_gold",
-    position: 37,
+    position: 41,
     title: "AccessHer Minimalist 18K Gold Plated Layered Chain & Hoop Earrings",
     product_id: "w_acc_gold",
     product_link: "https://www.amazon.in/s?k=AccessHer+Minimalist+Gold+Plated+Layered+Chain+Earrings",
@@ -760,7 +1012,9 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 499,
     old_price: "₹1,299",
     extracted_old_price: 1299,
-    thumbnail: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400&q=80",
+    rating: 4.4,
+    reviews: 970,
+    thumbnail: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&q=80",
     delivery: "Free delivery",
     category: "accessories",
     style: "smart_casual",
@@ -768,7 +1022,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   },
   {
     id: "w_acc_clutch",
-    position: 38,
+    position: 42,
     title: "Baggit Women Rose Gold Metallic Evening Box Clutch",
     product_id: "w_acc_clutch",
     product_link: "https://www.amazon.in/s?k=Baggit+Women+Rose+Gold+Metallic+Evening+Box+Clutch",
@@ -777,6 +1031,8 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 990,
     old_price: "₹1,990",
     extracted_old_price: 1990,
+    rating: 4.5,
+    reviews: 730,
     thumbnail: "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?w=500&q=80",
     delivery: "Free delivery",
     category: "accessories",
@@ -785,7 +1041,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
   },
   {
     id: "w_acc_belt",
-    position: 39,
+    position: 43,
     title: "Ginger by Lifestyle Women Tan Brown Classic Faux Leather Belt",
     product_id: "w_acc_belt",
     product_link: "https://www.amazon.in/s?k=Ginger+by+Lifestyle+Women+Tan+Brown+Classic+Belt",
@@ -794,7 +1050,47 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
     extracted_price: 399,
     old_price: "₹799",
     extracted_old_price: 799,
+    rating: 4.3,
+    reviews: 520,
     thumbnail: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&q=80",
+    delivery: "Free delivery",
+    category: "accessories",
+    style: "smart_casual",
+    gender: "women"
+  },
+  {
+    id: "w_acc_watch",
+    position: 44,
+    title: "Titan Raga Women Rose Gold Mother of Pearl Dial Analog Watch",
+    product_id: "w_acc_watch",
+    product_link: "https://www.tatacliq.com/search/?searchCategory=all&text=Titan+Raga+Women+Rose+Gold+Watch",
+    source: "Tata CLiQ",
+    price: "₹1,995",
+    extracted_price: 1995,
+    old_price: "₹2,995",
+    extracted_old_price: 2995,
+    rating: 4.7,
+    reviews: 1350,
+    thumbnail: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=502&q=80",
+    delivery: "Free delivery",
+    category: "accessories",
+    style: "formal",
+    gender: "women"
+  },
+  {
+    id: "w_acc_shades",
+    position: 45,
+    title: "Vincent Chase Women Oversized Gradient UV Protected Sunglasses",
+    product_id: "w_acc_shades",
+    product_link: "https://www.amazon.in/s?k=Vincent+Chase+Women+Oversized+Gradient+Sunglasses",
+    source: "Amazon.in",
+    price: "₹1,199",
+    extracted_price: 1199,
+    old_price: "₹1,999",
+    extracted_old_price: 1999,
+    rating: 4.5,
+    reviews: 860,
+    thumbnail: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=502&q=80",
     delivery: "Free delivery",
     category: "accessories",
     style: "smart_casual",
@@ -804,7 +1100,7 @@ export const DIVERSE_SAMPLE_PRODUCTS = [
 
 export function detectAnchorStyle(item = {}) {
   const text = `${item.title || ""} ${item.category || ""} ${item.subCategory || ""} ${item.fit || ""} ${item.material || ""}`.toLowerCase();
-  if (/cargo|jogger|baggy|oversize|parachute|street|skate|utility|combat|hoodie|graphic/i.test(text)) {
+  if (/cargo|jogger|baggy|oversize|parachute|street|skate|utility|combat|hoodie|graphic|track|athlet|sport|gym|workout|windbreak|performance/i.test(text)) {
     return "streetwear";
   }
   if (/chino|linen|polo|knit|khaki|smart casual/i.test(text)) {
@@ -895,7 +1191,345 @@ export function normalizeProductTitleForDeduplication(title = "") {
     .trim();
 }
 
-export function deduplicateAndRankProducts(products = [], { userSizes = {}, userPrefs = {}, category = "", anchorItem = {} } = {}) {
+export function getGarmentSeed(item = {}) {
+  const str = `${item.id || ""}_${item.title || ""}_${item.primaryColor || ""}_${item.category || ""}_${item.subCategory || ""}`;
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
+
+/**
+ * Normalizes styling piece intent to a guaranteed structured object.
+ */
+export function normalizePieceIntent(piece = {}, gender = "men") {
+  const g = String(gender || "men").toLowerCase() === "women" ? "women" : "men";
+  const cat = String(piece.category || "").toLowerCase();
+  const rawIntent = piece.intent && typeof piece.intent === "object" ? piece.intent : {};
+
+  let subtypes = Array.isArray(rawIntent.subtypes) && rawIntent.subtypes.length > 0
+    ? rawIntent.subtypes.map((s) => String(s).trim()).filter(Boolean)
+    : [];
+
+  if (subtypes.length === 0) {
+    if (piece.searchTerm) {
+      const lower = String(piece.searchTerm).toLowerCase();
+      if (/sneaker/i.test(lower)) subtypes.push("sneaker");
+      else if (/loafer/i.test(lower)) subtypes.push("loafer");
+      else if (/boot/i.test(lower)) subtypes.push("boot");
+      else if (/polo/i.test(lower)) subtypes.push("polo");
+      else if (/shirt/i.test(lower)) subtypes.push("shirt");
+      else if (/t-shirt|tee/i.test(lower)) subtypes.push("t-shirt");
+      else if (/cargo/i.test(lower)) subtypes.push("cargo pants");
+      else if (/chino/i.test(lower)) subtypes.push("chino pants");
+      else if (/trouser/i.test(lower)) subtypes.push("trousers");
+      else if (/jean/i.test(lower)) subtypes.push("jeans");
+      else if (/watch/i.test(lower)) subtypes.push("watch");
+      else if (/belt/i.test(lower)) subtypes.push("belt");
+      else if (/sunglass|aviator|shades/i.test(lower)) subtypes.push("sunglasses");
+      else if (/bag|sling/i.test(lower)) subtypes.push("bag");
+      else subtypes.push(cat || "item");
+    } else {
+      subtypes.push(cat || "item");
+    }
+  }
+
+  const allowedColors = Array.isArray(rawIntent.allowedColors) && rawIntent.allowedColors.length > 0
+    ? rawIntent.allowedColors.map((c) => String(c).trim()).filter(Boolean)
+    : (Array.isArray(piece.recommendedColors) && piece.recommendedColors.length > 0
+        ? piece.recommendedColors.map((c) => String(c).trim()).filter(Boolean)
+        : []);
+
+  const excludedColors = Array.isArray(rawIntent.excludedColors)
+    ? rawIntent.excludedColors.map((c) => String(c).trim()).filter(Boolean)
+    : [];
+
+  const fitOrShape = Array.isArray(rawIntent.fitOrShape)
+    ? rawIntent.fitOrShape.map((f) => String(f).trim()).filter(Boolean)
+    : [];
+
+  const materials = Array.isArray(rawIntent.materials)
+    ? rawIntent.materials.map((m) => String(m).trim()).filter(Boolean)
+    : [];
+
+  const styleTags = Array.isArray(rawIntent.styleTags)
+    ? rawIntent.styleTags.map((s) => String(s).trim()).filter(Boolean)
+    : [];
+
+  const mustHaveTerms = Array.isArray(rawIntent.mustHaveTerms) && rawIntent.mustHaveTerms.length > 0
+    ? rawIntent.mustHaveTerms.map((t) => String(t).trim()).filter(Boolean)
+    : [g, subtypes[0] || cat];
+
+  const excludeTerms = Array.isArray(rawIntent.excludeTerms)
+    ? rawIntent.excludeTerms.map((t) => String(t).trim()).filter(Boolean)
+    : [];
+
+  const brandPreferences = Array.isArray(rawIntent.brandPreferences)
+    ? rawIntent.brandPreferences.map((b) => String(b).trim()).filter(Boolean)
+    : [];
+
+  const reason = String(rawIntent.reason || piece.stylingReason || "").trim();
+
+  return {
+    category: cat,
+    categoryLabel: piece.categoryLabel || cat,
+    subtypes,
+    allowedColors,
+    excludedColors,
+    fitOrShape,
+    materials,
+    styleTags,
+    mustHaveTerms,
+    excludeTerms,
+    brandPreferences,
+    reason
+  };
+}
+
+/**
+ * Hard Pre-Ranking Product Validator.
+ * Strictly rejects items that violate budget lower bounds, gender, anchor exclusions,
+ * or explicit intent-excluded terms before ranking occurs.
+ */
+export function validateProduct(product = {}, {
+  intent = {},
+  anchorItem = {},
+  gender = "men",
+  minPrice = null,
+  maxPrice = null,
+  allowAboveBudget = false,
+  userPrefs = {}
+} = {}) {
+  const title = String(product.title || "").toLowerCase();
+  const rawPrice = product.extractedPrice ?? product.extracted_price;
+  const price = Number(rawPrice);
+  const targetCategory = String(product.category || intent.category || "").toLowerCase();
+
+  // 1. Record integrity: Must have non-empty title, image, price
+  if (!product.title || title.length < 3) {
+    return { valid: false, reason: "missing_title" };
+  }
+  if (!hasValidImage(product)) {
+    return { valid: false, reason: "invalid_or_missing_image" };
+  }
+  if (!Number.isFinite(price) || price <= 0) {
+    return { valid: false, reason: "invalid_price" };
+  }
+
+  // 2. Strict Budget Checks: NEVER relax minPrice!
+  if (minPrice !== null && minPrice > 0 && price < minPrice) {
+    return { valid: false, reason: `price_below_min_${price}_lt_${minPrice}` };
+  }
+  if (maxPrice !== null && maxPrice > 0) {
+    const effectiveMax = allowAboveBudget ? Math.round(maxPrice * 1.15) : maxPrice;
+    if (price > effectiveMax) {
+      return { valid: false, reason: `price_above_max_${price}_gt_${effectiveMax}` };
+    }
+  }
+
+  // 3. Gender Purity
+  const isMenTarget = String(gender).toLowerCase() !== "women";
+  if (isMenTarget) {
+    if (/\b(women|woman|women's|woman's|female|girl|girls|ladies|lady|kurti|kurtis|saree|sarees|lehenga|bra|panties|maternity)\b/i.test(title)) {
+      if (!/\b(men|man|men's|man's)\b/i.test(title)) {
+        return { valid: false, reason: "gender_mismatch_women_item" };
+      }
+    }
+  } else {
+    if (/\b(men|man|men's|man's|male|boy|boys|gentleman|boxer|briefs)\b/i.test(title)) {
+      if (!/\b(women|woman|ladies)\b/i.test(title)) {
+        return { valid: false, reason: "gender_mismatch_men_item" };
+      }
+    }
+  }
+
+  // 4. Anchor Category Leakage: if anchor is an outerwear piece, drop any jacket/coat/blazer/bomber/overshirt
+  const anchorDesc = `${anchorItem.category || ""} ${anchorItem.subCategory || ""} ${anchorItem.title || ""}`.toLowerCase();
+  const isAnchorJacket = /jacket|coat|blazer|cardigan|shrug|vest|bomber|parka|windbreaker|anorak|trench|overcoat/i.test(anchorDesc);
+  if (isAnchorJacket) {
+    if (targetCategory === "layering") {
+      return { valid: false, reason: "anchor_jacket_forbids_layering" };
+    }
+    if (/\b(jacket|coat|blazer|bomber|overshirt|cardigan|shrug|vest|parka|windbreaker)\b/i.test(title)) {
+      return { valid: false, reason: "anchor_jacket_leakage_outerwear_title" };
+    }
+  }
+
+  // 5. Excluded terms and subtypes from Intent
+  const excludeTerms = Array.isArray(intent.excludeTerms) ? intent.excludeTerms : [];
+  for (const term of excludeTerms) {
+    if (term && term.length >= 3) {
+      const baseTerm = term.replace(/s$/, "");
+      const reg = new RegExp(`\\b${baseTerm}(?:s|es)?\\b`, "i");
+      if (reg.test(title)) {
+        return { valid: false, reason: `excluded_term_match_${term}` };
+      }
+    }
+  }
+
+  // 6. Forbidden Colors from Intent and userPrefs
+  const avoidColors = [
+    ...(Array.isArray(intent.excludedColors) ? intent.excludedColors : []),
+    ...(Array.isArray(userPrefs.avoidColors) ? userPrefs.avoidColors : [])
+  ].filter(Boolean);
+
+  for (const ac of avoidColors) {
+    if (ac && ac.length >= 3) {
+      const reg = new RegExp(`\\b${ac}\\b`, "i");
+      if (reg.test(title)) {
+        return { valid: false, reason: `avoided_color_match_${ac}` };
+      }
+    }
+  }
+
+  // 7. Hard Exclusions from user preferences
+  const hardExclusions = Array.isArray(userPrefs.hardExclusions) ? userPrefs.hardExclusions : [];
+  for (const he of hardExclusions) {
+    if (he && he.length >= 3) {
+      const reg = new RegExp(`\\b${he}\\b`, "i");
+      if (reg.test(title)) {
+        return { valid: false, reason: `hard_exclusion_match_${he}` };
+      }
+    }
+  }
+
+  return { valid: true };
+}
+
+/**
+ * Relevance-First Product Scoring.
+ * Subtype, color, material, and fashion intent strictly dominate brand/rating.
+ */
+export function scoreProductRelevance(product = {}, {
+  intent = {},
+  anchorItem = {},
+  userPrefs = {},
+  targetSize = null,
+  minPrice = null,
+  maxPrice = null
+} = {}) {
+  let score = 0;
+  const breakdown = {};
+  const title = String(product.title || "").toLowerCase();
+  const source = String(product.source || "").toLowerCase();
+  const price = Number(product.extractedPrice ?? product.extracted_price ?? 0);
+
+  // 1. Subtype / Must-Have terms match (+45 max)
+  const subtypes = Array.isArray(intent.subtypes) ? intent.subtypes : [];
+  const mustHave = Array.isArray(intent.mustHaveTerms) ? intent.mustHaveTerms : [];
+  let subtypeMatched = false;
+
+  for (const sub of subtypes) {
+    if (sub && sub.length >= 3 && title.includes(sub.toLowerCase())) {
+      score += 45;
+      breakdown.subtypeMatch = 45;
+      subtypeMatched = true;
+      break;
+    }
+  }
+  if (!subtypeMatched) {
+    let partialMatches = 0;
+    for (const term of [...subtypes, ...mustHave]) {
+      const words = String(term || "").toLowerCase().split(/\s+/);
+      for (const w of words) {
+        if (w.length >= 4 && title.includes(w)) {
+          partialMatches++;
+        }
+      }
+    }
+    if (partialMatches > 0) {
+      const pts = Math.min(30, partialMatches * 15);
+      score += pts;
+      breakdown.partialSubtypeMatch = pts;
+    }
+  }
+
+  // 2. Allowed Color match (+25 max)
+  const allowedColors = Array.isArray(intent.allowedColors) ? intent.allowedColors : [];
+  for (const col of allowedColors) {
+    if (col && col.length >= 3 && title.includes(col.toLowerCase())) {
+      score += 25;
+      breakdown.colorMatch = 25;
+      break;
+    }
+  }
+
+  // 3. Style / Material / Fit terms (+15 max)
+  const styleTerms = [
+    ...(Array.isArray(intent.materials) ? intent.materials : []),
+    ...(Array.isArray(intent.styleTags) ? intent.styleTags : []),
+    ...(Array.isArray(intent.fitOrShape) ? intent.fitOrShape : [])
+  ];
+  for (const st of styleTerms) {
+    if (st && st.length >= 3 && title.includes(st.toLowerCase())) {
+      score += 15;
+      breakdown.styleMaterialFitMatch = 15;
+      break;
+    }
+  }
+
+  // 4. Preferred Brand match (+10)
+  const preferredBrands = [
+    ...(Array.isArray(userPrefs.preferredBrands) ? userPrefs.preferredBrands : []),
+    ...(Array.isArray(intent.brandPreferences) ? intent.brandPreferences : [])
+  ];
+  for (const pb of preferredBrands) {
+    if (pb && pb.length >= 3 && (title.includes(pb.toLowerCase()) || source.includes(pb.toLowerCase()))) {
+      score += 10;
+      breakdown.preferredBrand = 10;
+      break;
+    }
+  }
+
+  // 5. Price Proximity to Budget Midpoint (+8 max)
+  if (minPrice != null && maxPrice != null && maxPrice > minPrice) {
+    const mid = (minPrice + maxPrice) / 2;
+    const diffRatio = Math.abs(price - mid) / (maxPrice - minPrice);
+    const pts = Math.max(0, Math.round(8 * (1 - Math.min(1, diffRatio))));
+    score += pts;
+    breakdown.budgetProximity = pts;
+  }
+
+  // 6. Rating & Review Quality (+7 max as tie-breaker)
+  const rating = Number(product.rating || 0);
+  const reviews = Number(product.reviews || 0);
+  if (rating >= 4.5 && reviews >= 50) {
+    score += 7;
+    breakdown.ratingQuality = 7;
+  } else if (rating >= 4.0 && reviews >= 20) {
+    score += 4;
+    breakdown.ratingQuality = 4;
+  }
+
+  // 7. Size Match Bonus (+10)
+  if (targetSize && product.extractedSize === targetSize) {
+    score += 10;
+    breakdown.sizeMatch = 10;
+  }
+
+  // 8. Anchor color repetition penalty (-15)
+  const anchorColor = String(anchorItem.primaryColor || "").toLowerCase();
+  const category = String(product.category || intent.category || "").toLowerCase();
+  if (anchorColor && (category === "tops" || category === "bottoms") && title.includes(anchorColor)) {
+    score -= 15;
+    breakdown.anchorColorDuplicatePenalty = -15;
+  }
+
+  return { score, breakdown };
+}
+
+export function deduplicateAndRankProducts(products = [], {
+  userSizes = {},
+  userPrefs = {},
+  category = "",
+  anchorItem = {},
+  recommendedColors = [],
+  intent = null,
+  minPrice = null,
+  maxPrice = null
+} = {}) {
   const targetUserSize = (category === "tops" ? userSizes.top
     : category === "bottoms" ? userSizes.bottom
     : category === "shoes" ? userSizes.shoes
@@ -903,6 +1537,7 @@ export function deduplicateAndRankProducts(products = [], { userSizes = {}, user
     : null);
 
   const targetSizeStr = targetUserSize ? String(targetUserSize).trim().toUpperCase() : null;
+  const effectiveIntent = intent || normalizePieceIntent({ category, recommendedColors });
 
   const avoidColors = (userPrefs.avoidColors || []).map((c) => String(c).toLowerCase());
   const hardExclusions = (userPrefs.hardExclusions || []).map((e) => String(e).toLowerCase());
@@ -932,44 +1567,41 @@ export function deduplicateAndRankProducts(products = [], { userSizes = {}, user
 
   const deduplicated = [];
   for (const [, group] of groups.entries()) {
-    if (group.length === 1) {
-      const prod = group[0];
-      const prodSize = extractProductSize(prod.title);
-      const isSizeMatch = Boolean(targetSizeStr && prodSize && prodSize === targetSizeStr);
-      deduplicated.push({
-        ...prod,
-        extractedSize: prodSize,
-        userSizeMatch: isSizeMatch
-      });
-      continue;
-    }
-
-    // Multiple listings of the same product with different sizes (e.g. size 46 vs 42)
-    let chosen = null;
-    if (targetSizeStr) {
-      chosen = group.find((p) => {
+    let chosen = group[0];
+    if (targetSizeStr && group.length > 1) {
+      const match = group.find((p) => {
         const sz = extractProductSize(p.title);
         return sz && sz === targetSizeStr;
       });
-    }
-
-    if (!chosen) {
-      chosen = group[0];
+      if (match) chosen = match;
     }
 
     const prodSize = extractProductSize(chosen.title);
     const isSizeMatch = Boolean(targetSizeStr && prodSize && prodSize === targetSizeStr);
+    const relevance = scoreProductRelevance(chosen, {
+      intent: effectiveIntent,
+      anchorItem,
+      userPrefs,
+      targetSize: targetSizeStr,
+      minPrice,
+      maxPrice
+    });
+
     deduplicated.push({
       ...chosen,
       extractedSize: prodSize,
-      userSizeMatch: isSizeMatch
+      userSizeMatch: isSizeMatch,
+      _relevanceScore: relevance.score,
+      _scoreBreakdown: relevance.breakdown
     });
   }
 
   deduplicated.sort((a, b) => {
     if (a.userSizeMatch && !b.userSizeMatch) return -1;
     if (!a.userSizeMatch && b.userSizeMatch) return 1;
-    return 0;
+    const diff = (b._relevanceScore || 0) - (a._relevanceScore || 0);
+    if (diff !== 0) return diff;
+    return (Number(b.rating || 0) * 10 + (b.reviews || 0)) - (Number(a.rating || 0) * 10 + (a.reviews || 0));
   });
 
   return deduplicated;
@@ -1038,64 +1670,107 @@ export function detectProductSubtype(product = {}, category = "") {
   return "general_item";
 }
 
-export function pickDiverseProductSet(products = [], category = "", limit = 3) {
+export function pickDiverseProductSet(products = [], category = "", limit = 3, offset = 0) {
   if (!Array.isArray(products) || products.length === 0) return [];
   if (products.length <= 1) return products.slice(0, limit);
 
+  const start = (offset && products.length > limit) ? (Math.abs(Number(offset)) % products.length) : 0;
+  const pool = start > 0 ? [...products.slice(start), ...products.slice(0, start)] : products;
+
+  const isAccessory = category === "accessories" || category === "bags" || category === "jewelry";
   const selected = [];
   const seenSubtypes = new Set();
+  const subtypeCounts = {};
   const seenBrands = new Set();
 
+  const canAddSubtype = (subtype) => {
+    const currentCount = subtypeCounts[subtype] || 0;
+    if (currentCount === 0) return true;
+    if (isAccessory) {
+      // For accessories, check if there's any candidate in pool with a subtype not yet picked
+      const hasUnseenSubtypeInPool = pool.some((p) => {
+        const id = p.id || p.product_id;
+        if (selected.some((s) => (s.id || s.product_id) === id)) return false;
+        const st = detectProductSubtype(p, category);
+        return (subtypeCounts[st] || 0) === 0;
+      });
+      if (hasUnseenSubtypeInPool) return false;
+    }
+    return currentCount < 2; // Never more than 2 of any subtype in a 3-item list
+  };
+
+  const addProduct = (prod, subtype, brand) => {
+    selected.push(prod);
+    seenSubtypes.add(subtype);
+    subtypeCounts[subtype] = (subtypeCounts[subtype] || 0) + 1;
+    if (brand) seenBrands.add(brand);
+  };
+
   // Pass 1: Strict diversity - Pick distinct subtype AND distinct brand/retailer
-  for (const prod of products) {
+  for (const prod of pool) {
     if (selected.length >= limit) break;
     const subtype = detectProductSubtype(prod, category);
     const brand = String(prod.source || prod.brand || "").toLowerCase().trim();
 
     if (!seenSubtypes.has(subtype) && (!brand || !seenBrands.has(brand))) {
-      selected.push(prod);
-      seenSubtypes.add(subtype);
-      if (brand) seenBrands.add(brand);
+      addProduct(prod, subtype, brand);
     }
   }
 
   // Pass 2: Distinct subtype, allow brand repeat if necessary
   if (selected.length < limit) {
-    for (const prod of products) {
+    for (const prod of pool) {
       if (selected.length >= limit) break;
       const id = prod.id || prod.product_id;
       if (selected.some((p) => (p.id || p.product_id) === id)) continue;
       const subtype = detectProductSubtype(prod, category);
-
-      if (!seenSubtypes.has(subtype)) {
-        selected.push(prod);
-        seenSubtypes.add(subtype);
-      }
-    }
-  }
-
-  // Pass 3: Distinct brand, allow subtype repeat if variety was limited
-  if (selected.length < limit) {
-    for (const prod of products) {
-      if (selected.length >= limit) break;
-      const id = prod.id || prod.product_id;
-      if (selected.some((p) => (p.id || p.product_id) === id)) continue;
       const brand = String(prod.source || prod.brand || "").toLowerCase().trim();
 
-      if (!brand || !seenBrands.has(brand)) {
-        selected.push(prod);
-        if (brand) seenBrands.add(brand);
+      if (!seenSubtypes.has(subtype)) {
+        addProduct(prod, subtype, brand);
       }
     }
   }
 
-  // Pass 4: Fill remaining slots with remaining valid products
+  // Pass 3: Distinct brand, respecting canAddSubtype
   if (selected.length < limit) {
-    for (const prod of products) {
+    for (const prod of pool) {
       if (selected.length >= limit) break;
       const id = prod.id || prod.product_id;
       if (selected.some((p) => (p.id || p.product_id) === id)) continue;
-      selected.push(prod);
+      const subtype = detectProductSubtype(prod, category);
+      const brand = String(prod.source || prod.brand || "").toLowerCase().trim();
+
+      if (canAddSubtype(subtype) && (!brand || !seenBrands.has(brand))) {
+        addProduct(prod, subtype, brand);
+      }
+    }
+  }
+
+  // Pass 4: Fill remaining slots with remaining valid products respecting canAddSubtype
+  if (selected.length < limit) {
+    for (const prod of pool) {
+      if (selected.length >= limit) break;
+      const id = prod.id || prod.product_id;
+      if (selected.some((p) => (p.id || p.product_id) === id)) continue;
+      const subtype = detectProductSubtype(prod, category);
+      const brand = String(prod.source || prod.brand || "").toLowerCase().trim();
+
+      if (canAddSubtype(subtype)) {
+        addProduct(prod, subtype, brand);
+      }
+    }
+  }
+
+  // Pass 5: Fallback if pool only had 1 subtype
+  if (selected.length < limit) {
+    for (const prod of pool) {
+      if (selected.length >= limit) break;
+      const id = prod.id || prod.product_id;
+      if (selected.some((p) => (p.id || p.product_id) === id)) continue;
+      const subtype = detectProductSubtype(prod, category);
+      const brand = String(prod.source || prod.brand || "").toLowerCase().trim();
+      addProduct(prod, subtype, brand);
     }
   }
 
@@ -1207,7 +1882,7 @@ export function createItemStylingReason(product = {}, piece = {}, anchorItem = {
  * Gemini AI Stylist: Generates intelligent, trending complete-the-look outfit pairings.
  * Produces a full coordinated 3-to-4 piece outfit around the anchor piece.
  */
-export async function generateStylingPlanWithGemini({ item = {}, profile = {}, targetCategory = "", apiKey = "" }) {
+export async function generateStylingPlanWithGemini({ item = {}, profile = {}, targetCategory = "", apiKey = "", shuffleIndex = 0 }) {
   if (!apiKey) return null;
 
   const rawGender = String(profile.gender || profile.shoppingProfile?.gender || "").toLowerCase();
@@ -1228,13 +1903,25 @@ export async function generateStylingPlanWithGemini({ item = {}, profile = {}, t
   const anchorMaterial = clean(item.material || "", 40);
   const style = detectAnchorStyle(item);
 
-  const isBottom = /bottom|pant|trouser|jean|skirt|short|chino|legging|palazzo/i.test(`${anchorCat} ${anchorSubCat} ${anchorTitle}`);
-  const isTop = /top|shirt|tee|t-shirt|blouse|kurta|sweater|hoodie|polo/i.test(`${anchorCat} ${anchorSubCat} ${anchorTitle}`);
-  const isDress = /dress|gown|jumpsuit|romper/i.test(`${anchorCat} ${anchorSubCat} ${anchorTitle}`);
-  const isShoes = /shoe|sneaker|boot|sandal|heel|loafer/i.test(`${anchorCat} ${anchorSubCat} ${anchorTitle}`);
+  const anchorFullText = `${anchorCat} ${anchorSubCat} ${anchorTitle}`.toLowerCase();
+  const isJacket = /jacket|coat|blazer|cardigan|shrug|vest|bomber|parka|windbreaker|anorak|trench|overcoat/i.test(anchorFullText);
+  const isBottom = !isJacket && /bottom|pant|trouser|jean|skirt|short|chino|legging|palazzo/i.test(anchorFullText);
+  const isShoes = !isJacket && /shoe|sneaker|boot|sandal|heel|loafer/i.test(anchorFullText);
+  const isDress = !isJacket && !isShoes && /dress|gown|jumpsuit|romper/i.test(anchorFullText);
+  const isTop = !isJacket && !isShoes && !isBottom && !isDress && /top|shirt|tee|t-shirt|blouse|kurta|sweater|hoodie|polo/i.test(anchorFullText);
+
+  const variationPrompts = [
+    "LOOK AESTHETIC DIRECTION: Modern Smart Casual — Crisp refined foundation, structured silhouettes, and high-contrast color harmony.",
+    "LOOK AESTHETIC DIRECTION: Urban Utility & Streetwear — Relaxed boxy silhouettes, tactile layering (utility overshirt, chore jacket, or bomber), and contemporary street footwear.",
+    "LOOK AESTHETIC DIRECTION: Minimalist European Chic — Clean, understated lines, premium supima cotton or poplin, neutral earthy tones, and sophisticated accessories.",
+    "LOOK AESTHETIC DIRECTION: Casual Weekend & Relaxed Layers — Effortless comfort, textured fabrics (waffle, denim, canvas), and approachable weekend styling.",
+    "LOOK AESTHETIC DIRECTION: Elevated Evening / Statement — Sharp, confident tailoring, subtle rich dark tones, polished leather accents, and standout accessories."
+  ];
+  const variationIndex = Math.abs(Number(shuffleIndex || 0));
+  const activeVariation = variationPrompts[variationIndex % variationPrompts.length];
 
   const systemPrompt = `You are the lead AI Personal Fashion Stylist for ClothMatics.
-Your task is to generate a COMPLETE COORDINATED OUTFIT around an anchor garment owned by the user.
+Your task is to generate a COMPLETE, HIGHLY INDIVIDUALIZED COORDINATED OUTFIT around an anchor garment owned by the user.
 
 USER PROFILE & SIZES:
 - Gender: Strictly ${gender}
@@ -1261,33 +1948,46 @@ ANCHOR GARMENT:
 - Material: ${anchorMaterial}
 - Detected Style Archetype: ${style}
 
+CURRENT VARIATION MANDATE (#${variationIndex + 1}):
+- ${activeVariation}
+- FRESHNESS REQUIREMENT: Avoid standard boilerplate or repetitive clothing. Give this look a distinct signature identity, specific cut, and fresh color harmony.
+
 CLOTHMATICS AI STYLIST CORE RULES:
 1. GENDER PURITY: Must be strictly ${gender.toUpperCase()}. Every piece, title, and query must be designed exclusively for ${gender}. Never output unisex or opposing gender clothing.
 2. NEVER RECOMMEND THE SAME CATEGORY AS THE ANCHOR:
+   ${isJacket ? `- The anchor item is an OUTERWEAR / JACKET / BLAZER ('${anchorTitle}'). You must NEVER recommend jackets, coats, blazers, overshirts, or layering pieces! The user is already wearing this jacket as their outer layer. You must recommend: 1 Inner Top (crew neck t-shirt, casual shirt, or polo that layers cleanly underneath), 1 Bottom (Pants/Chinos/Trousers/Jeans), 1 Footwear, and 1 Accessory.` : ""}
    ${isBottom ? "- The anchor item is a PAIR OF PANTS/TROUSERS. You must NEVER recommend pants, trousers, jeans, or chinos! Recommend 1 Top, 1 Footwear, 1 Layering/Jacket, and 1 Accessory." : ""}
    ${isTop ? "- The anchor item is a TOP/SHIRT. You must NEVER recommend tops or shirts! Recommend 1 Bottom (Trousers/Chinos/Jeans), 1 Footwear, 1 Layering, and 1 Accessory." : ""}
    ${isDress ? "- The anchor item is a DRESS. Recommend 1 Footwear, 1 Layering shrug/jacket, 1 Handbag/Clutch, and 1 Jewelry/Accessory." : ""}
    ${isShoes ? "- The anchor item is FOOTWEAR. Recommend 1 Bottom, 1 Top, 1 Layering, and 1 Accessory." : ""}
-3. SKIN TONE & COLOR HARMONY:
-   - Skin Tone Harmony: Complement the user's skin tone (${skinTone}). Warm/wheatish/dusky skin pairs with rich earthy tones (olive, warm navy, mustard, terracotta, camel, ecru); cool/fair skin pairs with crisp contrast (deep navy, emerald, charcoal, cobalt, pure white).
-   - Ground bold/distinctive colors with clean neutrals (crisp white, deep navy, rich black, beige).
-4. BODY TYPE & SILHOUETTE BALANCING:
-   - Balance volume: Wide-leg/baggy/relaxed bottoms require fitted, structured, or cropped tops. Slim/tapered bottoms can take relaxed/oversized layers or boxy tees.
-5. STYLE ARCHETYPE COHESION:
-   - Streetwear: Heavyweight oversized boxy graphic tees (240 GSM), chunky low-profile skate sneakers (Puma, Nike, Comet), utility bombers, tactical digital watch / crossbody bag.
-   - Smart Casual: Knitted cotton polos, tan/brown leather penny loafers, unstructured overshirts, braided leather belts.
-   - Formal: Pure cotton oxford/poplin button-downs, minimalist clean leather dress sneakers or black derbies, navy/charcoal blazers, analog dress watches.
-   - Parisian Chic: Ribbed knit high-neck tops, pointed-toe nude/black block heels, double-breasted blazers, structured faux-leather tote bags.
-6. BRAND-TARGETED SEARCH QUERIES:
-   - In each piece's 'searchTerm', append top reputable fashion brands for crisp, studio-grade Google Shopping results:
-     * For Men: e.g., 'men black oversized graphic cotton streetwear t-shirt (Zara OR H&M OR Snitch OR Puma)'
-     * For Women: e.g., 'women black ribbed high neck knit top (Zara OR H&M OR Vero Moda OR Marks & Spencer)'
-7. INDIVIDUAL PIECE REASONING: Each piece in 'pieces' must have its own distinct, specific styling reason explaining why its silhouette, color, and fabric balance with the anchor garment.
+3. DYNAMIC ANCHOR COLOR CONTRAST & HARMONY:
+   - Base all color decisions on the anchor color ('${anchorColor || "neutral"}').
+   - If the anchor is dark (Black, Charcoal, Deep Navy): Strongly contrast with lighter or earthy neutral coordinates (Crisp White, Off-White, Ecru, Light Grey, Camel, Sage Green, Dusty Blue). Never build an all-dark muddy outfit.
+   - If the anchor is light (White, Beige, Cream, Light Blue, Ecru): Ground with deep, rich contrasting coordinates (Deep Navy Blue, Olive Green, Rich Dark Brown, Slate Grey, Charcoal).
+   - If the anchor is saturated or colored (Olive, Rust, Maroon, Mustard, Pink, Yellow): Pair with sophisticated grounding neutrals (Ecru, Cream, Black, Dark Denim, Warm Beige, Heather Grey) that elevate rather than clash.
+   - NEVER recommend the anchor garment's exact primary color for other main pieces unless intentional monochrome.
+4. FABRIC & TEXTURAL SYNERGY:
+   - Complement the anchor fabric ('${anchorMaterial || "standard"}'). Linen anchors pair with textured waffle cotton, slub knit, or espadrilles/suede loafers. Denim anchors pair with brushed flannel, clean 240+ GSM cotton, or rugged leather boots/overshirts. Formal trousers pair with poplin or derbies.
+5. SILHOUETTE & PROPORTION BALANCING:
+   - Wide-leg / baggy / relaxed cuts demand structured, tailored, or cropped tops.
+   - Slim / tapered cuts allow boxy, relaxed, or layered tops for volume contrast.
+6. DIVERSE, BESPOKE GOOGLE SHOPPING SEARCH QUERIES:
+   - CRITICAL ANTI-REPETITION MANDATE: Every wardrobe item is distinct. NEVER use cookie-cutter, repetitive, or generic search terms. Tailor every piece's color, cut, fabric, and search term specifically to this individual garment (${anchorTitle}).
+   - In each piece's 'searchTerm', generate a highly specific, studio-grade shopping query containing:
+     * Gender: '${gender.toLowerCase()}'
+     * Complementary Color: (e.g. 'off white', 'olive green', 'tan brown', 'slate grey')
+     * Specific Cut/Fabric: (e.g. 'textured waffle cotton', 'relaxed linen', 'chunky court', 'suede penny')
+     * Target Garment Type: (e.g. 'polo shirt', 'casual loafers', 'unstructured blazer', 'braided belt')
+     * Diversified Retailer/Brand Targeting: Rotate reputable brands appropriate to the style:
+       - For Men: (Uniqlo OR Rare Rabbit OR Snitch OR Zara OR Marks & Spencer OR Levi's OR Puma OR Comet OR Red Tape OR Woodland OR Flying Machine OR Roadster)
+       - For Women: (Zara OR H&M OR Mango OR Vero Moda OR Marks & Spencer OR Forever New OR Levi's OR Carlton London OR Lavie OR Baggit OR ONLY)
+7. INDIVIDUAL PIECE REASONING: Each piece in 'pieces' must have its own distinct, specific styling reason explaining why its specific silhouette, complementary color, and fabric texture balance with the anchor garment ('${anchorTitle}').
 8. STRICT USER PROFILE & SIZE ADHERENCE:
    - NEVER recommend colors listed under 'Colors to STRICTLY AVOID' (${userPrefs.avoidColors.join(', ') || 'none'}).
    - NEVER recommend garments matching 'Hard Exclusions' (${userPrefs.hardExclusions.join(', ') || 'none'}).
-   - If user has fit preference (${userPrefs.fitPreference || 'balanced'}), integrate it into the top/layering style.
-   - If user has shoe size (UK/India ${userSizes.shoes || 'standard'}), recommend footwear styles suited to that profile.
+   - Top size: ${userSizes.top || "standard fit"}. Bottom size: ${userSizes.bottom || "standard"}. Shoe size: UK ${userSizes.shoes || "standard"}.
+9. ACCESSORY DIVERSITY & ANTI-REPETITION:
+   - NEVER default blindly to a watch for accessories. Intentionally rotate between Belts, Sunglasses/Eyewear, Crossbody/Shoulder Bags, and Watches to give users a fresh, diverse styling experience.
 
 Return pure JSON only in this exact format:
 {
@@ -1296,14 +1996,107 @@ Return pure JSON only in this exact format:
   "styleArchetype": "e.g. Urban Streetwear / Smart Casual / Tailored Formal / Contemporary Parisian Chic",
   "colorHarmony": "e.g. High-Contrast Monotone / Complementary Contrast / Neutral Grounding",
   "silhouetteBalance": "e.g. Volume-Balanced Proportion / Elongated Tailored Line",
-  "pieces": [
+  "pieces": ${isJacket ? `[
+    {
+      "category": "tops",
+      "categoryLabel": "Tops & Shirts",
+      "icon": "👕",
+      "searchTerm": "${gender.toLowerCase()} crisp white heavyweight crew neck t-shirt",
+      "stylingReason": "Why this specific inner top layers under ${anchorTitle}...",
+      "recommendedColors": ["white"],
+      "intent": {
+        "subtypes": ["crew neck t-shirt", "t-shirt"],
+        "allowedColors": ["white", "off-white"],
+        "excludedColors": ["black"],
+        "fitOrShape": ["regular fit"],
+        "materials": ["cotton"],
+        "styleTags": ["clean", "minimalist"],
+        "mustHaveTerms": ["${gender.toLowerCase()}", "white", "crew neck"],
+        "excludeTerms": ["jacket", "blazer", "overshirt"],
+        "brandPreferences": ["Uniqlo", "Zara", "Snitch"],
+        "reason": "Crisp white base provides high-contrast framing under ${anchorTitle}."
+      }
+    },
+    {
+      "category": "bottoms",
+      "categoryLabel": "Pants & Trousers",
+      "icon": "👖",
+      "searchTerm": "${gender.toLowerCase()} slim fit beige stretch chinos",
+      "stylingReason": "Why these bottoms ground the jacket...",
+      "recommendedColors": ["beige"],
+      "intent": {
+        "subtypes": ["chino pants", "trousers"],
+        "allowedColors": ["beige", "tan"],
+        "excludedColors": ["black"],
+        "fitOrShape": ["slim fit"],
+        "materials": ["stretch cotton"],
+        "styleTags": ["smart casual"],
+        "mustHaveTerms": ["${gender.toLowerCase()}", "chinos"],
+        "excludeTerms": ["sweatpants", "track pants"],
+        "brandPreferences": ["Highlander", "Zara", "Dennis Lingo"],
+        "reason": "Tailored chinos provide clean structure beneath the jacket."
+      }
+    },
+    {
+      "category": "shoes",
+      "categoryLabel": "Footwear",
+      "icon": "👟",
+      "searchTerm": "${gender.toLowerCase()} minimalist clean white leather court sneakers",
+      "stylingReason": "Why this footwear balances the silhouette...",
+      "recommendedColors": ["white"],
+      "intent": {
+        "subtypes": ["sneakers", "court sneakers", "low top sneakers"],
+        "allowedColors": ["white", "off-white"],
+        "excludedColors": ["black", "brown", "red"],
+        "fitOrShape": ["low top", "clean profile"],
+        "materials": ["leather", "canvas"],
+        "styleTags": ["minimalist", "court"],
+        "mustHaveTerms": ["${gender.toLowerCase()}", "white", "sneakers"],
+        "excludeTerms": ["loafer", "boot", "derby", "skate", "running"],
+        "brandPreferences": ["Puma", "Comet", "Adidas"],
+        "reason": "Clean low-profile court sneakers keep the look crisp and modern."
+      }
+    },
+    {
+      "category": "accessories",
+      "categoryLabel": "Accessories",
+      "icon": "👜",
+      "searchTerm": "${gender.toLowerCase()} tan brown genuine leather braided belt",
+      "stylingReason": "Why this accessory elevates the look...",
+      "recommendedColors": ["tan", "brown"],
+      "intent": {
+        "subtypes": ["belt", "leather belt"],
+        "allowedColors": ["tan", "brown"],
+        "excludedColors": [],
+        "fitOrShape": ["standard width"],
+        "materials": ["genuine leather"],
+        "styleTags": ["classic", "refined"],
+        "mustHaveTerms": ["${gender.toLowerCase()}", "leather", "belt"],
+        "excludeTerms": ["wallet", "cap"],
+        "brandPreferences": ["Tommy Hilfiger", "Woodland"],
+        "reason": "Tan leather belt frames the waistline cleanly."
+      }
+    }
+  ]` : `[
     {
       "category": "tops",
       "categoryLabel": "Tops & Shirts",
       "icon": "👕",
       "searchTerm": "${gender.toLowerCase()} ...",
       "stylingReason": "Why this specific top, color, and fit pairs with the anchor garment...",
-      "recommendedColors": ["color1", "color2"]
+      "recommendedColors": ["color1", "color2"],
+      "intent": {
+        "subtypes": ["polo", "shirt", "t-shirt"],
+        "allowedColors": ["color1"],
+        "excludedColors": [],
+        "fitOrShape": ["regular"],
+        "materials": ["cotton"],
+        "styleTags": ["smart casual"],
+        "mustHaveTerms": ["${gender.toLowerCase()}", "color1"],
+        "excludeTerms": [],
+        "brandPreferences": [],
+        "reason": "Styling reason..."
+      }
     },
     {
       "category": "shoes",
@@ -1311,7 +2104,19 @@ Return pure JSON only in this exact format:
       "icon": "👟",
       "searchTerm": "${gender.toLowerCase()} ...",
       "stylingReason": "Why this specific footwear pairs with the anchor garment...",
-      "recommendedColors": ["color1"]
+      "recommendedColors": ["color1"],
+      "intent": {
+        "subtypes": ["sneakers", "loafers"],
+        "allowedColors": ["color1"],
+        "excludedColors": [],
+        "fitOrShape": ["low top"],
+        "materials": ["leather"],
+        "styleTags": ["casual"],
+        "mustHaveTerms": ["${gender.toLowerCase()}"],
+        "excludeTerms": [],
+        "brandPreferences": [],
+        "reason": "Styling reason..."
+      }
     },
     {
       "category": "layering",
@@ -1319,7 +2124,19 @@ Return pure JSON only in this exact format:
       "icon": "🧥",
       "searchTerm": "${gender.toLowerCase()} ...",
       "stylingReason": "Why this jacket/layer pairs with the anchor garment...",
-      "recommendedColors": ["color1"]
+      "recommendedColors": ["color1"],
+      "intent": {
+        "subtypes": ["overshirt", "bomber", "blazer"],
+        "allowedColors": ["color1"],
+        "excludedColors": [],
+        "fitOrShape": ["relaxed"],
+        "materials": ["cotton"],
+        "styleTags": ["layering"],
+        "mustHaveTerms": ["${gender.toLowerCase()}"],
+        "excludeTerms": [],
+        "brandPreferences": [],
+        "reason": "Styling reason..."
+      }
     },
     {
       "category": "accessories",
@@ -1327,22 +2144,40 @@ Return pure JSON only in this exact format:
       "icon": "⌚",
       "searchTerm": "${gender.toLowerCase()} ...",
       "stylingReason": "Why this accessory finishes the look...",
-      "recommendedColors": ["color1"]
+      "recommendedColors": ["color1"],
+      "intent": {
+        "subtypes": ["watch", "belt", "sunglasses", "bag"],
+        "allowedColors": ["color1"],
+        "excludedColors": [],
+        "fitOrShape": [],
+        "materials": [],
+        "styleTags": [],
+        "mustHaveTerms": ["${gender.toLowerCase()}"],
+        "excludeTerms": [],
+        "brandPreferences": [],
+        "reason": "Styling reason..."
+      }
     }
-  ]
+  ]`}
 }`;
 
-  const models = ["gemini-2.5-flash", "gemini-2.0-flash"];
+  const models = [
+    "gemini-2.5-flash",
+    "gemini-flash-latest",
+    "gemini-3.1-flash-lite",
+    "gemini-2.5-flash-lite"
+  ];
   for (const model of models) {
     try {
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: AbortSignal.timeout(6000),
         body: JSON.stringify({
           contents: [{ parts: [{ text: systemPrompt }] }],
           generationConfig: {
             responseMimeType: "application/json",
-            temperature: 0.3
+            temperature: 0.85
           }
         })
       });
@@ -1353,19 +2188,30 @@ Return pure JSON only in this exact format:
         if (rawText) {
           const parsed = JSON.parse(rawText);
           if (parsed && Array.isArray(parsed.pieces) && parsed.pieces.length > 0) {
-            const primary = parsed.pieces.find((p) => p.category === targetCategory) || parsed.pieces[0];
+            const normalizedPieces = parsed.pieces.map((p) => {
+              const normIntent = normalizePieceIntent(p, gender);
+              return {
+                ...p,
+                intent: normIntent,
+                searchTerm: p.searchTerm || buildQueryLatticeFromIntent(normIntent, gender)[0],
+                recommendedColors: (Array.isArray(p.recommendedColors) && p.recommendedColors.length > 0) ? p.recommendedColors : normIntent.allowedColors,
+                stylingReason: p.stylingReason || normIntent.reason
+              };
+            });
+            const primary = normalizedPieces.find((p) => p.category === targetCategory) || normalizedPieces[0];
             return {
+              _geminiModelUsed: model,
               outfitTitle: parsed.outfitTitle || "Coordinated Outfit Look",
               overallStylingAdvice: parsed.overallStylingAdvice || parsed.stylingAdvice || "",
               styleArchetype: parsed.styleArchetype || (style === "streetwear" ? "Urban Streetwear" : style === "formal" ? "Tailored Formal" : "Smart Casual"),
               colorHarmony: parsed.colorHarmony || "Harmonious Complementary Contrast",
               silhouetteBalance: parsed.silhouetteBalance || "Volume-Balanced Proportion",
-              pieces: parsed.pieces,
+              pieces: normalizedPieces,
               targetCategory: primary.category,
               searchTerm: primary.searchTerm,
               stylingReason: primary.stylingReason,
               recommendedColors: primary.recommendedColors || [],
-              alternativeCategories: parsed.pieces.filter((p) => p !== primary).map((p) => ({
+              alternativeCategories: normalizedPieces.filter((p) => p !== primary).map((p) => ({
                 targetCategory: p.category,
                 searchTerm: p.searchTerm,
                 stylingReason: p.stylingReason
@@ -1385,18 +2231,22 @@ Return pure JSON only in this exact format:
  * Deterministic expert fashion engine fallback if Gemini is unavailable or rate-limited.
  * Dynamic and style-vibe aware so different pants never receive identical shirts.
  */
-export function getFallbackStylingPlan({ item = {}, profile = {}, targetCategory = "" }) {
+export function getFallbackStylingPlan({ item = {}, profile = {}, targetCategory = "", shuffleIndex = 0 }) {
   const rawGender = String(profile.gender || profile.shoppingProfile?.gender || "").toLowerCase();
   const isFemale = rawGender.includes("fem") || rawGender.includes("wom") || rawGender === "female";
   const gender = isFemale ? "women" : "men";
 
   const text = `${item.category || ""} ${item.subCategory || ""} ${item.title || ""}`.toLowerCase();
   const style = detectAnchorStyle(item);
+  const anchorColor = String(item.primaryColor || "").toLowerCase().trim();
+  const baseSeed = getGarmentSeed(item);
+  const seed = baseSeed + Math.abs(Number(shuffleIndex || 0));
 
-  const isBottom = /bottom|pant|trouser|jean|skirt|short|chino|legging|palazzo/i.test(text);
-  const isTop = /top|shirt|tee|t-shirt|blouse|kurta|sweater|hoodie|polo/i.test(text);
-  const isDress = /dress|gown|jumpsuit|romper/i.test(text);
-  const isShoes = /shoe|sneaker|boot|sandal|heel|loafer/i.test(text);
+  const isJacket = /jacket|coat|blazer|cardigan|shrug|vest|bomber|parka|windbreaker|anorak|trench|overcoat/i.test(text);
+  const isShoes = !isJacket && ((item.category && /shoe|footwear/i.test(item.category)) || (/shoe|footwear|sneaker|boot|sandal|heel|loafer|derby|oxford/i.test(text) && !/bootcut/i.test(text)));
+  const isDress = !isJacket && !isShoes && /dress|gown|jumpsuit|romper/i.test(text);
+  const isBottom = !isJacket && !isShoes && /bottom|pant|trouser|jean|skirt|short|chino|legging|palazzo/i.test(text);
+  const isTop = !isJacket && !isShoes && !isBottom && !isDress && /(?:^|[^\w-])(?:tops?|shirts?|tees?|t-shirts?|blouse|kurta|sweater|hoodie|polo)\b/i.test(text);
 
   let pieces = [];
   let outfitTitle = "Coordinated Outfit Look";
@@ -1405,255 +2255,441 @@ export function getFallbackStylingPlan({ item = {}, profile = {}, targetCategory
   let colorHarmony = "Harmonious Complementary Contrast";
   let silhouetteBalance = "Volume-Balanced Proportion";
 
-  if (isBottom) {
+  if (isJacket) {
+    if (gender === "men") {
+      const isAthletic = /track|performance|running|sport|athlet|gym|windbreak/i.test(text);
+      const isBlazer = /blazer|suit|formal|coat/i.test(text);
+
+      if (isAthletic) {
+        outfitTitle = "Modern Athleisure Performance Look";
+        overallStylingAdvice = `A lightweight performance jacket demands clean, breathable base layers and tapered active bottoms for a streamlined, functional athletic silhouette.`;
+        styleArchetype = "Performance Athleisure";
+        colorHarmony = "High-Contrast Monochrome & Neutrals";
+        silhouetteBalance = "Streamlined Tapered Athletic Proportion";
+
+        const topOptions = [
+          { term: "men crisp white heavyweight cotton crew neck t-shirt (Puma OR Snitch OR Zara)", colors: ["white"], reason: "Crisp white crew-neck tee provides a clean, breathable foundation that layers smoothly under the track jacket." },
+          { term: "men black relaxed fit crew neck graphic t-shirt (Bonkers Corner OR Puma)", colors: ["black"], reason: "Solid black crew neck creates high-contrast framing under the light track jacket." },
+          { term: "men charcoal grey breathable cotton crew neck t-shirt (Marks & Spencer OR Rare Rabbit)", colors: ["charcoal", "grey"], reason: "Charcoal tee delivers tonal athletic depth beneath the jacket." }
+        ];
+        const topPick = topOptions[seed % topOptions.length];
+
+        const botOptions = [
+          { term: "men deep navy blue slim fit stretch chino trousers (Highlander OR Zara)", colors: ["navy"], reason: "Deep navy chinos ground the athletic jacket with smart, versatile structure." },
+          { term: "men black tapered utility cargo joggers (Snitch OR Bonkers Corner)", colors: ["black"], reason: "Tapered utility joggers echo the performance feel of the track jacket." },
+          { term: "men dark grey slim fit stretch trousers (Kotty OR Rare Rabbit)", colors: ["grey", "dark grey"], reason: "Dark grey trousers create an understated, streamlined athletic silhouette." }
+        ];
+        const botPick = botOptions[seed % botOptions.length];
+
+        const shoeOptions = [
+          { term: "men minimalist clean white leather low top sneakers (Puma OR Comet)", colors: ["white"], reason: "Clean low-profile court sneakers keep the athleisure look crisp and intentional." },
+          { term: "men retro chunky skate sneakers black white (Puma OR Comet)", colors: ["black", "white"], reason: "Chunky skate sneakers add modern street volume beneath the tapered joggers." },
+          { term: "men navy blue lightweight casual running sneakers (Asics OR Puma)", colors: ["navy"], reason: "Responsive lightweight sneakers reinforce authentic athletic performance." }
+        ];
+        const shoePick = shoeOptions[seed % shoeOptions.length];
+
+        const accOptions = [
+          { term: "men matte black digital tactical sports watch (Casio OR Fastrack)", colors: ["black"], reason: "Matte tactical hardware completes the sporty performance aesthetic." },
+          { term: "men black polarized sport aviator sunglasses (Vincent Chase OR Fastrack)", colors: ["black"], reason: "Polarized eyewear provides sleek outdoor functionality." },
+          { term: "men black nylon utility crossbody sling bag (Wildcraft OR Puma)", colors: ["black"], reason: "A compact crossbody bag keeps essentials secure and complements the active lifestyle." }
+        ];
+        const accPick = accOptions[seed % accOptions.length];
+
+        pieces = [
+          { category: "tops", categoryLabel: "Tops & Shirts", icon: "👕", searchTerm: topPick.term, stylingReason: topPick.reason, recommendedColors: topPick.colors },
+          { category: "bottoms", categoryLabel: "Pants & Trousers", icon: "👖", searchTerm: botPick.term, stylingReason: botPick.reason, recommendedColors: botPick.colors },
+          { category: "shoes", categoryLabel: "Footwear", icon: "👟", searchTerm: shoePick.term, stylingReason: shoePick.reason, recommendedColors: shoePick.colors },
+          { category: "accessories", categoryLabel: "Accessories", icon: "👜", searchTerm: accPick.term, stylingReason: accPick.reason, recommendedColors: accPick.colors }
+        ];
+      } else if (isBlazer) {
+        outfitTitle = "Modern Tailored Sartorial Look";
+        overallStylingAdvice = `A structured blazer sets the tone for refined tailoring. Anchoring with a crisp button-down, formal trousers, and leather dress shoes completes executive sophistication.`;
+        styleArchetype = "Tailored Formal";
+        colorHarmony = "Timeless Executive Contrast";
+        silhouetteBalance = "Elongated Structured Line";
+
+        const topOptions = [
+          { term: "men white slim fit oxford cotton shirt (Zara OR Marks & Spencer OR Dennis Lingo)", colors: ["white"], reason: "A crisp white oxford shirt is the timeless foundation under a tailored blazer." },
+          { term: "men light blue slim fit oxford cotton shirt (Raymond OR Van Heusen)", colors: ["light blue"], reason: "Soft light blue adds executive depth beneath dark tailoring." }
+        ];
+        const topPick = topOptions[seed % topOptions.length];
+
+        const botOptions = [
+          { term: "men charcoal grey tailored slim fit trousers (Raymond OR Van Heusen)", colors: ["charcoal", "grey"], reason: "Charcoal tailored trousers create classic tonal balance." },
+          { term: "men beige slim fit stretch chino trousers (Highlander OR Zara)", colors: ["beige", "tan"], reason: "Beige chinos bring Riviera-inspired smart casual to the blazer." }
+        ];
+        const botPick = botOptions[seed % botOptions.length];
+
+        const shoeOptions = [
+          { term: "men classic tan brown leather casual loafers (Red Tape OR Hush Puppies)", colors: ["tan", "brown"], reason: "Tan leather loafers elevate the tailored separates." },
+          { term: "men black genuine leather derby dress shoes (Bata OR Red Tape)", colors: ["black"], reason: "Polished leather derbies ensure immaculate business presentation." }
+        ];
+        const shoePick = shoeOptions[seed % shoeOptions.length];
+
+        const accOptions = [
+          { term: "men tan brown braided genuine leather belt (Tommy Hilfiger OR Woodland)", colors: ["tan", "brown"], reason: "Braided leather coordinates cleanly with the loafers." },
+          { term: "men black leather analog minimalist watch (Titan OR Fossil)", colors: ["black", "silver"], reason: "Understated analog dial adds refined polish without distraction." }
+        ];
+        const accPick = accOptions[seed % accOptions.length];
+
+        pieces = [
+          { category: "tops", categoryLabel: "Tops & Shirts", icon: "👕", searchTerm: topPick.term, stylingReason: topPick.reason, recommendedColors: topPick.colors },
+          { category: "bottoms", categoryLabel: "Pants & Trousers", icon: "👖", searchTerm: botPick.term, stylingReason: botPick.reason, recommendedColors: botPick.colors },
+          { category: "shoes", categoryLabel: "Footwear", icon: "👞", searchTerm: shoePick.term, stylingReason: shoePick.reason, recommendedColors: shoePick.colors },
+          { category: "accessories", categoryLabel: "Accessories", icon: "⌚", searchTerm: accPick.term, stylingReason: accPick.reason, recommendedColors: accPick.colors }
+        ];
+      } else {
+        // Casual / Denim / Utility / Chore Jacket
+        outfitTitle = "Contemporary Casual Layered Look";
+        overallStylingAdvice = `Your ${item.primaryColor || ""} casual jacket acts as the signature outer piece. Grounding with a neutral base tee, straight-fit bottoms, and casual footwear balances texture and warmth.`;
+        styleArchetype = "Contemporary Casual";
+        colorHarmony = "Textured Earthy Neutrals";
+        silhouetteBalance = "Structured Outer Layer with Relaxed Base";
+
+        const topOptions = [
+          { term: "men ecru off white boxy heavyweight cotton t-shirt (Snitch OR Zara)", colors: ["ecru", "white"], reason: "Heavyweight ecru cotton provides a rich neutral base under the jacket." },
+          { term: "men navy blue solid knitted cotton polo t-shirt (Highlander OR Rare Rabbit)", colors: ["navy"], reason: "Knitted polo adds collar structure beneath the jacket neckline." }
+        ];
+        const topPick = topOptions[seed % topOptions.length];
+
+        const botOptions = [
+          { term: "men dark indigo raw denim jeans (Levi's OR Flying Machine)", colors: ["indigo", "dark blue"], reason: "Raw dark indigo denim pairs naturally with casual jackets." },
+          { term: "men beige slim fit stretch chino trousers (Highlander OR Zara)", colors: ["beige", "tan"], reason: "Beige chinos create effortless, earthy color blocking." }
+        ];
+        const botPick = botOptions[seed % botOptions.length];
+
+        const shoeOptions = [
+          { term: "men minimalist clean white leather low top sneakers (Puma OR Comet)", colors: ["white"], reason: "Crisp white sneakers keep the casual outerwear outfit modern." },
+          { term: "men dark brown leather chelsea ankle boots (Woodland OR Red Tape)", colors: ["brown"], reason: "Chelsea boots ground the casual jacket with rugged heritage character." }
+        ];
+        const shoePick = shoeOptions[seed % shoeOptions.length];
+
+        const accOptions = [
+          { term: "men tan brown braided genuine leather belt (Tommy Hilfiger OR Woodland)", colors: ["tan", "brown"], reason: "Tan leather frames the waistline cleanly." },
+          { term: "men polarized classic aviator sunglasses (Vincent Chase OR Fastrack)", colors: ["black", "gold"], reason: "Classic aviators add effortless weekend cool." }
+        ];
+        const accPick = accOptions[seed % accOptions.length];
+
+        pieces = [
+          { category: "tops", categoryLabel: "Tops & Shirts", icon: "👕", searchTerm: topPick.term, stylingReason: topPick.reason, recommendedColors: topPick.colors },
+          { category: "bottoms", categoryLabel: "Pants & Trousers", icon: "👖", searchTerm: botPick.term, stylingReason: botPick.reason, recommendedColors: botPick.colors },
+          { category: "shoes", categoryLabel: "Footwear", icon: "👟", searchTerm: shoePick.term, stylingReason: shoePick.reason, recommendedColors: shoePick.colors },
+          { category: "accessories", categoryLabel: "Accessories", icon: "🕶️", searchTerm: accPick.term, stylingReason: accPick.reason, recommendedColors: accPick.colors }
+        ];
+      }
+    } else {
+      // Women Outerwear / Jacket / Blazer
+      outfitTitle = "Contemporary Parisian Layered Look";
+      overallStylingAdvice = `Your ${item.primaryColor || ""} jacket provides the key outer layer. Layering over a sleek knit top with wide-leg trousers and versatile footwear delivers effortless chic.`;
+      styleArchetype = "Contemporary Chic";
+      colorHarmony = "Refined Tonal Balance";
+      silhouetteBalance = "Tailored Upper with Fluid Lower Line";
+
+      const topOptions = [
+        { term: "women white ribbed high neck fitted top (Zara OR H&M)", colors: ["white"], reason: "A fitted high-neck top provides clean contrast beneath the jacket lapels." },
+        { term: "women black sleeveless scoop neck knit top (H&M OR Mango)", colors: ["black"], reason: "Sleek black knitwear creates a minimalist slimming base layer." }
+      ];
+      const topPick = topOptions[seed % topOptions.length];
+
+      const botOptions = [
+        { term: "women beige high waist wide leg straight trouser (Kotty OR Zara)", colors: ["beige"], reason: "Wide-leg trousers elongate the lower body and balance the jacket cut." },
+        { term: "women black high waist wide leg straight trouser (Kotty OR Zara)", colors: ["black"], reason: "Black tailored trousers ensure sleek, versatile proportions." }
+      ];
+      const botPick = botOptions[seed % botOptions.length];
+
+      const shoeOptions = [
+        { term: "women bata white chunky casual sneakers", colors: ["white"], reason: "Chunky sneakers keep the layered jacket look modern and city-ready." },
+        { term: "women carlton london nude pointed toe block heels", colors: ["nude", "black"], reason: "Pointed block heels elevate the jacket ensemble for formal occasions." }
+      ];
+      const shoePick = shoeOptions[seed % shoeOptions.length];
+
+      const accOptions = [
+        { term: "women structured black faux leather laptop tote bag (Lavie OR Baggit)", colors: ["black"], reason: "A structured tote bag delivers polished everyday utility." },
+        { term: "women minimalist 18k gold plated layered chain hoop earrings (AccessHer OR Zaveri)", colors: ["gold"], reason: "Delicate gold accents brighten the neckline beneath the jacket collar." }
+      ];
+      const accPick = accOptions[seed % accOptions.length];
+
+      pieces = [
+        { category: "tops", categoryLabel: "Tops & Shirts", icon: "👚", searchTerm: topPick.term, stylingReason: topPick.reason, recommendedColors: topPick.colors },
+        { category: "bottoms", categoryLabel: "Pants & Trousers", icon: "👖", searchTerm: botPick.term, stylingReason: botPick.reason, recommendedColors: botPick.colors },
+        { category: "shoes", categoryLabel: "Footwear", icon: "👠", searchTerm: shoePick.term, stylingReason: shoePick.reason, recommendedColors: shoePick.colors },
+        { category: "accessories", categoryLabel: "Accessories", icon: "👜", searchTerm: accPick.term, stylingReason: accPick.reason, recommendedColors: accPick.colors }
+      ];
+    }
+  } else if (isBottom) {
     if (gender === "men") {
       if (style === "streetwear") {
-        // e.g. Black Cargo Pants / Baggy Joggers
         outfitTitle = "Urban Streetwear Utility Look";
-        overallStylingAdvice = `Pairing your ${item.primaryColor || "black"} cargo pants with an oversized graphic tee and chunky skate sneakers creates a balanced, modern streetwear proportion.`;
+        overallStylingAdvice = `Pairing your ${item.primaryColor || "streetwear"} bottoms with an oversized graphic tee and chunky skate sneakers creates a balanced, modern streetwear proportion.`;
         styleArchetype = "Urban Streetwear";
-        colorHarmony = "High-Contrast Monotone";
+        colorHarmony = "High-Contrast Street Palettes";
         silhouetteBalance = "Volume-Balanced Boxy Proportion";
+
+        let topOptions = [];
+        if (anchorColor.includes("black") || anchorColor.includes("dark")) {
+          topOptions = [
+            { term: "men white oversized graphic cotton streetwear t-shirt (Snitch OR Bonkers Corner OR Puma)", colors: ["white", "cream"], reason: "A crisp white oversized graphic tee creates classic high-contrast monochrome balance against black bottoms." },
+            { term: "men sage green oversized heavyweight graphic streetwear t-shirt (Bonkers Corner OR H&M OR Puma)", colors: ["sage", "olive"], reason: "Sage green adds subtle earthy color that balances the dark utility bottom." },
+            { term: "men heather grey oversized graphic streetwear t-shirt (Snitch OR Zara OR Puma)", colors: ["grey", "charcoal"], reason: "Heather grey offers an understated athletic streetwear vibe with black." }
+          ];
+        } else if (anchorColor.includes("olive") || anchorColor.includes("green")) {
+          topOptions = [
+            { term: "men black oversized graphic cotton streetwear t-shirt (Snitch OR Bonkers Corner OR Puma)", colors: ["black"], reason: "Black grounds the olive tone with an authentic military-streetwear aesthetic." },
+            { term: "men crisp white oversized graphic streetwear t-shirt (Bonkers Corner OR Puma)", colors: ["white"], reason: "Crisp white provides high-energy contrast against rich olive bottoms." },
+            { term: "men ecru off white oversized boxy graphic t-shirt (Zara OR Snitch)", colors: ["ecru", "cream"], reason: "Warm ecru provides an effortless organic contrast with olive." }
+          ];
+        } else if (anchorColor.includes("beige") || anchorColor.includes("khaki") || anchorColor.includes("tan")) {
+          topOptions = [
+            { term: "men charcoal black oversized graphic cotton streetwear t-shirt (Snitch OR Bonkers Corner)", colors: ["black", "charcoal"], reason: "Charcoal black brings clean grounding contrast to light khaki bottoms." },
+            { term: "men deep navy oversized graphic streetwear t-shirt (Puma OR Bonkers Corner)", colors: ["navy"], reason: "Deep navy provides rich complementary depth against neutral khaki." }
+          ];
+        } else {
+          topOptions = [
+            { term: "men black oversized graphic cotton streetwear t-shirt (Bonkers Corner OR Snitch OR Puma)", colors: ["black", "white"], reason: "An oversized boxy graphic tee balances the heavy cargo pockets and maintains street-style proportions." },
+            { term: "men white oversized graphic cotton streetwear t-shirt (Snitch OR Puma OR Bonkers Corner)", colors: ["white"], reason: "A clean graphic tee keeps the focal point balanced with the utility silhouette." },
+            { term: "men slate grey oversized boxy graphic t-shirt (Bonkers Corner OR H&M)", colors: ["grey"], reason: "Slate grey provides a cool neutral bridge for casual street styling." }
+          ];
+        }
+        const topPick = topOptions[seed % topOptions.length];
+
+        const shoeOptions = [
+          { term: "men retro chunky skate sneakers black white (Puma OR Comet OR Converse)", colors: ["white", "black"], reason: "Chunky low-profile skate sneakers provide visual weight at the hem to complement the cuffs." },
+          { term: "men minimalist clean white leather low top sneakers (Puma OR Comet)", colors: ["white"], reason: "Clean white court sneakers keep the streetwear silhouette crisp and intentional." },
+          { term: "men vintage gum sole retro skate sneakers (Adidas OR Comet OR Puma)", colors: ["white", "gum"], reason: "Gum sole detailing introduces a vintage skate aesthetic." }
+        ];
+        const shoePick = shoeOptions[seed % shoeOptions.length];
+
+        const layerOptions = [
+          { term: "men black lightweight utility bomber jacket (Zara OR Snitch)", colors: ["black", "olive"], reason: "A lightweight bomber adds clean structure without feeling bulky or formal." },
+          { term: "men olive green casual utility bomber jacket (H&M OR Snitch)", colors: ["olive"], reason: "Utility bomber brings authentic street volume to frame the graphic tee." },
+          { term: "men washed black denim trucker jacket (Levi's OR Flying Machine)", colors: ["black", "grey"], reason: "Denim trucker adds tactile durability over the relaxed tee." }
+        ];
+        const layerPick = layerOptions[seed % layerOptions.length];
+
+        const accOptions = [
+          { term: "men matte black digital tactical sports watch (Casio OR Fastrack)", colors: ["black"], reason: "Matte tactical hardware completes the utilitarian streetwear aesthetic." },
+          { term: "men black nylon utility crossbody chest bag (Wildcraft OR Puma)", colors: ["black"], reason: "A compact crossbody bag reinforces practical street utility." }
+        ];
+        const accPick = accOptions[seed % accOptions.length];
+
         pieces = [
-          {
-            category: "tops",
-            categoryLabel: "Tops & Shirts",
-            icon: "👕",
-            searchTerm: "men black oversized graphic cotton streetwear t-shirt",
-            stylingReason: `An oversized boxy graphic tee balances the heavy cargo pockets and maintains street-style proportions.`,
-            recommendedColors: ["black", "charcoal", "white"]
-          },
-          {
-            category: "shoes",
-            categoryLabel: "Footwear",
-            icon: "👟",
-            searchTerm: "men retro chunky skate sneakers black white",
-            stylingReason: `Chunky low-profile skate sneakers provide visual weight at the hem to complement the cargo cuffs.`,
-            recommendedColors: ["white", "black"]
-          },
-          {
-            category: "layering",
-            categoryLabel: "Jackets & Layers",
-            icon: "🧥",
-            searchTerm: "men black lightweight utility bomber jacket",
-            stylingReason: `A lightweight bomber adds clean structure without feeling bulky or formal.`,
-            recommendedColors: ["black", "olive"]
-          },
-          {
-            category: "accessories",
-            categoryLabel: "Accessories",
-            icon: "⌚",
-            searchTerm: "men matte black digital tactical sports watch",
-            stylingReason: `Matte tactical hardware completes the utilitarian streetwear aesthetic.`,
-            recommendedColors: ["black"]
-          }
+          { category: "tops", categoryLabel: "Tops & Shirts", icon: "👕", searchTerm: topPick.term, stylingReason: topPick.reason, recommendedColors: topPick.colors },
+          { category: "shoes", categoryLabel: "Footwear", icon: "👟", searchTerm: shoePick.term, stylingReason: shoePick.reason, recommendedColors: shoePick.colors },
+          { category: "layering", categoryLabel: "Jackets & Layers", icon: "🧥", searchTerm: layerPick.term, stylingReason: layerPick.reason, recommendedColors: layerPick.colors },
+          { category: "accessories", categoryLabel: "Accessories", icon: "⌚", searchTerm: accPick.term, stylingReason: accPick.reason, recommendedColors: accPick.colors }
         ];
       } else if (style === "formal") {
-        // e.g. Grey Slim Trousers
         outfitTitle = "Modern Tailored Professional Look";
         overallStylingAdvice = `Tailored ${item.primaryColor || "grey"} trousers provide a crisp, refined base. Anchoring with a pure cotton oxford shirt and navy blazer achieves timeless corporate elegance.`;
         styleArchetype = "Tailored Formal";
-        colorHarmony = "Timeless Executive Palette (White & Navy)";
+        colorHarmony = "Timeless Executive Palette";
         silhouetteBalance = "Clean Elongated Line";
+
+        let topOptions = [];
+        if (anchorColor.includes("grey") || anchorColor.includes("gray")) {
+          topOptions = [
+            { term: "men white slim fit oxford cotton shirt (Zara OR Marks & Spencer OR Dennis Lingo)", colors: ["white", "light blue"], reason: `A crisp white button-down oxford shirt is the timeless foundation for tailored ${item.primaryColor || "grey"} trousers.` },
+            { term: "men crisp white formal button down oxford shirt (Raymond OR Van Heusen OR Marks & Spencer)", colors: ["white"], reason: `High-thread-count white oxford cotton creates an authoritative executive finish.` }
+          ];
+        } else if (anchorColor.includes("black")) {
+          topOptions = [
+            { term: "men light blue slim fit oxford cotton shirt (Zara OR Marks & Spencer OR Van Heusen)", colors: ["light blue"], reason: "Light blue introduces soft executive contrast against sharp black trousers." },
+            { term: "men white slim fit oxford cotton shirt (Raymond OR Dennis Lingo OR Zara)", colors: ["white"], reason: "Crisp white creates stark, high-contrast monochrome polish." }
+          ];
+        } else if (anchorColor.includes("navy") || anchorColor.includes("blue")) {
+          topOptions = [
+            { term: "men crisp white formal button down oxford shirt (Raymond OR Van Heusen OR Zara)", colors: ["white"], reason: "Pure white is the definitive sartorial companion for navy trousers." },
+            { term: "men light pink textured oxford cotton shirt (Marks & Spencer OR Zara)", colors: ["pink"], reason: "Subtle pastel pink warms up deep navy tailored fabric." }
+          ];
+        } else {
+          topOptions = [
+            { term: "men white slim fit oxford cotton shirt (Zara OR Marks & Spencer OR Dennis Lingo)", colors: ["white"], reason: "A crisp white button-down oxford shirt provides a clean foundation." },
+            { term: "men light blue slim fit oxford cotton shirt (Raymond OR Van Heusen OR Zara)", colors: ["light blue"], reason: "Light blue brings timeless corporate versatility." }
+          ];
+        }
+        const topPick = topOptions[seed % topOptions.length];
+
+        const shoeOptions = [
+          { term: "men minimalist white leather low top sneakers (Puma OR Comet OR Zara)", colors: ["white"], reason: "Clean low-profile white sneakers modernize the trousers for contemporary smart-office versatility." },
+          { term: "men black genuine leather derby dress shoes (Bata OR Red Tape)", colors: ["black"], reason: "Polished leather derbies ensure formal business meetings remain immaculate." }
+        ];
+        const shoePick = shoeOptions[seed % shoeOptions.length];
+
+        const blazerOptions = [
+          { term: "men navy blue slim fit formal blazer (Van Heusen OR Raymond OR Zara)", colors: ["navy", "charcoal"], reason: "A tailored navy blazer creates the definitive menswear grey-and-navy power pairing." },
+          { term: "men charcoal grey tailored slim blazer (Raymond OR Van Heusen)", colors: ["charcoal"], reason: "Charcoal adds tonal executive depth over the white shirt." }
+        ];
+        const layerPick = blazerOptions[seed % blazerOptions.length];
+
+        const accOptions = [
+          { term: "men black leather analog minimalist watch (Titan OR Fossil)", colors: ["black", "silver"], reason: "An understated analog dial maintains sleek executive polish." },
+          { term: "men classic black genuine leather formal belt (Woodland OR Tommy Hilfiger)", colors: ["black"], reason: "Polished formal leather matches the footwear and frames the waistband." }
+        ];
+        const accPick = accOptions[seed % accOptions.length];
+
         pieces = [
-          {
-            category: "tops",
-            categoryLabel: "Tops & Shirts",
-            icon: "👕",
-            searchTerm: "men white slim fit oxford cotton shirt (Zara OR Marks & Spencer OR Dennis Lingo)",
-            stylingReason: `A crisp white button-down oxford shirt is the timeless foundation for tailored ${item.primaryColor || "grey"} trousers.`,
-            recommendedColors: ["white", "light blue"]
-          },
-          {
-            category: "shoes",
-            categoryLabel: "Footwear",
-            icon: "👟",
-            searchTerm: "men minimalist white leather low top sneakers (Puma OR Comet OR Zara)",
-            stylingReason: `Clean low-profile white sneakers modernize the trousers for contemporary smart-office versatility.`,
-            recommendedColors: ["white"]
-          },
-          {
-            category: "layering",
-            categoryLabel: "Jackets & Layers",
-            icon: "🧥",
-            searchTerm: "men navy blue slim fit formal blazer (Van Heusen OR Raymond OR Zara)",
-            stylingReason: `A tailored navy blazer creates the definitive menswear grey-and-navy power pairing.`,
-            recommendedColors: ["navy", "charcoal"]
-          },
-          {
-            category: "accessories",
-            categoryLabel: "Accessories",
-            icon: "⌚",
-            searchTerm: "men black leather analog minimalist watch (Titan OR Fossil)",
-            stylingReason: `An understated analog dial maintains sleek executive polish.`,
-            recommendedColors: ["black", "silver"]
-          }
+          { category: "tops", categoryLabel: "Tops & Shirts", icon: "👕", searchTerm: topPick.term, stylingReason: topPick.reason, recommendedColors: topPick.colors },
+          { category: "shoes", categoryLabel: "Footwear", icon: "👟", searchTerm: shoePick.term, stylingReason: shoePick.reason, recommendedColors: shoePick.colors },
+          { category: "layering", categoryLabel: "Jackets & Layers", icon: "🧥", searchTerm: layerPick.term, stylingReason: layerPick.reason, recommendedColors: layerPick.colors },
+          { category: "accessories", categoryLabel: "Accessories", icon: "⌚", searchTerm: accPick.term, stylingReason: accPick.reason, recommendedColors: accPick.colors }
         ];
       } else if (style === "rugged") {
-        // e.g. Blue Denim Jeans
         outfitTitle = "Classic Americana Rugged Look";
-        overallStylingAdvice = `Denim calls for textured, durable layers. A checked flannel overshirt and leather chelsea boots deliver effortless, masculine character.`;
+        overallStylingAdvice = "Denim calls for textured, durable layers. A checked flannel overshirt and leather chelsea boots deliver effortless, masculine character.";
         styleArchetype = "Rugged Americana";
         colorHarmony = "Earthy Textured Contrast";
         silhouetteBalance = "Durable Structured Layering";
+
+        let topOptions = [];
+        if (anchorColor.includes("blue") || anchorColor.includes("denim")) {
+          topOptions = [
+            { term: "men red black checked cotton flannel casual shirt (Roadster OR Wrangler)", colors: ["red", "black", "navy"], reason: "A checked flannel shirt adds visual texture and rugged warmth against denim." },
+            { term: "men navy blue and white checked cotton flannel shirt (Wrangler OR Levi's OR Roadster)", colors: ["navy", "white"], reason: "Navy-white check creates tonal texture with rugged durability." }
+          ];
+        } else if (anchorColor.includes("black")) {
+          topOptions = [
+            { term: "men grey and black checked cotton flannel casual shirt (Roadster OR Wrangler)", colors: ["grey", "black"], reason: "Monochrome flannel checks add rugged visual depth over dark denim." },
+            { term: "men white and red checked cotton flannel casual shirt (Wrangler OR Levi's)", colors: ["red", "white"], reason: "Warm red flannel check pops cleanly against black jeans." }
+          ];
+        } else {
+          topOptions = [
+            { term: "men red black checked cotton flannel casual shirt (Roadster OR Wrangler)", colors: ["red", "black"], reason: "A checked flannel shirt adds visual texture and rugged warmth." },
+            { term: "men green navy checked cotton flannel casual shirt (Wrangler OR Roadster)", colors: ["green", "navy"], reason: "Forest green and navy flannel complements rugged earth tones." }
+          ];
+        }
+        const topPick = topOptions[seed % topOptions.length];
+
+        const shoeOptions = [
+          { term: "men dark brown leather chelsea ankle boots (Woodland OR Red Tape)", colors: ["brown", "tan"], reason: "Sturdy leather chelsea boots seamlessly ground the jeans for all-day versatility." },
+          { term: "men tan nubuck leather lace-up casual boots (Woodland OR Red Tape)", colors: ["tan"], reason: "Tan nubuck boots bring authentic outdoor character to the hemline." }
+        ];
+        const shoePick = shoeOptions[seed % shoeOptions.length];
+
+        const layerOptions = [
+          { term: "men navy blue casual cotton overshirt jacket (Mast & Harbour OR H&M)", colors: ["navy", "olive"], reason: "A solid cotton overshirt provides an easy neutral contrast over the flannel." },
+          { term: "men olive green casual utility field jacket (Marks & Spencer OR Snitch)", colors: ["olive"], reason: "Field jacket introduces military utility over durable denim." }
+        ];
+        const layerPick = layerOptions[seed % layerOptions.length];
+
+        const accOptions = [
+          { term: "men tan brown braided genuine leather belt (Tommy Hilfiger OR Woodland)", colors: ["tan", "brown"], reason: "Rich tan leather hardware ties together the boots and waistband." },
+          { term: "men dark brown full grain leather belt (Woodland OR Levi's)", colors: ["brown"], reason: "Heavyweight full grain leather ensures durable everyday functionality." }
+        ];
+        const accPick = accOptions[seed % accOptions.length];
+
         pieces = [
-          {
-            category: "tops",
-            categoryLabel: "Tops & Shirts",
-            icon: "👕",
-            searchTerm: "men red black checked cotton flannel casual shirt (Roadster OR Wrangler)",
-            stylingReason: `A checked flannel shirt adds visual texture and rugged warmth against denim.`,
-            recommendedColors: ["red", "black", "navy"]
-          },
-          {
-            category: "shoes",
-            categoryLabel: "Footwear",
-            icon: "🥾",
-            searchTerm: "men dark brown leather chelsea ankle boots (Woodland OR Red Tape)",
-            stylingReason: `Sturdy leather chelsea boots seamlessly ground the jeans for all-day versatility.`,
-            recommendedColors: ["brown", "tan"]
-          },
-          {
-            category: "layering",
-            categoryLabel: "Jackets & Layers",
-            icon: "🧥",
-            searchTerm: "men navy blue casual cotton overshirt jacket (Mast & Harbour OR H&M)",
-            stylingReason: `A solid cotton overshirt provides an easy neutral contrast over the flannel.`,
-            recommendedColors: ["navy", "olive"]
-          },
-          {
-            category: "accessories",
-            categoryLabel: "Accessories",
-            icon: "⌚",
-            searchTerm: "men tan brown braided genuine leather belt (Tommy Hilfiger OR Woodland)",
-            stylingReason: `Rich tan leather hardware ties together the boots and waistband.`,
-            recommendedColors: ["tan", "brown"]
-          }
+          { category: "tops", categoryLabel: "Tops & Shirts", icon: "👕", searchTerm: topPick.term, stylingReason: topPick.reason, recommendedColors: topPick.colors },
+          { category: "shoes", categoryLabel: "Footwear", icon: "🥾", searchTerm: shoePick.term, stylingReason: shoePick.reason, recommendedColors: shoePick.colors },
+          { category: "layering", categoryLabel: "Jackets & Layers", icon: "🧥", searchTerm: layerPick.term, stylingReason: layerPick.reason, recommendedColors: layerPick.colors },
+          { category: "accessories", categoryLabel: "Accessories", icon: "⌚", searchTerm: accPick.term, stylingReason: accPick.reason, recommendedColors: accPick.colors }
         ];
       } else {
-        // Smart Casual default, e.g. Light Blue Chinos / Khakis
+        // Smart Casual default
         outfitTitle = "Refined Smart-Casual Look";
-        overallStylingAdvice = `Your ${item.primaryColor || "chino"} trousers provide a relaxed, versatile canvas. Pairing with a rich navy knitted polo and tan loafers creates an effortlessly sophisticated color block.`;
+        overallStylingAdvice = `Your ${item.primaryColor || "chino"} trousers provide a relaxed, versatile canvas. Pairing with a knitted polo and casual loafers creates an effortlessly sophisticated color block.`;
         styleArchetype = "Smart Casual";
-        colorHarmony = "Complementary Contrast (Navy & Tan)";
+        colorHarmony = "Complementary Tonal Balance";
         silhouetteBalance = "Refined Tapered Silhouette";
+
+        let topOptions = [];
+        if (anchorColor.includes("navy") || anchorColor.includes("blue")) {
+          topOptions = [
+            { term: "men off white solid knitted cotton polo t-shirt (Rare Rabbit OR Highlander OR Marks & Spencer)", colors: ["off white", "cream"], reason: "An off-white knitted polo creates high-contrast, polished sophistication against navy trousers." },
+            { term: "men camel tan textured knitted cotton polo t-shirt (Highlander OR Rare Rabbit OR Zara)", colors: ["camel", "tan"], reason: "Camel tan warms up navy bottoms with Italian smart-casual flair." },
+            { term: "men sage green knitted cotton polo t-shirt (Rare Rabbit OR Marks & Spencer)", colors: ["sage", "olive"], reason: "Muted sage green offers contemporary earthy contrast with navy." }
+          ];
+        } else if (anchorColor.includes("beige") || anchorColor.includes("khaki") || anchorColor.includes("tan")) {
+          topOptions = [
+            { term: "men navy blue solid knitted cotton polo t-shirt (Highlander OR Rare Rabbit OR H&M)", colors: ["navy", "white"], reason: `A deep navy knitted polo creates high-contrast, polished sophistication against ${item.primaryColor || "light"} chinos.` },
+            { term: "men forest green solid knitted cotton polo t-shirt (Rare Rabbit OR Highlander OR H&M)", colors: ["green", "olive"], reason: "Deep forest green provides an earthy, distinguished polo contrast." },
+            { term: "men rich black knitted cotton polo t-shirt (Highlander OR Snitch OR Zara)", colors: ["black"], reason: "Crisp black knits bring modern minimalist edge to neutral chinos." }
+          ];
+        } else if (anchorColor.includes("olive") || anchorColor.includes("green")) {
+          topOptions = [
+            { term: "men crisp white solid knitted cotton polo t-shirt (Highlander OR Rare Rabbit OR H&M)", colors: ["white"], reason: "Pure white offers crisp, bright contrast that makes olive trousers stand out." },
+            { term: "men rich black textured knitted cotton polo t-shirt (Rare Rabbit OR Zara OR H&M)", colors: ["black"], reason: "Solid black creates a modern, sleek pairing with olive bottoms." },
+            { term: "men ecru cream knitted cotton polo t-shirt (Marks & Spencer OR Rare Rabbit)", colors: ["ecru", "cream"], reason: "Ecru knit delivers relaxed, warm European smart casual." }
+          ];
+        } else if (anchorColor.includes("black") || anchorColor.includes("charcoal")) {
+          topOptions = [
+            { term: "men crisp white solid knitted cotton polo t-shirt (Highlander OR Rare Rabbit OR H&M)", colors: ["white"], reason: "Crisp white polo is the definitive monochrome contrast against black trousers." },
+            { term: "men camel tan solid knitted cotton polo t-shirt (Rare Rabbit OR Zara OR H&M)", colors: ["camel", "tan"], reason: "Camel tan introduces sophisticated warmth over dark trousers." }
+          ];
+        } else {
+          topOptions = [
+            { term: "men navy blue solid knitted cotton polo t-shirt (Highlander OR Rare Rabbit OR H&M)", colors: ["navy", "white"], reason: "A deep navy knitted polo creates versatile smart-casual balance." },
+            { term: "men crisp white solid knitted cotton polo t-shirt (Rare Rabbit OR Marks & Spencer)", colors: ["white"], reason: "A crisp white polo keeps the look clean and intentional." }
+          ];
+        }
+        const topPick = topOptions[seed % topOptions.length];
+
+        const shoeOptions = [
+          { term: "men classic tan brown leather casual loafers (Red Tape OR Hush Puppies)", colors: ["tan", "brown"], reason: "Warm tan leather loafers elevate the chinos for an Italian smart-casual aesthetic." },
+          { term: "men minimalist clean white leather sneakers (Puma OR Comet)", colors: ["white"], reason: "Clean leather low tops keep the look modern, relaxed, and office-ready." },
+          { term: "men dark brown suede penny loafers (Red Tape OR Hush Puppies)", colors: ["brown"], reason: "Soft suede texture adds refined luxury beneath the hem." }
+        ];
+        const shoePick = shoeOptions[seed % shoeOptions.length];
+
+        const layerOptions = [
+          { term: "men navy blue casual cotton overshirt jacket (Mast & Harbour OR H&M)", colors: ["navy", "beige"], reason: "A neutral overshirt balances the look with relaxed, structured depth." },
+          { term: "men beige relaxed cotton chore overshirt (Marks & Spencer OR Zara)", colors: ["beige"], reason: "Beige cotton adds warm neutral dimension over the polo." }
+        ];
+        const layerPick = layerOptions[seed % layerOptions.length];
+
+        const accOptions = [
+          { term: "men tan brown braided genuine leather belt (Tommy Hilfiger OR H&M)", colors: ["tan", "brown"], reason: "Braided leather coordinates with the loafers to cleanly frame the waistband." },
+          { term: "men black leather analog minimalist watch (Titan OR Fossil)", colors: ["black", "silver"], reason: "Understated analog dial adds refined polish without distraction." }
+        ];
+        const accPick = accOptions[seed % accOptions.length];
+
         pieces = [
-          {
-            category: "tops",
-            categoryLabel: "Tops & Shirts",
-            icon: "👕",
-            searchTerm: "men navy blue solid knitted cotton polo t-shirt (Highlander OR Rare Rabbit OR H&M)",
-            stylingReason: `A deep navy knitted polo creates high-contrast, polished sophistication against ${item.primaryColor || "light"} chinos.`,
-            recommendedColors: ["navy", "white"]
-          },
-          {
-            category: "shoes",
-            categoryLabel: "Footwear",
-            icon: "👟",
-            searchTerm: "men classic tan brown leather casual loafers (Red Tape OR Hush Puppies)",
-            stylingReason: `Warm tan leather loafers elevate the chinos for an Italian smart-casual aesthetic.`,
-            recommendedColors: ["tan", "brown"]
-          },
-          {
-            category: "layering",
-            categoryLabel: "Jackets & Layers",
-            icon: "🧥",
-            searchTerm: "men mast harbour navy blue casual cotton overshirt jacket",
-            stylingReason: `A neutral overshirt balances the look with relaxed, structured depth.`,
-            recommendedColors: ["navy", "beige"]
-          },
-          {
-            category: "accessories",
-            categoryLabel: "Accessories",
-            icon: "⌚",
-            searchTerm: "men tan brown braided genuine leather belt (Tommy Hilfiger OR H&M)",
-            stylingReason: `Braided leather coordinates with the loafers to cleanly frame the waistband.`,
-            recommendedColors: ["tan", "brown"]
-          }
+          { category: "tops", categoryLabel: "Tops & Shirts", icon: "👕", searchTerm: topPick.term, stylingReason: topPick.reason, recommendedColors: topPick.colors },
+          { category: "shoes", categoryLabel: "Footwear", icon: "👟", searchTerm: shoePick.term, stylingReason: shoePick.reason, recommendedColors: shoePick.colors },
+          { category: "layering", categoryLabel: "Jackets & Layers", icon: "🧥", searchTerm: layerPick.term, stylingReason: layerPick.reason, recommendedColors: layerPick.colors },
+          { category: "accessories", categoryLabel: "Accessories", icon: "⌚", searchTerm: accPick.term, stylingReason: accPick.reason, recommendedColors: accPick.colors }
         ];
       }
     } else {
       // Women Bottoms
       if (style === "streetwear" || style === "casual") {
         outfitTitle = "Modern Athleisure Street Look";
-        overallStylingAdvice = `Relaxed bottoms pair best with a cropped fitted top and chunky sneakers for an active, effortless urban silhouette.`;
+        overallStylingAdvice = "Relaxed bottoms pair best with a cropped fitted top and chunky sneakers for an active, effortless urban silhouette.";
         styleArchetype = "Modern Athleisure";
         colorHarmony = "Sporty Clean Neutrals";
         silhouetteBalance = "Cropped Waist with Relaxed Hem";
+
+        const topOptions = [
+          { term: "women white oversized graphic drop shoulder crop tee (Bonkers Corner OR H&M)", colors: ["white"], reason: "A boxy cropped graphic tee highlights the waistline while complementing the casual trouser cut." },
+          { term: "women black boxy graphic streetwear crop t-shirt (Bonkers Corner OR Zara)", colors: ["black"], reason: "Black crop tee provides clean, modern contrast." },
+          { term: "women sage green ribbed scoop neck crop top (H&M OR Vero Moda)", colors: ["sage"], reason: "Soft sage green adds a fresh, muted natural pop." }
+        ];
+        const topPick = topOptions[seed % topOptions.length];
+
         pieces = [
-          {
-            category: "tops",
-            categoryLabel: "Tops & Shirts",
-            icon: "👚",
-            searchTerm: "women white oversized graphic drop shoulder crop tee (Bonkers Corner OR H&M)",
-            stylingReason: `A boxy cropped graphic tee highlights the waistline while complementing the casual trouser cut.`,
-            recommendedColors: ["white", "black"]
-          },
-          {
-            category: "shoes",
-            categoryLabel: "Footwear",
-            icon: "👟",
-            searchTerm: "women bata white chunky casual sneakers",
-            stylingReason: `Chunky white sneakers add sporty height and contemporary street appeal.`,
-            recommendedColors: ["white"]
-          },
-          {
-            category: "layering",
-            categoryLabel: "Jackets & Layers",
-            icon: "🧥",
-            searchTerm: "women light blue cropped washed denim jacket (Vero Moda OR Levi's)",
-            stylingReason: `A cropped denim jacket keeps the silhouette compact and modern.`,
-            recommendedColors: ["light blue"]
-          },
-          {
-            category: "accessories",
-            categoryLabel: "Accessories",
-            icon: "👜",
-            searchTerm: "women structured black faux leather laptop tote bag (Lavie OR Baggit)",
-            stylingReason: `A sleek faux-leather tote elevates casual street styling.`,
-            recommendedColors: ["black"]
-          }
+          { category: "tops", categoryLabel: "Tops & Shirts", icon: "👚", searchTerm: topPick.term, stylingReason: topPick.reason, recommendedColors: topPick.colors },
+          { category: "shoes", categoryLabel: "Footwear", icon: "👟", searchTerm: "women bata white chunky casual sneakers", stylingReason: "Chunky white sneakers add sporty height and contemporary street appeal.", recommendedColors: ["white"] },
+          { category: "layering", categoryLabel: "Jackets & Layers", icon: "🧥", searchTerm: "women light blue cropped washed denim jacket (Vero Moda OR Levi's)", stylingReason: "A cropped denim jacket keeps the silhouette compact and modern.", recommendedColors: ["light blue"] },
+          { category: "accessories", categoryLabel: "Accessories", icon: "👜", searchTerm: "women structured black faux leather laptop tote bag (Lavie OR Baggit)", stylingReason: "A sleek faux-leather tote elevates casual street styling.", recommendedColors: ["black"] }
         ];
       } else {
-        // Women Smart / Formal / Chic (e.g. Beige Wide Leg Trousers)
         outfitTitle = "Contemporary Parisian Chic Look";
-        overallStylingAdvice = `Wide-leg ${item.primaryColor || "beige"} trousers have an elegant fluid drape. Balancing them with a fitted black top and tailored blazer creates an elongated, poised silhouette.`;
+        overallStylingAdvice = `Wide-leg ${item.primaryColor || "beige"} trousers have an elegant fluid drape. Balancing them with a fitted top and tailored blazer creates an elongated, poised silhouette.`;
         styleArchetype = "Contemporary Parisian Chic";
         colorHarmony = "Monochrome Grounding (Black & Nude)";
         silhouetteBalance = "Fluid Flared Drape with Fitted Top";
+
+        const topOptions = [
+          { term: "women black sleeveless ribbed high neck knit top (Zara OR H&M)", colors: ["black", "white"], reason: "A fitted black high-neck top provides clean visual contrast and balances the voluminous trousers." },
+          { term: "women crisp white cowl neck satin blouse (Mango OR Vero Moda)", colors: ["white"], reason: "Lustrous white satin brings elegant texture and fluid elegance." },
+          { term: "women beige ribbed sweetheart neck knit top (Marks & Spencer OR Zara)", colors: ["beige"], reason: "Soft beige ribbing maintains tonal sophistication." }
+        ];
+        const topPick = topOptions[seed % topOptions.length];
+
         pieces = [
-          {
-            category: "tops",
-            categoryLabel: "Tops & Shirts",
-            icon: "👚",
-            searchTerm: "women black sleeveless ribbed high neck knit top (Zara OR H&M)",
-            stylingReason: `A fitted black high-neck top provides clean visual contrast and balances the voluminous trousers.`,
-            recommendedColors: ["black", "white"]
-          },
-          {
-            category: "shoes",
-            categoryLabel: "Footwear",
-            icon: "👠",
-            searchTerm: "women carlton london nude pointed toe block heels",
-            stylingReason: `Pointed-toe nude block heels elongate the leg line beneath wide-leg hems.`,
-            recommendedColors: ["nude", "black"]
-          },
-          {
-            category: "layering",
-            categoryLabel: "Jackets & Layers",
-            icon: "🧥",
-            searchTerm: "women marks spencer beige double breasted relaxed blazer",
-            stylingReason: `A relaxed double-breasted blazer creates a coordinated, power-dressing statement.`,
-            recommendedColors: ["beige", "black"]
-          },
-          {
-            category: "accessories",
-            categoryLabel: "Accessories",
-            icon: "✨",
-            searchTerm: "women minimalist 18k gold plated layered chain hoop earrings (AccessHer OR Zaveri)",
-            stylingReason: `Delicate gold hardware adds warm, luxurious accents near the neckline.`,
-            recommendedColors: ["gold"]
-          }
+          { category: "tops", categoryLabel: "Tops & Shirts", icon: "👚", searchTerm: topPick.term, stylingReason: topPick.reason, recommendedColors: topPick.colors },
+          { category: "shoes", categoryLabel: "Footwear", icon: "👠", searchTerm: "women carlton london nude pointed toe block heels", stylingReason: "Pointed-toe nude block heels elongate the leg line beneath wide-leg hems.", recommendedColors: ["nude", "black"] },
+          { category: "layering", categoryLabel: "Jackets & Layers", icon: "🧥", searchTerm: "women marks spencer beige double breasted relaxed blazer", stylingReason: "A relaxed double-breasted blazer creates a coordinated, power-dressing statement.", recommendedColors: ["beige", "black"] },
+          { category: "accessories", categoryLabel: "Accessories", icon: "✨", searchTerm: "women minimalist 18k gold plated layered chain hoop earrings (AccessHer OR Zaveri)", stylingReason: "Delicate gold hardware adds warm, luxurious accents near the neckline.", recommendedColors: ["gold"] }
         ];
       }
     }
@@ -1664,179 +2700,250 @@ export function getFallbackStylingPlan({ item = {}, profile = {}, targetCategory
     styleArchetype = "Refined Casual";
     colorHarmony = "Neutral Anchoring";
     silhouetteBalance = "Proportional Separates";
-    pieces = [
-      {
-        category: "bottoms",
-        categoryLabel: "Pants & Trousers",
-        icon: "👖",
-        searchTerm: gender === "men" ? "men beige slim fit stretch chino trousers (Highlander OR Zara)" : "women beige high waist wide leg straight trouser (Kotty OR Zara)",
-        stylingReason: `Straight-fit neutral trousers anchor your ${item.title || "top"} without competing for attention.`,
-        recommendedColors: ["beige", "navy", "black"]
-      },
-      {
-        category: "shoes",
-        categoryLabel: "Footwear",
-        icon: "👟",
-        searchTerm: gender === "men" ? "men minimalist white leather low top sneakers (Puma OR Comet)" : "women bata white chunky casual sneakers",
-        stylingReason: `Crisp low-profile sneakers maintain casual versatility and match the relaxed vibe.`,
-        recommendedColors: ["white"]
-      },
-      {
-        category: "layering",
-        categoryLabel: "Jackets & Layers",
-        icon: "🧥",
-        searchTerm: gender === "men" ? "men navy blue casual cotton overshirt jacket" : "women light blue cropped washed denim jacket",
-        stylingReason: `An unbuttoned lightweight layer adds dimension while keeping the top visible.`,
-        recommendedColors: ["navy", "denim"]
-      },
-      {
-        category: "accessories",
-        categoryLabel: "Accessories",
-        icon: "⌚",
-        searchTerm: gender === "men" ? "men titan black leather analog minimalist watch" : "women structured black faux leather laptop tote bag",
-        stylingReason: `Understated accessories complete the outfit with polished finesse.`,
-        recommendedColors: ["black", "tan"]
+
+    if (gender === "men") {
+      let botOptions = [];
+      if (anchorColor.includes("black") || anchorColor.includes("dark")) {
+        botOptions = [
+          { term: "men light grey slim fit stretch chino trousers (Highlander OR Zara)", colors: ["grey", "light grey"], reason: "Light grey chinos provide high-contrast separation against the dark top." },
+          { term: "men off white relaxed fit cotton chino trousers (Marks & Spencer OR Zara)", colors: ["off white", "cream"], reason: "Off-white pants create an effortless, high-contrast monochrome look." },
+          { term: "men vintage light wash relaxed denim jeans (Levi's OR Flying Machine)", colors: ["light blue", "denim"], reason: "Washed blue denim softens the black top with casual texture." }
+        ];
+      } else if (anchorColor.includes("white") || anchorColor.includes("cream") || anchorColor.includes("ecru")) {
+        botOptions = [
+          { term: "men deep navy blue slim fit stretch chino trousers (Highlander OR Zara)", colors: ["navy"], reason: "Deep navy trousers provide the classic grounding contrast for a clean white top." },
+          { term: "men dark olive utility cargo joggers (Snitch OR Bonkers Corner)", colors: ["olive"], reason: "Dark olive brings earthy street dimension beneath a crisp top." },
+          { term: "men charcoal grey tailored pleated formal trousers (Raymond OR Van Heusen)", colors: ["charcoal", "grey"], reason: "Charcoal pleats deliver sharp, elongated proportions with a white top." }
+        ];
+      } else if (anchorColor.includes("navy") || anchorColor.includes("blue")) {
+        botOptions = [
+          { term: "men beige slim fit stretch chino trousers (Highlander OR Zara)", colors: ["beige", "tan"], reason: "Beige chinos are the premier complementary partner to rich navy tops." },
+          { term: "men ecru off white relaxed cotton chino trousers (Marks & Spencer OR H&M)", colors: ["ecru", "white"], reason: "Ecru pants create Riviera-inspired elegance with navy." },
+          { term: "men light grey textured casual chinos (Snitch OR Rare Rabbit)", colors: ["grey"], reason: "Cool light grey balances navy with modern corporate polish." }
+        ];
+      } else if (anchorColor.includes("olive") || anchorColor.includes("green")) {
+        botOptions = [
+          { term: "men black slim fit stretch cargo pants (Bonkers Corner OR Snitch)", colors: ["black"], reason: "Black cargo pants ground the olive top with authentic utility character." },
+          { term: "men dark indigo raw denim jeans (Levi's OR Flying Machine)", colors: ["indigo", "dark blue"], reason: "Raw dark indigo denim pairs naturally with olive tones." },
+          { term: "men beige cotton chino trousers (Highlander OR Rare Rabbit)", colors: ["beige"], reason: "Warm beige chinos create an earthy safari aesthetic with olive." }
+        ];
+      } else {
+        botOptions = [
+          { term: "men beige slim fit stretch chino trousers (Highlander OR Zara)", colors: ["beige", "navy", "black"], reason: `Straight-fit neutral trousers anchor your ${item.title || "top"} without competing for attention.` },
+          { term: "men deep navy blue slim fit stretch chino trousers (Highlander OR Zara)", colors: ["navy"], reason: "Deep navy chinos provide balanced anchoring for your top." }
+        ];
       }
-    ];
+      const botPick = botOptions[seed % botOptions.length];
+
+      const shoeOptions = [
+        { term: "men minimalist white leather low top sneakers (Puma OR Comet)", colors: ["white"], reason: "Crisp low-profile sneakers maintain casual versatility and match the relaxed vibe." },
+        { term: "men classic tan brown leather casual loafers (Red Tape OR Hush Puppies)", colors: ["tan", "brown"], reason: "Tan loafers bring refined smart-casual character beneath the hem." }
+      ];
+      const shoePick = shoeOptions[seed % shoeOptions.length];
+
+      const layerOptions = [
+        { term: "men navy blue casual cotton overshirt jacket (Mast & Harbour OR H&M)", colors: ["navy", "denim"], reason: "An unbuttoned lightweight layer adds dimension while keeping the top visible." },
+        { term: "men olive green casual utility overshirt jacket (Snitch OR Zara)", colors: ["olive"], reason: "Olive overshirt introduces contemporary texture." }
+      ];
+      const layerPick = layerOptions[seed % layerOptions.length];
+
+      pieces = [
+        { category: "bottoms", categoryLabel: "Pants & Trousers", icon: "👖", searchTerm: botPick.term, stylingReason: botPick.reason, recommendedColors: botPick.colors },
+        { category: "shoes", categoryLabel: "Footwear", icon: "👟", searchTerm: shoePick.term, stylingReason: shoePick.reason, recommendedColors: shoePick.colors },
+        { category: "layering", categoryLabel: "Jackets & Layers", icon: "🧥", searchTerm: layerPick.term, stylingReason: layerPick.reason, recommendedColors: layerPick.colors },
+        { category: "accessories", categoryLabel: "Accessories", icon: "⌚", searchTerm: "men titan black leather analog minimalist watch", stylingReason: "Understated accessories complete the outfit with polished finesse.", recommendedColors: ["black", "tan"] }
+      ];
+    } else {
+      // Women Top
+      const botOptions = [
+        { term: "women beige high waist wide leg straight trouser (Kotty OR Zara)", colors: ["beige"], reason: "High-waist wide-leg beige trousers create an elongated, poised line." },
+        { term: "women black high waist wide leg straight trouser (Kotty OR Zara)", colors: ["black"], reason: "Crisp black trousers provide sharp neutral framing." }
+      ];
+      const botPick = botOptions[seed % botOptions.length];
+
+      pieces = [
+        { category: "bottoms", categoryLabel: "Pants & Trousers", icon: "👖", searchTerm: botPick.term, stylingReason: botPick.reason, recommendedColors: botPick.colors },
+        { category: "shoes", categoryLabel: "Footwear", icon: "👟", searchTerm: "women bata white chunky casual sneakers", stylingReason: "Crisp white sneakers keep the outfit active and approachable.", recommendedColors: ["white"] },
+        { category: "layering", categoryLabel: "Jackets & Layers", icon: "🧥", searchTerm: "women light blue cropped washed denim jacket", stylingReason: "Cropped denim jacket adds casual structure without overwhelming.", recommendedColors: ["light blue"] },
+        { category: "accessories", categoryLabel: "Accessories", icon: "👜", searchTerm: "women structured black faux leather laptop tote bag", stylingReason: "Structured tote delivers sleek everyday polish.", recommendedColors: ["black"] }
+      ];
+    }
   } else if (isDress) {
-    // Anchor is a DRESS
     outfitTitle = "Elevated Occasion Ensemble";
-    overallStylingAdvice = `Your dress creates the single silhouette. Complementing it with delicate strappy heels, structured layering, and metallic accents completes a stunning look.`;
+    overallStylingAdvice = "Your dress creates the single silhouette. Complementing it with delicate strappy heels, structured layering, and metallic accents completes a stunning look.";
     styleArchetype = "Evening Occasion";
     colorHarmony = "Metallic Accents on Neutral Base";
     silhouetteBalance = "Elongated Single-Piece Line";
     pieces = [
-      {
-        category: "shoes",
-        categoryLabel: "Footwear",
-        icon: "👠",
-        searchTerm: "women carlton london nude pointed toe block heels",
-        stylingReason: `Nude block heels flatter the dress hemline and provide comfortable height.`,
-        recommendedColors: ["nude", "gold", "black"]
-      },
-      {
-        category: "layering",
-        categoryLabel: "Jackets & Shrugs",
-        icon: "🧥",
-        searchTerm: "women marks spencer beige double breasted relaxed blazer",
-        stylingReason: `A tailored blazer draped over the shoulders adds evening polish and warmth.`,
-        recommendedColors: ["beige", "black"]
-      },
-      {
-        category: "accessories",
-        categoryLabel: "Handbags & Clutches",
-        icon: "👛",
-        searchTerm: "women structured black faux leather laptop tote bag",
-        stylingReason: `A structured clutch or mini tote organizes essentials while complementing the formal drape.`,
-        recommendedColors: ["black", "metallic"]
-      },
-      {
-        category: "jewelry",
-        categoryLabel: "Jewelry",
-        icon: "✨",
-        searchTerm: "women minimalist 18k gold plated layered chain hoop earrings",
-        stylingReason: `Minimalist gold hoops frame the face and illuminate the neckline.`,
-        recommendedColors: ["gold"]
-      }
+      { category: "shoes", categoryLabel: "Footwear", icon: "👠", searchTerm: "women carlton london nude pointed toe block heels", stylingReason: "Nude block heels flatter the dress hemline and provide comfortable height.", recommendedColors: ["nude", "gold", "black"] },
+      { category: "layering", categoryLabel: "Jackets & Shrugs", icon: "🧥", searchTerm: "women marks spencer beige double breasted relaxed blazer", stylingReason: "A tailored blazer draped over the shoulders adds evening polish and warmth.", recommendedColors: ["beige", "black"] },
+      { category: "accessories", categoryLabel: "Handbags & Clutches", icon: "👛", searchTerm: "women structured black faux leather laptop tote bag", stylingReason: "A structured clutch or mini tote organizes essentials while complementing the formal drape.", recommendedColors: ["black", "metallic"] },
+      { category: "jewelry", categoryLabel: "Jewelry", icon: "✨", searchTerm: "women minimalist 18k gold plated layered chain hoop earrings", stylingReason: "Minimalist gold hoops frame the face and illuminate the neckline.", recommendedColors: ["gold"] }
     ];
   } else if (isShoes) {
-    // Anchor is SHOES
-    outfitTitle = "Head-to-Toe Footwear Coordinates";
-    overallStylingAdvice = `Building from the ground up, tailored trousers and a contrasting top ensure your footwear takes its rightful place in the look.`;
-    styleArchetype = "Footwear-Anchored Style";
-    colorHarmony = "Tonal Contrast";
-    silhouetteBalance = "Clean Break Tailored Hem";
-    pieces = [
-      {
-        category: "bottoms",
-        categoryLabel: "Pants & Trousers",
-        icon: "👖",
-        searchTerm: gender === "men" ? "men peter england charcoal grey slim fit formal trousers" : "women beige high waist wide leg straight trouser",
-        stylingReason: `Clean hemmed trousers showcase the silhouette of your shoes without bunching.`,
-        recommendedColors: ["grey", "beige", "black"]
-      },
-      {
-        category: "tops",
-        categoryLabel: "Tops & Shirts",
-        icon: "👕",
-        searchTerm: gender === "men" ? "men white slim fit oxford cotton shirt" : "women white regular fit solid formal shirt",
-        stylingReason: `A crisp white shirt provides timeless balance across the entire silhouette.`,
-        recommendedColors: ["white"]
-      },
-      {
-        category: "layering",
-        categoryLabel: "Jackets & Layers",
-        icon: "🧥",
-        searchTerm: gender === "men" ? "men navy blue slim fit formal blazer" : "women marks spencer beige double breasted relaxed blazer",
-        stylingReason: `A structured blazer ties the shoes and top into a unified outfit.`,
-        recommendedColors: ["navy", "beige"]
-      },
-      {
-        category: "accessories",
-        categoryLabel: "Accessories",
-        icon: "⌚",
-        searchTerm: gender === "men" ? "men titan black leather analog minimalist watch" : "women structured black faux leather laptop tote bag",
-        stylingReason: `Hardware color-matched to the footwear finishes the look cleanly.`,
-        recommendedColors: ["black", "tan"]
+    const isSneaker = /sneaker|skate|court|runner|trainer|running|casual|low top|chunky/i.test(text);
+    const isBoot = /boot|chelsea|hiking|workwear/i.test(text);
+
+    if (gender === "men") {
+      if (isSneaker) {
+        outfitTitle = "Clean Contemporary Street Coordinates";
+        overallStylingAdvice = `Starting from your ${item.title || "sneakers"}, relaxed proportions and clean modern separates provide effortless street-ready balance.`;
+        styleArchetype = "Contemporary Street Casual";
+        colorHarmony = "Earthy Grounded Neutrals";
+        silhouetteBalance = "Volume-Balanced Street Proportion";
+
+        const botOptions = [
+          { term: "men beige slim fit stretch chino trousers (Highlander OR Zara)", colors: ["beige", "tan"], reason: "Beige chinos dress up casual sneakers with a sharp smart-casual edge." },
+          { term: "men black relaxed utility cargo pants (Snitch OR Bonkers Corner)", colors: ["black"], reason: "Black utility cargos bring street-style volume to frame the footwear." },
+          { term: "men light blue relaxed tapered denim jeans (Levi's OR Flying Machine)", colors: ["light blue"], reason: "Light wash relaxed denim complements low-profile sneakers effortlessly." }
+        ];
+        const botPick = botOptions[seed % botOptions.length];
+
+        const topOptions = [
+          { term: "men white oversized graphic cotton streetwear t-shirt (Snitch OR Puma)", colors: ["white"], reason: "A crisp graphic tee echoes the clean sporty vibe of the sneakers." },
+          { term: "men ecru off white boxy heavyweight cotton t-shirt (Snitch OR Zara)", colors: ["ecru", "white"], reason: "Ecru heavyweight cotton creates modern, understated neutral harmony." },
+          { term: "men navy blue solid knitted cotton polo t-shirt (Highlander OR Rare Rabbit)", colors: ["navy"], reason: "Knitted navy polo adds refined texture above the casual footwear." }
+        ];
+        const topPick = topOptions[seed % topOptions.length];
+
+        const layerOptions = [
+          { term: "men navy blue casual cotton overshirt jacket (Mast & Harbour OR H&M)", colors: ["navy", "denim"], reason: "A lightweight overshirt adds effortless layering over the tee." },
+          { term: "men olive green casual utility field jacket (Snitch OR Zara)", colors: ["olive"], reason: "Utility field jacket introduces rugged outdoor character." },
+          { term: "men beige relaxed fit cotton chore overshirt (Zara OR Marks & Spencer)", colors: ["beige"], reason: "Beige chore overshirt provides refined casual structure." }
+        ];
+        const layerPick = layerOptions[seed % layerOptions.length];
+
+        const accOptions = [
+          { term: "men matte black digital tactical sports watch (Casio OR Fastrack)", colors: ["black"], reason: "Sporty matte tactical hardware pairs naturally with athletic footwear." },
+          { term: "men tan brown braided genuine leather belt (Tommy Hilfiger OR H&M)", colors: ["tan", "brown"], reason: "Braided leather provides a refined, textured transition at the waist." }
+        ];
+        const accPick = accOptions[seed % accOptions.length];
+
+        pieces = [
+          { category: "bottoms", categoryLabel: "Pants & Trousers", icon: "👖", searchTerm: botPick.term, stylingReason: botPick.reason, recommendedColors: botPick.colors },
+          { category: "tops", categoryLabel: "Tops & Shirts", icon: "👕", searchTerm: topPick.term, stylingReason: topPick.reason, recommendedColors: topPick.colors },
+          { category: "layering", categoryLabel: "Jackets & Layers", icon: "🧥", searchTerm: layerPick.term, stylingReason: layerPick.reason, recommendedColors: layerPick.colors },
+          { category: "accessories", categoryLabel: "Accessories", icon: "⌚", searchTerm: accPick.term, stylingReason: accPick.reason, recommendedColors: accPick.colors }
+        ];
+      } else if (isBoot) {
+        outfitTitle = "Rugged Heritage Coordinated Look";
+        overallStylingAdvice = "Sturdy boots anchor the outfit with rugged weight. Pairing with durable denim, a flannel shirt, and structured utility layering completes the masculine look.";
+        styleArchetype = "Rugged Americana";
+        colorHarmony = "Earthy Textured Palette";
+        silhouetteBalance = "Grounded Structured Hem";
+
+        const botPick = { term: "men dark indigo raw denim jeans (Levi's OR Flying Machine)", colors: ["indigo", "dark blue"], reason: "Heavyweight dark denim stacks naturally over sturdy boot collars." };
+        const topPick = { term: "men red black checked cotton flannel casual shirt (Roadster OR Wrangler)", colors: ["red", "black"], reason: "Flannel check brings timeless workwear texture above the boots." };
+        const layerPick = { term: "men olive green casual utility field jacket (Snitch OR Marks & Spencer)", colors: ["olive"], reason: "A military utility field jacket complements the durable footwear." };
+        const accPick = { term: "men dark brown full grain leather belt (Woodland OR Levi's)", colors: ["brown"], reason: "Full grain leather hardware matches the rugged boot finish." };
+
+        pieces = [
+          { category: "bottoms", categoryLabel: "Pants & Trousers", icon: "👖", searchTerm: botPick.term, stylingReason: botPick.reason, recommendedColors: botPick.colors },
+          { category: "tops", categoryLabel: "Tops & Shirts", icon: "👕", searchTerm: topPick.term, stylingReason: topPick.reason, recommendedColors: topPick.colors },
+          { category: "layering", categoryLabel: "Jackets & Layers", icon: "🧥", searchTerm: layerPick.term, stylingReason: layerPick.reason, recommendedColors: layerPick.colors },
+          { category: "accessories", categoryLabel: "Accessories", icon: "⌚", searchTerm: accPick.term, stylingReason: accPick.reason, recommendedColors: accPick.colors }
+        ];
+      } else {
+        // Loafers / Formal / Dress Shoes
+        outfitTitle = "Refined Sartorial Footwear Coordinates";
+        overallStylingAdvice = "Dress shoes demand tailored hemlines and crisp collar lines. Tailored trousers with no break allow the footwear silhouette to shine.";
+        styleArchetype = "Sartorial Smart Casual";
+        colorHarmony = "Classic Executive Contrast";
+        silhouetteBalance = "Clean No-Break Tailored Line";
+
+        const botOptions = [
+          { term: "men peter england charcoal grey slim fit formal trousers (Peter England OR Raymond)", colors: ["charcoal", "grey"], reason: "Tailored charcoal trousers showcase the shoe silhouette with immaculate drape." },
+          { term: "men beige slim fit stretch chino trousers (Highlander OR Zara)", colors: ["beige", "tan"], reason: "Beige chinos bring European smart-casual flair alongside dress loafers." }
+        ];
+        const botPick = botOptions[seed % botOptions.length];
+
+        const topOptions = [
+          { term: "men white slim fit oxford cotton shirt (Dennis Lingo OR Marks & Spencer)", colors: ["white"], reason: "A crisp white button-down provides timeless sartorial elegance." },
+          { term: "men navy blue solid knitted cotton polo t-shirt (Highlander OR Rare Rabbit)", colors: ["navy"], reason: "A knitted polo softens formal shoes into elevated business casual." }
+        ];
+        const topPick = topOptions[seed % topOptions.length];
+
+        const layerPick = { term: "men navy blue slim fit structured formal blazer (Van Heusen OR Raymond)", colors: ["navy"], reason: "A tailored navy blazer elevates the look into authoritative smart-office elegance." };
+        const accPick = { term: "men titan black leather analog minimalist watch (Titan OR Fossil)", colors: ["black"], reason: "A clean analog dial mirrors the refined craftsmanship of the footwear." };
+
+        pieces = [
+          { category: "bottoms", categoryLabel: "Pants & Trousers", icon: "👖", searchTerm: botPick.term, stylingReason: botPick.reason, recommendedColors: botPick.colors },
+          { category: "tops", categoryLabel: "Tops & Shirts", icon: "👕", searchTerm: topPick.term, stylingReason: topPick.reason, recommendedColors: topPick.colors },
+          { category: "layering", categoryLabel: "Jackets & Layers", icon: "🧥", searchTerm: layerPick.term, stylingReason: layerPick.reason, recommendedColors: layerPick.colors },
+          { category: "accessories", categoryLabel: "Accessories", icon: "⌚", searchTerm: accPick.term, stylingReason: accPick.reason, recommendedColors: accPick.colors }
+        ];
       }
-    ];
+    } else {
+      // Women Shoes
+      if (isSneaker) {
+        outfitTitle = "Sporty Chic Daily Coordinates";
+        overallStylingAdvice = "Clean sneakers call for easy, flowing bottom silhouettes and structured casual layers.";
+        styleArchetype = "Sporty Chic";
+        colorHarmony = "Crisp Fresh Neutrals";
+        silhouetteBalance = "Fluid Leg with Cropped Upper";
+
+        pieces = [
+          { category: "bottoms", categoryLabel: "Pants & Trousers", icon: "👖", searchTerm: "women beige high waist wide leg straight trouser (Kotty OR Zara)", stylingReason: "Wide-leg trousers pooling slightly over chunky sneakers creates a contemporary street proportion.", recommendedColors: ["beige", "white"] },
+          { category: "tops", categoryLabel: "Tops & Shirts", icon: "👚", searchTerm: "women white oversized graphic drop shoulder crop tee (Bonkers Corner OR H&M)", stylingReason: "A cropped tee balances the high waistband and sneaker volume.", recommendedColors: ["white"] },
+          { category: "layering", categoryLabel: "Jackets & Layers", icon: "🧥", searchTerm: "women light blue cropped washed denim jacket (Vero Moda OR Levi's)", stylingReason: "A denim jacket delivers effortless casual layering.", recommendedColors: ["light blue"] },
+          { category: "accessories", categoryLabel: "Accessories", icon: "👜", searchTerm: "women structured black faux leather laptop tote bag (Lavie OR Baggit)", stylingReason: "A sleek tote elevates the sporty aesthetic for city errands.", recommendedColors: ["black"] }
+        ];
+      } else {
+        // Heels / Loafers / Flats
+        outfitTitle = "Polished Feminine Footwear Coordinates";
+        overallStylingAdvice = "Elegant heels or loafers elevate tailored separates with poised sophistication.";
+        styleArchetype = "Contemporary Feminine";
+        colorHarmony = "Refined Tonal Palette";
+        silhouetteBalance = "Elongated Drape";
+
+        pieces = [
+          { category: "bottoms", categoryLabel: "Pants & Trousers", icon: "👖", searchTerm: "women black high rise flared stretch trousers (Kotty OR Zara)", stylingReason: "Flared trousers break gracefully over heels to elongate the silhouette.", recommendedColors: ["black"] },
+          { category: "tops", categoryLabel: "Tops & Shirts", icon: "👚", searchTerm: "women white regular fit solid formal shirt (Tokyo Talkies OR Zara)", stylingReason: "A crisp formal shirt anchors the sophisticated footwear.", recommendedColors: ["white"] },
+          { category: "layering", categoryLabel: "Jackets & Layers", icon: "🧥", searchTerm: "women marks spencer beige double breasted relaxed blazer", stylingReason: "A structured blazer ties the tailored outfit together.", recommendedColors: ["beige"] },
+          { category: "accessories", categoryLabel: "Accessories", icon: "✨", searchTerm: "women minimalist 18k gold plated layered chain hoop earrings (AccessHer OR Zaveri)", stylingReason: "Warm metallic accents match the formal tone of the footwear.", recommendedColors: ["gold"] }
+        ];
+      }
+    }
   } else {
-    // General fallback
     outfitTitle = "Smart-Casual Coordinated Look";
     overallStylingAdvice = "A versatile, balanced pairing designed to coordinate effortlessly with your wardrobe item.";
     styleArchetype = "Smart Casual";
     colorHarmony = "Harmonious Complementary Contrast";
     silhouetteBalance = "Volume-Balanced Proportion";
     pieces = [
-      {
-        category: "tops",
-        categoryLabel: "Tops & Shirts",
-        icon: "👕",
-        searchTerm: `${gender} white cotton casual shirt`,
-        stylingReason: "A versatile white shirt completes the foundation.",
-        recommendedColors: ["white"]
-      },
-      {
-        category: "shoes",
-        categoryLabel: "Footwear",
-        icon: "👟",
-        searchTerm: `${gender} white minimalist sneakers`,
-        stylingReason: "Clean sneakers keep the outfit modern and approachable.",
-        recommendedColors: ["white"]
-      },
-      {
-        category: "layering",
-        categoryLabel: "Jackets & Layers",
-        icon: "🧥",
-        searchTerm: `${gender} casual overshirt jacket`,
-        stylingReason: "Layering adds depth and structure.",
-        recommendedColors: ["navy"]
-      },
-      {
-        category: "accessories",
-        categoryLabel: "Accessories",
-        icon: "⌚",
-        searchTerm: `${gender} leather belt watch`,
-        stylingReason: "Refined accessories complete the outfit.",
-        recommendedColors: ["black"]
-      }
+      { category: "tops", categoryLabel: "Tops & Shirts", icon: "👕", searchTerm: `${gender} white cotton casual shirt`, stylingReason: "A versatile white shirt completes the foundation.", recommendedColors: ["white"] },
+      { category: "shoes", categoryLabel: "Footwear", icon: "👟", searchTerm: `${gender} white minimalist sneakers`, stylingReason: "Clean sneakers keep the outfit modern and approachable.", recommendedColors: ["white"] },
+      { category: "layering", categoryLabel: "Jackets & Layers", icon: "🧥", searchTerm: `${gender} casual overshirt jacket`, stylingReason: "Layering adds depth and structure.", recommendedColors: ["navy"] },
+      { category: "accessories", categoryLabel: "Accessories", icon: "⌚", searchTerm: `${gender} leather belt watch`, stylingReason: "Refined accessories complete the outfit.", recommendedColors: ["black"] }
     ];
   }
 
-  const primary = pieces.find((p) => p.category === targetCategory) || pieces[0];
+  const normalizedPieces = pieces.map((p) => {
+    const normIntent = normalizePieceIntent(p, gender);
+    return {
+      ...p,
+      intent: normIntent,
+      searchTerm: p.searchTerm || buildQueryLatticeFromIntent(normIntent, gender)[0],
+      recommendedColors: (Array.isArray(p.recommendedColors) && p.recommendedColors.length > 0) ? p.recommendedColors : normIntent.allowedColors,
+      stylingReason: p.stylingReason || normIntent.reason
+    };
+  });
+
+  const primary = normalizedPieces.find((p) => p.category === targetCategory) || normalizedPieces[0];
 
   return {
+    _geminiModelUsed: null,
     outfitTitle,
     overallStylingAdvice,
     styleArchetype,
     colorHarmony,
     silhouetteBalance,
-    pieces,
+    pieces: normalizedPieces,
     targetCategory: primary.category,
     searchTerm: primary.searchTerm,
     stylingReason: primary.stylingReason,
     recommendedColors: primary.recommendedColors || [],
-    alternativeCategories: pieces.filter((p) => p !== primary).map((p) => ({
+    alternativeCategories: normalizedPieces.filter((p) => p !== primary).map((p) => ({
       targetCategory: p.category,
       searchTerm: p.searchTerm,
       stylingReason: p.stylingReason
@@ -1862,10 +2969,11 @@ export function filterProductsStrict({
   const anchorLower = String(anchorCategory).toLowerCase();
   const targetLower = String(targetCategory).toLowerCase();
 
-  const isAnchorBottom = /bottom|pant|trouser|jean|skirt|short|chino|legging|palazzo/i.test(anchorLower);
-  const isAnchorTop = /top|shirt|tee|t-shirt|blouse|kurta|sweater|hoodie|polo/i.test(anchorLower);
-  const isAnchorShoes = /shoe|sneaker|boot|sandal|heel|loafer/i.test(anchorLower);
-  const isAnchorDress = /dress|gown|jumpsuit/i.test(anchorLower);
+  const isAnchorJacket = /jacket|coat|blazer|cardigan|shrug|vest|bomber|parka|windbreaker|anorak|trench|overcoat/i.test(anchorLower);
+  const isAnchorBottom = !isAnchorJacket && /bottom|pant|trouser|jean|skirt|short|chino|legging|palazzo/i.test(anchorLower);
+  const isAnchorTop = !isAnchorJacket && /top|shirt|tee|t-shirt|blouse|kurta|sweater|hoodie|polo/i.test(anchorLower);
+  const isAnchorShoes = !isAnchorJacket && /shoe|sneaker|boot|sandal|heel|loafer/i.test(anchorLower);
+  const isAnchorDress = !isAnchorJacket && /dress|gown|jumpsuit/i.test(anchorLower);
 
   const min = Number.isFinite(Number(minPrice)) && Number(minPrice) >= 0 ? Number(minPrice) : null;
   const baseMax = Number.isFinite(Number(maxPrice)) && Number(maxPrice) > 0 ? Number(maxPrice) : null;
@@ -1893,7 +3001,12 @@ export function filterProductsStrict({
     }
 
     // 2. Prevent recommending same category as anchor
-    if (isAnchorBottom) {
+    if (isAnchorJacket) {
+      const isLayer = /\b(jacket|jackets|blazer|blazers|overshirt|overshirts|coat|coats|shrug|cardigan|vest|bomber|parka|windbreaker)\b/i.test(title) || itemCat === "layering";
+      if (isLayer) {
+        return false;
+      }
+    } else if (isAnchorBottom) {
       const isPant = /\b(pant|pants|trouser|trousers|jeans|cargos|cargo|chinos|chino|joggers|shorts|skirt)\b/i.test(title) || itemCat === "bottoms";
       const isTopOrShoe = /\b(shirt|top|t-shirt|tee|jacket|overshirt|polo|shoes|sneakers|loafers|belt|watch)\b/i.test(title);
       if (isPant && !isTopOrShoe) {
@@ -1921,6 +3034,7 @@ export function filterProductsStrict({
       const isShoe = itemCat === "shoes" || (/\b(shoe|shoes|sneaker|sneakers|loafer|loafers|boot|boots|sandal|sandals|footwear|slides|derby|mules|heels|flats)\b/i.test(title) && !/\b(shirt|t-shirt|pants?|jeans?)\b/i.test(title));
       if (!isShoe) return false;
     } else if (targetLower === "layering") {
+      if (isAnchorJacket) return false;
       const isLayer = itemCat === "layering" || /\b(jacket|jackets|blazer|blazers|overshirt|overshirts|coat|coats|shrug|shrugs|cardigan|cardigans|vest|vests|bomber|hoodie|hoodies|windbreaker)\b/i.test(title);
       if (!isLayer) return false;
     } else if (targetLower === "accessories" || targetLower === "bags" || targetLower === "jewelry") {
@@ -1957,6 +3071,15 @@ export function filterProductsStrict({
   });
 }
 
+export function hashString(str = "") {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
+
 /**
  * Main handler for /api/shopping/complete-look
  * Returns a complete coordinated outfit matching the ClothMatics AI Stylist experience.
@@ -1969,6 +3092,9 @@ export async function handleCompleteLook({
   allowAboveBudget = false,
   targetCategory = "",
   customQuery = "",
+  shuffleIndex = 0,
+  sessionSeed = "",
+  providerPreference = "",
   gl = "in",
   hl = "en",
   env = {}
@@ -1991,6 +3117,12 @@ export async function handleCompleteLook({
   const userSizes = getUserProfileSizes(profile);
   const userPrefs = getUserProfilePreferences(profile);
 
+  // Request ID and dynamic session-seeded variation index
+  const requestId = "req_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8);
+  const activeSessionSeed = String(sessionSeed || "").trim() || (Math.random().toString(36).substring(2, 10) + Date.now().toString(36));
+  const rawSeed = String(item.id || item.title || "") + "_" + activeSessionSeed + "_" + String(shuffleIndex || 0);
+  const variationIndex = Math.abs(hashString(rawSeed)) % 5;
+
   // Step 1: Call Gemini AI for trending multi-piece outfit styling plan
   let stylingPlan = null;
   if (geminiKey) {
@@ -1998,7 +3130,8 @@ export async function handleCompleteLook({
       item,
       profile,
       targetCategory,
-      apiKey: geminiKey
+      apiKey: geminiKey,
+      shuffleIndex: variationIndex
     });
   }
 
@@ -2007,16 +3140,17 @@ export async function handleCompleteLook({
     stylingPlan = getFallbackStylingPlan({
       item,
       profile,
-      targetCategory
+      targetCategory,
+      shuffleIndex: variationIndex
     });
   }
 
+  const geminiModelUsed = stylingPlan?._geminiModelUsed || null;
   const minPrice = budget.min ?? budget.minPrice;
   const maxPrice = budget.max ?? budget.maxPrice;
-  const anchorDesc = `${item.category || ""} ${item.subCategory || ""} ${item.title || ""}`;
   const pieces = stylingPlan.pieces || [];
 
-  // Step 2: Query candidate products per category
+  // Prepare normalized diverse samples for potential fallback
   const sampleNormalized = DIVERSE_SAMPLE_PRODUCTS.map((p, idx) => ({
     ...normalizeProduct(p, idx),
     category: p.category,
@@ -2024,120 +3158,128 @@ export async function handleCompleteLook({
     style: p.style
   }));
 
-  // Fetch SerpApi / Serper in parallel for each piece's specific search term if shopping key is present
-  let liveByPieceIndex = [];
+  const debugSearches = [];
+  const outfitCategories = [];
   let isSample = false;
   let notice = "";
-
-  if (hasShoppingKey) {
-    try {
-      const searchTasks = pieces.map(async (piece) => {
-        const query = (piece.category === targetCategory && customQuery) ? customQuery : piece.searchTerm;
-        try {
-          const { items } = await fetchShoppingWithFallback({ query, gl, hl, env });
-          return items
-            .map((p, idx) => ({
-              ...normalizeProduct(p, idx),
-              category: piece.category,
-              gender
-            }))
-            .filter(hasValidImage);
-        } catch (err) {
-          console.warn(`Shopping search error for ${piece.category}:`, err.message);
-          return [];
-        }
-      });
-
-      const settled = await Promise.allSettled(searchTasks);
-      liveByPieceIndex = settled.map((res) => (res.status === "fulfilled" ? res.value : []));
-
-      const totalLive = liveByPieceIndex.reduce((sum, list) => sum + list.length, 0);
-      if (totalLive === 0) {
-        isSample = true;
-        notice = "No live shopping results found for this specific query. Showing curated matches.";
-      }
-    } catch (error) {
-      console.warn("Shopping live request error:", error.message);
-      isSample = true;
-      notice = "Shopping provider is temporarily unavailable. Showing preview matches.";
-    }
-  } else {
-    isSample = true;
-    notice = "SerpApi API key not configured in Cloudflare environment yet (Serper.dev supported as fallback). Displaying sample products for preview.";
-  }
-
-  // Step 3: For each piece in the outfit, pool, filter, deduplicate, and strictly cap at maximum 3 products
-  const outfitCategories = [];
+  let totalLiveFound = 0;
 
   for (let i = 0; i < pieces.length; i++) {
     const piece = pieces[i];
-    const liveForPiece = (liveByPieceIndex[i] || []).filter(hasValidImage);
-    const sampleForPiece = sampleNormalized.filter((p) => p.category === piece.category && p.gender === gender && hasValidImage(p));
+    const pieceIntent = piece.intent || normalizePieceIntent(piece, gender);
+    const pieceCustomQ = (piece.category === targetCategory && customQuery) ? customQuery : "";
+    const queries = buildQueryLatticeFromIntent(pieceIntent, gender, pieceCustomQ);
 
-    // Candidates for this piece ONLY contain items matching this specific category with verified images!
-    const candidatePool = [...liveForPiece, ...sampleForPiece];
+    let rawLiveItems = [];
+    let queryProvider = null;
 
-    let catFiltered = filterProductsStrict({
-      products: candidatePool,
-      minPrice,
-      maxPrice,
-      allowAboveBudget,
-      gender,
-      anchorCategory: anchorDesc,
-      targetCategory: piece.category,
-      userPrefs
-    });
-
-    // If budget was too strict and returned 0 products, relax budget to ensure user always gets 3 curated picks
-    if (catFiltered.length === 0) {
-      catFiltered = filterProductsStrict({
-        products: sampleForPiece,
-        minPrice: null,
-        maxPrice: null,
-        allowAboveBudget: true,
-        gender,
-        anchorCategory: anchorDesc,
-        targetCategory: piece.category,
-        userPrefs
-      });
+    if (hasShoppingKey) {
+      try {
+        const latticeRes = await fetchShoppingLattice({
+          queries,
+          gl,
+          hl,
+          env,
+          providerPreference,
+          maxCandidates: 30
+        });
+        rawLiveItems = latticeRes.items || [];
+        queryProvider = latticeRes.provider;
+        if (latticeRes.hasKey && rawLiveItems.length > 0) {
+          totalLiveFound += rawLiveItems.length;
+        }
+      } catch (err) {
+        console.warn(`Lattice fetch error for ${piece.category}:`, err.message);
+      }
     }
 
-    // Deduplicate duplicate listings (e.g. size 46 vs 42) and prioritize user's size
-    let deduplicated = deduplicateAndRankProducts(catFiltered, {
+    debugSearches.push({
+      category: piece.category,
+      queries,
+      totalRawCandidates: rawLiveItems.length,
+      provider: queryProvider || (hasShoppingKey ? "shopping_api" : "sample")
+    });
+
+    // Step 2A: Validate live candidates with strict gates
+    const liveValid = rawLiveItems
+      .map((p, idx) => ({
+        ...normalizeProduct(p, idx),
+        category: piece.category,
+        gender,
+        _originQuery: p._originQuery || queries[0],
+        _originProvider: p._originProvider || queryProvider || "unknown",
+        _sourceType: "live"
+      }))
+      .filter(hasValidImage)
+      .filter((p) => {
+        const check = validateProduct(p, {
+          intent: pieceIntent,
+          anchorItem: item,
+          gender,
+          minPrice,
+          maxPrice,
+          allowAboveBudget,
+          userPrefs
+        });
+        return check.valid;
+      });
+
+    let candidatePool = [...liveValid];
+
+    // Step 2B: If fewer than 3 live items survived validation, fallback/backfill from sample catalog with STRICT validation
+    if (candidatePool.length < 3) {
+      const validSamples = sampleNormalized
+        .filter((p) => p.category === piece.category && p.gender === gender && hasValidImage(p))
+        .map((p) => ({
+          ...p,
+          _originQuery: "curated_sample",
+          _originProvider: "sample",
+          _sourceType: "sample"
+        }))
+        .filter((p) => {
+          const check = validateProduct(p, {
+            intent: pieceIntent,
+            anchorItem: item,
+            gender,
+            minPrice,
+            maxPrice,
+            allowAboveBudget,
+            userPrefs
+          });
+          return check.valid;
+        });
+
+      const existingIds = new Set(candidatePool.map((c) => c.id || c.product_id));
+      for (const s of validSamples) {
+        const sId = s.id || s.product_id;
+        if (!existingIds.has(sId)) {
+          candidatePool.push(s);
+          existingIds.add(sId);
+          if (candidatePool.length >= 6) break;
+        }
+      }
+    }
+
+    // Step 3: Deduplicate and rank products by relevance
+    let deduplicated = deduplicateAndRankProducts(candidatePool, {
       userSizes,
       userPrefs,
       category: piece.category,
-      anchorItem: item
+      anchorItem: item,
+      recommendedColors: piece.recommendedColors || [],
+      intent: pieceIntent,
+      minPrice,
+      maxPrice
     });
 
-    // If budget or live search yielded fewer than 3 items, backfill from sampleForPiece
-    if (deduplicated.length < 3) {
-      const existingIds = new Set(deduplicated.map((p) => p.id || p.product_id));
-      const needed = 3 - deduplicated.length;
-      const backfills = sampleForPiece.filter((p) => !existingIds.has(p.id || p.product_id) && hasValidImage(p)).slice(0, needed);
-      deduplicated = deduplicateAndRankProducts([...deduplicated, ...backfills], {
-        userSizes,
-        userPrefs,
-        category: piece.category,
-        anchorItem: item
-      });
-    }
+    // Step 4: Strict capping: Curate 3 diverse products per category with rotation offset
+    const catOffset = (variationIndex * 3);
+    const diversePicks = pickDiverseProductSet(deduplicated, piece.category, 3, catOffset);
 
-    // Fallback: If still 0, use sampleForPiece directly
-    if (deduplicated.length === 0 && sampleForPiece.length > 0) {
-      deduplicated = deduplicateAndRankProducts(sampleForPiece, {
-        userSizes,
-        userPrefs,
-        category: piece.category,
-        anchorItem: item
-      });
-    }
-
-    // STRICT CAPPING: Maximum 3 diverse products per category with item-specific styling rationale & guaranteed images!
-    const diversePicks = pickDiverseProductSet(deduplicated, piece.category, 3);
     const capped = diversePicks.map((prod) => {
       const fallbackImg = getCategoryFallbackImage(piece.category, gender);
       const thumb = hasValidImage(prod) ? prod.thumbnail : fallbackImg;
+      const isFallback = prod._sourceType === "sample";
       return {
         ...prod,
         thumbnail: thumb,
@@ -2145,7 +3287,36 @@ export async function handleCompleteLook({
         stylingReason: createItemStylingReason(prod, piece, item, profile),
         category: piece.category,
         categoryLabel: piece.categoryLabel,
-        icon: piece.icon
+        icon: piece.icon,
+        meta: {
+          fallbackUsed: isFallback,
+          source: prod._sourceType || "live",
+          query: prod._originQuery || queries[0],
+          provider: prod._originProvider || "unknown",
+          relevanceScore: prod._relevanceScore ?? 0
+        }
+      };
+    });
+
+    const allAvailable = deduplicated.slice(0, 15).map((prod) => {
+      const fallbackImg = getCategoryFallbackImage(piece.category, gender);
+      const thumb = hasValidImage(prod) ? prod.thumbnail : fallbackImg;
+      const isFallback = prod._sourceType === "sample";
+      return {
+        ...prod,
+        thumbnail: thumb,
+        image: thumb,
+        stylingReason: createItemStylingReason(prod, piece, item, profile),
+        category: piece.category,
+        categoryLabel: piece.categoryLabel,
+        icon: piece.icon,
+        meta: {
+          fallbackUsed: isFallback,
+          source: prod._sourceType || "live",
+          query: prod._originQuery || queries[0],
+          provider: prod._originProvider || "unknown",
+          relevanceScore: prod._relevanceScore ?? 0
+        }
       };
     });
 
@@ -2156,16 +3327,30 @@ export async function handleCompleteLook({
       stylingReason: piece.stylingReason,
       searchTerm: piece.searchTerm,
       recommendedColors: piece.recommendedColors || [],
+      intent: pieceIntent,
       targetSize: (piece.category === "tops" ? userSizes.top : piece.category === "bottoms" ? userSizes.bottom : piece.category === "shoes" ? userSizes.shoes : piece.category === "dresses" ? userSizes.dress : null),
-      products: capped
+      products: capped,
+      allAvailableProducts: allAvailable,
+      totalAvailable: deduplicated.length
     });
   }
 
-  // Flatten capped products for backward compatibility
+  if (!hasShoppingKey) {
+    isSample = true;
+    notice = "SerpApi API key not configured in Cloudflare environment yet (Serper.dev supported as fallback). Displaying sample products for preview.";
+  } else if (totalLiveFound === 0) {
+    isSample = true;
+    notice = "No live shopping results found for this specific query. Showing curated matches.";
+  }
+
   const allProducts = outfitCategories.flatMap((c) => c.products);
 
   return {
     ok: true,
+    requestId,
+    sessionSeed: activeSessionSeed,
+    variationIndex,
+    shuffleIndex: Math.abs(Number(shuffleIndex || 0)),
     outfit: {
       title: stylingPlan.outfitTitle,
       stylingAdvice: stylingPlan.overallStylingAdvice,
@@ -2185,6 +3370,13 @@ export async function handleCompleteLook({
     unfilteredTotal: allProducts.length,
     isSample,
     notice,
+    debug: {
+      requestId,
+      sessionSeed: activeSessionSeed,
+      variationIndex,
+      geminiModelUsed,
+      searches: debugSearches
+    },
     status: 200
   };
 }
@@ -2204,6 +3396,9 @@ export async function onRequestPost(context) {
   const allowAboveBudget = body.allowAboveBudget === true;
   const targetCategory = body.targetCategory || "";
   const customQuery = body.customQuery || body.query || "";
+  const shuffleIndex = Number(body.shuffleIndex ?? body.shuffle ?? 0);
+  const sessionSeed = String(body.sessionSeed ?? body.seed ?? "").trim();
+  const providerPreference = String(body.providerPreference || body.shoppingProvider || body.provider || "").trim();
   const gl = body.gl || "in";
   const hl = body.hl || "en";
 
@@ -2214,6 +3409,9 @@ export async function onRequestPost(context) {
     allowAboveBudget,
     targetCategory,
     customQuery,
+    shuffleIndex,
+    sessionSeed,
+    providerPreference,
     gl,
     hl,
     env
@@ -2236,6 +3434,9 @@ export async function onRequestGet(context) {
   const maxPrice = url.searchParams.get("maxPrice");
   const allowAboveBudget = url.searchParams.get("allowAboveBudget") === "true";
   const customQuery = url.searchParams.get("q") || "";
+  const shuffleIndex = Number(url.searchParams.get("shuffle") || url.searchParams.get("shuffleIndex") || 0);
+  const sessionSeed = String(url.searchParams.get("sessionSeed") || url.searchParams.get("seed") || "").trim();
+  const providerPreference = String(url.searchParams.get("provider") || url.searchParams.get("providerPreference") || "").trim();
 
   const result = await handleCompleteLook({
     item: { title, category, subCategory, primaryColor },
@@ -2244,6 +3445,9 @@ export async function onRequestGet(context) {
     allowAboveBudget,
     targetCategory,
     customQuery,
+    shuffleIndex,
+    sessionSeed,
+    providerPreference,
     env
   });
 

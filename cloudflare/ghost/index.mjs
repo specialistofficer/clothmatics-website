@@ -140,7 +140,7 @@ var index_default = {
       });
       if(backendResponse.status>=300&&backendResponse.status<400) return new Response(JSON.stringify({error:"Unexpected backend redirect"}),{status:502,headers:{"Content-Type":"application/json",...CORS_HEADERS}});
       const contentType = backendResponse.headers.get("content-type") || "";
-      if (backendResponse.status === 530 || url.pathname === "/generate" && contentType.includes("text/html")) {
+      if (backendResponse.status === 530 || (url.pathname === "/generate" || url.pathname === "/outfit" || url.pathname === "/full-look") && contentType.includes("text/html")) {
         return new Response(
           JSON.stringify({
             error: "Backend Offline",

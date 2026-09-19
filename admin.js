@@ -417,6 +417,7 @@ function renderHealth(logs) {
   const rate = successes + failures ? Math.round(successes / (successes + failures) * 100) : 100;
   const latencies = logs.map((x) => Number(x.responseTime)).filter(Number.isFinite);
   const today = new Date(); today.setHours(0, 0, 0, 0);
+  if ($("#health-total")) $("#health-total").textContent = logs.length.toLocaleString();
   $("#health-rate").textContent = `${rate}%`;
   $("#health-today").textContent = logs.filter((x) => activityTime(x) >= today.getTime()).length;
   $("#health-latency").textContent = latencies.length ? `${Math.round(latencies.reduce((a, b) => a + b, 0) / latencies.length)} ms` : "—";
@@ -510,6 +511,12 @@ async function loadShoppingStatus() {
       $("#serper-live-status").textContent = serper.configured ? "Ready" : "Inactive";
       $("#serper-stack-role").textContent = serper.role || "Fallback";
       $("#serper-env-status").textContent = serper.configured ? "SERPER_API_KEY Active" : "Key Missing";
+      if ($("#serper-credits-count")) {
+        $("#serper-credits-count").textContent = typeof serper.credits === "number" ? serper.credits.toLocaleString() : (serper.configured ? "Tracking…" : "—");
+      }
+      if ($("#serper-queries-used")) {
+        $("#serper-queries-used").textContent = typeof serper.queriesUsed === "number" ? `${serper.queriesUsed.toLocaleString()} queries` : (serper.configured ? "Active" : "—");
+      }
     }
 
     // SerpApi Status Card
@@ -519,6 +526,12 @@ async function loadShoppingStatus() {
       $("#serpapi-live-status").textContent = serpapi.configured ? "Ready" : "Inactive";
       $("#serpapi-stack-role").textContent = serpapi.role || "Primary";
       $("#serpapi-env-status").textContent = serpapi.configured ? "SERPAPI_API_KEY Active" : "Key Missing";
+      if ($("#serpapi-monthly-calls")) {
+        $("#serpapi-monthly-calls").textContent = typeof serpapi.searchesThisMonth === "number" ? `${serpapi.searchesThisMonth.toLocaleString()} calls` : (serpapi.configured ? "Tracking…" : "—");
+      }
+      if ($("#serpapi-remaining-searches")) {
+        $("#serpapi-remaining-searches").textContent = typeof serpapi.planSearchesLeft === "number" ? `${serpapi.planSearchesLeft.toLocaleString()} left` : (serpapi.configured ? "Active" : "—");
+      }
     }
 
     // Strategy
@@ -619,6 +632,7 @@ async function testShoppingApiPing() {
   } finally {
     btn.disabled = false;
     btn.textContent = "Ping Shopping API";
+    loadShoppingStatus().catch(() => {});
   }
 }
 

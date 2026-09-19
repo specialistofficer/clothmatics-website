@@ -54,13 +54,176 @@ export async function callAiGateway(user, path, data, options = {}) {
   return authenticatedFetch(user, AI_GATEWAY_URL, path, { data, ...options });
 }
 
+function findJsonObjectEnd(text, start) {
+  let depth = 0, inString = false, escaped = false;
+  for (let index = start; index < text.length; index += 1) {
+    const character = text[index];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (character === '\\') escaped = true;
+      else if (character === '"') inString = false;
+      continue;
+    }
+    if (character === '"') inString = true;
+    else if (character === '{') depth += 1;
+    else if (character === '}' && --depth === 0) return index;
+  }
+  return -1;
+}
+
+function isInsideArray(text, objStart) {
+  let depth = 0, inString = false, escaped = false;
+  for (let i = 0; i < objStart; i += 1) {
+    const char = text[i];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (char === '\\') escaped = true;
+      else if (char === '"') inString = false;
+      continue;
+    }
+    if (char === '"') inString = true;
+    else if (char === '[') depth += 1;
+    else if (char === ']' && depth > 0) depth -= 1;
+  }
+  return depth > 0;
+}
+
+function escapeControlCharsInJson(str) {
+  let inString = false, escaped = false, out = '';
+  for (let i = 0; i < str.length; i += 1) {
+    const c = str[i];
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+        out += c;
+      } else if (c === '\\') {
+        escaped = true;
+        out += c;
+      } else if (c === '"') {
+        inString = false;
+        out += c;
+      } else if (c === '\n') {
+        out += '\\n';
+      } else if (c === '\r') {
+        out += '\\r';
+      } else if (c === '\t') {
+        out += '\\t';
+      } else {
+        out += c;
+      }
+    } else {
+      if (c === '"') inString = true;
+      out += c;
+    }
+  }
+  return out;
+}
+
+function repairTruncatedJson(str) {
+  let inString = false, escaped = false, stack = [];
+  for (let i = 0; i < str.length; i += 1) {
+    const c = str[i];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (c === '\\') escaped = true;
+      else if (c === '"') inString = false;
+      continue;
+    }
+    if (c === '"') inString = true;
+    else if (c === '{' || c === '[') stack.push(c);
+    else if (c === '}' && stack[stack.length - 1] === '{') stack.pop();
+    else if (c === ']' && stack[stack.length - 1] === '[') stack.pop();
+  }
+  let repaired = str.replace(/,\s*$/, '');
+  if (inString) repaired += '"';
+  while (stack.length > 0) {
+    const open = stack.pop();
+    repaired = repaired.replace(/,\s*$/, '');
+    repaired += open === '{' ? '}' : ']';
+  }
+  return repaired;
+}
+
+function tryParseJson(str) {
+  if (!str || typeof str !== 'string') return null;
+  try { return JSON.parse(str); } catch {}
+  try { return JSON.parse(str.replace(/,\s*([}\]])/g, '$1')); } catch {}
+  try {
+    const escaped = escapeControlCharsInJson(str).replace(/,\s*([}\]])/g, '$1');
+    return JSON.parse(escaped);
+  } catch {}
+  try {
+    const doubleQuoted = escapeControlCharsInJson(str)
+      .replace(/'([^'\\]*(?:\\.[^'\\]*)*)'/g, '"$1"')
+      .replace(/,\s*([}\]])/g, '$1');
+    return JSON.parse(doubleQuoted);
+  } catch {}
+  try {
+    const pythonFixed = str
+      .replace(/\bNone\b/g, 'null')
+      .replace(/\bTrue\b/g, 'true')
+      .replace(/\bFalse\b/g, 'false')
+      .replace(/,\s*([}\]])/g, '$1');
+    return JSON.parse(pythonFixed);
+  } catch {}
+  try {
+    const repaired = repairTruncatedJson(escapeControlCharsInJson(str));
+    return JSON.parse(repaired);
+  } catch {}
+  return null;
+}
+
+export function parseAiJson(text) {
+  const raw = String(text || '').trim();
+  if (!raw) return null;
+
+  const fencedMatch = raw.match(/```(?:json|markdown|text)?\s*([\s\S]*?)\s*```/i);
+  const target = fencedMatch ? fencedMatch[1].trim() : raw;
+
+  const direct = tryParseJson(target);
+  if (direct && typeof direct === 'object') {
+    return Array.isArray(direct) ? null : direct;
+  }
+
+  const start = target.indexOf('{');
+  if (start < 0 || isInsideArray(target, start)) return null;
+
+  const end = findJsonObjectEnd(target, start);
+  if (end > start) {
+    const candidate = target.slice(start, end + 1);
+    const parsed = tryParseJson(candidate);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed;
+  }
+
+  const lastBrace = target.lastIndexOf('}');
+  if (lastBrace > start) {
+    const candidate = target.slice(start, lastBrace + 1);
+    const parsed = tryParseJson(candidate);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed;
+  }
+
+  // Final attempt: repair potential truncation starting from {
+  const candidateFromStart = target.slice(start);
+  const repairedFromStart = tryParseJson(candidateFromStart);
+  if (repairedFromStart && typeof repairedFromStart === 'object' && !Array.isArray(repairedFromStart)) {
+    return repairedFromStart;
+  }
+
+  return null;
+}
+
 export async function callUserAi(user, payload, options = {}) {
   const { body, response } = await callAiGateway(user, "/v1/generate", payload, options);
-  const text = body?.candidates?.[0]?.content?.parts?.map((part) => part?.text || "").join("").trim();
+  const parts = body?.candidates?.[0]?.content?.parts || [];
+  const nonThoughtParts = parts.filter((part) => !part?.thought && typeof part?.text === "string" && part.text.trim().length > 0);
+  const partsToUse = nonThoughtParts.length > 0 ? nonThoughtParts : parts;
+  const text = partsToUse.map((part) => part?.text || "").join("").trim();
   if (!text) throw new ClothmaticsApiError("The stylist returned an empty response.", { status: 502, code: "invalid-response" });
-  let data;
-  try { data = JSON.parse(text.replace(/```json|```/g, "").trim()); }
-  catch { throw new ClothmaticsApiError("The stylist returned an invalid response. Please try again.", { status: 502, code: "invalid-response" }); }
+  const data = parseAiJson(text);
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    console.error("[ClothMatics AI Stylist] parseAiJson could not extract JSON from text:", text);
+    throw new ClothmaticsApiError("The stylist returned an invalid response. Please try again.", { status: 502, code: "invalid-response", details: text.slice(0, 500) });
+  }
   return {
     data,
     provider: response.headers.get("X-AI-Provider") || body?._clothmatics?.provider || "unknown",

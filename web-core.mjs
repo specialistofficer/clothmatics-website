@@ -19,8 +19,9 @@ export function lookbookSlotFor(item = {}) {
   if (category === "Accessory" || /\b(accessor(?:y|ies)|watch|bag|belt|jewel(?:lery|ry)?|scarf|hat|cap|headwear|eyewear|sunglasses?)\b/.test(text)) return "accessory";
   if (category === "Outerwear" || /\b(outerwear|jacket|blazer|coat|cardigan|shrug|overshirt|shacket|bomber|hoodie|parka|trench)\b/.test(text)) return "layer";
   if (category === "Bottom" || /\b(bottom|pants?|trousers?|jeans?|skirts?|shorts?|leggings?|joggers?|cargo|chinos?|palazzo)\b/.test(text)) return "bottom";
-  if (/\b(dress shirt|shirts?|t[ -]?shirts?|tees?|tops?|blouses?|kurtas?|polos?|sweaters?|sweatshirts?|tank tops?|crop tops?)\b/.test(text)) return "top";
+  if (/\bdress shirt\b/.test(text)) return "top";
   if (category === "One-piece" || category === "Traditional set" || /\b(dress|gown|jumpsuit|romper|one[ -]?piece|saree|sari|lehenga|anarkali|salwar suit|kurta set|sherwani|dhoti set|traditional set|co-ord set)\b/.test(text)) return "hero";
+  if (/\b(dress shirt|shirts?|t[ -]?shirts?|tees?|tops?|blouses?|kurtas?|polos?|sweaters?|sweatshirts?|tank tops?|crop tops?)\b/.test(text)) return "top";
   if (item.bodyZone === "feet") return "footwear";
   if (item.bodyZone === "accessory" || item.layerRole === "accessory") return "accessory";
   if (item.layerRole === "outer") return "layer";
@@ -144,6 +145,13 @@ export function eligibleWardrobe(wardrobe=[]) {
   return wardrobe.filter((item)=>item?.id && item.hiddenFromAI!==true && item.privateItem!==true && item.stylingUsage!=="private_innerwear" && String(item.laundryStatus||"").toLowerCase()!=="laundry");
 }
 
+export function normalizeOutfitScore(value, fallback = 85) {
+  let score = Number(value);
+  if (!Number.isFinite(score) || score <= 0) return fallback;
+  if (score <= 10) score = score * 10;
+  return Math.max(0, Math.min(100, Math.round(score)));
+}
+
 export function validateGroundedOutfit(raw={},wardrobe=[]) {
   const eligible=eligibleWardrobe(wardrobe),byId=new Map(eligible.map((item)=>[String(item.id),item]));
   const ids=Array.isArray(raw.wardrobeItemIds)?raw.wardrobeItemIds.map(String):[];
@@ -154,12 +162,49 @@ export function validateGroundedOutfit(raw={},wardrobe=[]) {
   const wearable=slots.includes("hero")?slots.some((slot)=>["footwear","layer","accessory"].includes(slot)):slots.includes("top")&&slots.includes("bottom");
   if(!wearable)throw new Error("The result did not contain the main pieces needed for a wearable outfit.");
   return {
-    score:Math.max(0,Math.min(100,Math.round(Number(raw.score)||80))),
+    score:normalizeOutfitScore(raw.score, 85),
     title:String(raw.title||"Your ClothMatics look").trim().slice(0,80),
     subtitle:String(raw.subtitle||"Styled from clothes you already own.").trim().slice(0,240),
     wardrobeItemIds:ids,
     reasoning:(Array.isArray(raw.reasoning)?raw.reasoning:[]).map((value)=>String(value).replace(/\s*\([A-Za-z0-9_-]{10,}\)/g,"").trim()).filter(Boolean).slice(0,5),
     shoppingSuggestions:[],
+  };
+}
+
+export function createGroundedFallbackLook(wardrobe=[], occasion="Casual", mood="Relaxed") {
+  const eligible = eligibleWardrobe(wardrobe);
+  if (eligible.length < 2) throw new Error("Add at least two clean wardrobe pieces through Camera first.");
+  
+  const heroes = eligible.filter((i) => lookbookSlotFor(i) === "hero");
+  const tops = eligible.filter((i) => lookbookSlotFor(i) === "top");
+  const bottoms = eligible.filter((i) => lookbookSlotFor(i) === "bottom");
+  const layers = eligible.filter((i) => lookbookSlotFor(i) === "layer");
+  const footwear = eligible.filter((i) => lookbookSlotFor(i) === "footwear");
+  const accessories = eligible.filter((i) => lookbookSlotFor(i) === "accessory");
+
+  let ids = [];
+  if (heroes.length > 0) {
+    ids = [heroes[0].id, (layers[0] || footwear[0] || accessories[0] || tops[0])?.id].filter(Boolean);
+  } else if (tops.length > 0 && bottoms.length > 0) {
+    ids = [tops[0].id, bottoms[0].id, (layers[0] || footwear[0] || accessories[0])?.id].filter(Boolean);
+  } else {
+    ids = eligible.slice(0, 2).map((i) => i.id);
+  }
+
+  const title = `${mood} ${occasion} Edit`;
+  const subtitle = `Curated from your available wardrobe pieces for ${occasion.toLowerCase()}.`;
+  const reasoning = [
+    `Coordinates your best matching pieces for a ${mood.toLowerCase()} aesthetic.`,
+    `Selected from your clean, available wardrobe for ${occasion.toLowerCase()}.`
+  ];
+
+  return {
+    score: 88,
+    title,
+    subtitle,
+    wardrobeItemIds: [...new Set(ids)],
+    reasoning,
+    shoppingSuggestions: [],
   };
 }
 

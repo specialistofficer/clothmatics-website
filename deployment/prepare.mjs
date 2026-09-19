@@ -9,14 +9,14 @@ for(const entry of await readdir(root,{withFileTypes:true})){
 }
 for(const name of ['assets','data','functions'])await cp(join(root,name),join(target,name),{recursive:true});
 await mkdir(join(target,'downloads'),{recursive:true});
-for(const name of ['clothmatics_ghost_v9.py','clothmatics_ghost_v9.ipynb','clothmatics_ghost_v9_2.py','clothmatics_ghost_v9_2.ipynb']){
+for(const name of ['clothmatics_ghost_v9.py','clothmatics_ghost_v9.ipynb','clothmatics_ghost_v9_2.py','clothmatics_ghost_v9_2.ipynb','clothmatics_ghost_v9_3.py','clothmatics_ghost_v9_3.ipynb','clothmatics_ghost_v9_4.py','clothmatics_ghost_v9_4.ipynb']){
  const bytes=await readFile(join(root,'kaggle',name));
  await writeFile(join(target,'downloads',name),bytes);
  console.log(`${name} SHA256 ${createHash('sha256').update(bytes).digest('hex')}`);
 }
 // Every compatibility URL and the embedded direct-run cell must serve the
 // current reviewed runner, even when an older filename remains bookmarked.
-const python=await readFile(join(root,'kaggle','clothmatics_ghost_v9_2.py'));
+const python=await readFile(join(root,'kaggle','clothmatics_ghost_v9_4.py'));
 await writeFile(join(target,'downloads','clothmatics_ghost_v9.txt'),python);
 console.log(`clothmatics_ghost_v9.txt SHA256 ${createHash('sha256').update(python).digest('hex')}`);
 await writeFile(join(target,'downloads','clothmatics_ghost_v9_source.js'),python);
@@ -38,7 +38,7 @@ const appPath=join(target,'app.js');
 await writeFile(appPath,embedSource(await readFile(appPath,'utf8')));
 await writeFile(join(root,'app.js'),embedSource(await readFile(join(root,'app.js'),'utf8')));
 await mkdir(join(root,'downloads'),{recursive:true});
-for(const name of ['clothmatics_ghost_v9.py','clothmatics_ghost_v9.ipynb','clothmatics_ghost_v9_2.py','clothmatics_ghost_v9_2.ipynb']){
+for(const name of ['clothmatics_ghost_v9.py','clothmatics_ghost_v9.ipynb','clothmatics_ghost_v9_2.py','clothmatics_ghost_v9_2.ipynb','clothmatics_ghost_v9_3.py','clothmatics_ghost_v9_3.ipynb','clothmatics_ghost_v9_4.py','clothmatics_ghost_v9_4.ipynb']){
  await copyFile(join(target,'downloads',name),join(root,'downloads',name));
 }
 for(const name of ['clothmatics_ghost_v9.txt','clothmatics_ghost_v9_source.js']){

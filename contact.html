@@ -24,8 +24,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./legal.css" />
-    <link rel="stylesheet" href="./contact.css" />
+    <link rel="stylesheet" href="./legal.css?v=20260913-responsive-v1" />
+    <link rel="stylesheet" href="./contact.css?v=20260913-responsive-v1" />
     <script type="application/ld+json">
       {"@context":"https://schema.org","@graph":[{"@type":"ContactPage","@id":"https://clothmatics.pages.dev/contact#page","url":"https://clothmatics.pages.dev/contact","name":"ClothMatics Help and Contact","description":"Contact ClothMatics support or submit an account-deletion request.","isPartOf":{"@id":"https://clothmatics.pages.dev/#website"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://clothmatics.pages.dev/"},{"@type":"ListItem","position":2,"name":"Help and Contact","item":"https://clothmatics.pages.dev/contact"}]}]}
     </script>
@@ -63,13 +63,13 @@
       <section id="delete-account" class="deletion-request-card" aria-labelledby="deletion-heading">
         <div class="deletion-copy"><span class="legal-kicker">ACCOUNT DELETION</span><h2 id="deletion-heading">Request permanent account deletion</h2><p>Sign in with the same ClothMatics account you want deleted. After you submit, our authorized team will review the request.</p><ul><li>Deletes your sign-in account and profile</li><li>Deletes wardrobe items, images, outfits, plans, history, and related app data</li><li>This action is permanent after approval</li></ul></div>
         <div class="deletion-auth-card">
-          <div id="deletion-signed-out"><h3>Verify your account</h3><form id="deletion-signin-form"><label>Email<input id="deletion-email" type="email" autocomplete="email" required></label><label>Password<input id="deletion-password" type="password" autocomplete="current-password" required></label><button type="submit" class="support-submit">Sign in securely</button></form><div class="deletion-divider">or</div><button id="deletion-google" type="button" class="deletion-google">Continue with Google</button></div>
+          <div id="deletion-signed-out"><h3>Verify your account</h3><p>Sign in with your Google account to verify your identity.</p><button id="deletion-google" type="button" class="deletion-google">Continue with Google</button></div>
           <div id="deletion-signed-in" class="hidden"><span class="verified-label">VERIFIED ACCOUNT</span><h3 id="deletion-account-email"></h3><p>Only this signed-in account will be included in the request.</p><label class="consent-row"><input id="deletion-confirm" type="checkbox"><span>I understand that approval permanently deletes this account and its ClothMatics data.</span></label><button id="request-deletion" type="button" class="danger-action">Submit deletion request</button><button id="deletion-signout" type="button" class="text-action">Use another account</button></div>
           <p id="deletion-status" role="status" aria-live="polite"></p>
         </div>
       </section>
     </main>
-    <footer class="legal-footer"><span>© 2026 ClothMatics</span><div><a href="./">Home</a><a href="./faq">FAQ</a><a href="./privacy">Privacy</a><a href="./terms">Terms</a><a href="./affiliate-disclosure">Affiliate Disclosure</a></div></footer>
+    <footer class="legal-footer"><span>© 2026 ClothMatics</span><div><a href="./">Home</a><a href="./faq">FAQ</a><a href="./privacy">Privacy</a><a href="./terms">Terms</a></div></footer>
     <script type="module" src="./contact.js"></script>
   </body>
 </html>

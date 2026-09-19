@@ -1,9 +1,14 @@
-# ClothMatics appearance v2 update
+# ClothMatics v9.4 full-look router
 
-The ready-to-import notebook is **clothmatics_ghost_v9.ipynb**. The equivalent
-single-cell Python script is **clothmatics_ghost_v9.py**. These are generated
+The current ready-to-import notebook is **clothmatics_ghost_v9_4.ipynb**. The equivalent
+single-cell Python script is **clothmatics_ghost_v9_4.py**. These are generated
 from the reviewed source files in this directory; edit the sources and run
-`python kaggle/build_notebook.py` to rebuild both artifacts.
+`python kaggle/build_notebook.py` to rebuild both artifacts. v9.4 keeps the v9.3
+`/generate` garment renderer and `/outfit` worn-photo extraction route unchanged,
+and adds an isolated `/full-look` route. The new route uses two to six selected
+wardrobe references with the already loaded FLUX.2 Klein pipeline to create one
+static, coherent, full-body mannequin presentation. It does not add a second
+model or change existing single-garment and selfie behavior.
 
 ## What was wrong
 
@@ -27,7 +32,7 @@ reviewable. No global histogram recoloring is applied to fabric or logos.
 
 ## Run on Kaggle
 
-1. Import `clothmatics_ghost_v9.ipynb` into Kaggle. Enable Internet and the GPU
+1. Import `clothmatics_ghost_v9_4.ipynb` into Kaggle. Enable Internet and the GPU
    accelerator; the provided dual-T4 allocation is supported.
 2. In Kaggle Secrets, enable `CLOTHMATICS_SYNC_TOKEN` with the existing value
    configured for the Ghost Worker's `/set-target` endpoint. The notebook also
@@ -36,7 +41,7 @@ reviewable. No global histogram recoloring is applied to fabric or logos.
    pinned dependencies, loads the same pinned FLUX.2-klein-4B revision, warms the
    model, starts the tunnel and registers the new target. Leave the cell running.
 4. Check the permanent Worker's `/health` response. Its backend must report
-   `pipeline_version: 9.1.0-ghost-volume-v2`, `ghost_contract_version: 2`, and
+   `pipeline_version: 9.2.0-multicolor`, `ghost_contract_version: 2`, and
    `ready: true`.
 5. The website and permanent Worker were deployed on 2026-09-11. Reload the
    website after your v9 backend is ready. Website and GPU notebook are separate
@@ -50,7 +55,9 @@ into the downloadable code.
 ## Identified Cloudflare connection
 
 - Permanent Worker: `clothmatics-ghost.chiragsharma376.workers.dev`
-- Generation endpoint: `/generate`
+- Existing single-garment endpoint: `/generate`
+- Worn-outfit endpoint: `/outfit`
+- Selected-wardrobe complete-look endpoint: `/full-look`
 - Notebook registration endpoint: `/set-target` with `X-Sync-Token`
 - Website server proxy: `functions/api/wardrobe/ghost.js`
 - Live health inspection on 2026-09-11 found the old **8.3.3-ghost-3d** backend
@@ -93,10 +100,16 @@ so a transport retry can reuse completed inference. New user attempts receive a
 new seed. GPU inference owns the lock on a worker thread; a disconnected HTTP
 caller cannot release it while inference is still running.
 
+Final v9.4 single-cell SHA-256:
+`43475a47512f2ab41de2d18f63671398fd78af6f2583220ae9ce33dd179fb01c`.
+
 ## Validation and limits
 
-- Final local result: 121 Node tests, 6 Python checks and 13 browser assertions
-  passed. Mobile (390x844) and desktop (1280x800) dialog layouts were checked.
+- Current local result: 202 Node tests and 16 Python prompt/notebook/parser checks
+  passed. The checks cover authenticated multi-reference forwarding, wardrobe
+  ownership, one-piece and separates slot rules, existing occlusion preservation,
+  pant-leg separation and bounded sock-stem trimming. Visual output quality remains
+  a live Kaggle check.
 - Website suite: `node --test tests/*.test.mjs`
 - Notebook/contract checks: `python kaggle/test_prompt_contract.py`
 - Browser regression harness: serve the workspace and open

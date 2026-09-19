@@ -46,7 +46,7 @@ onAuthStateChanged(auth, (user) => {
   if (!user) $("#deletion-confirm").checked = false;
 });
 
-$("#deletion-signin-form").addEventListener("submit", async (event) => {
+$("#deletion-signin-form")?.addEventListener("submit", async (event) => {
   event.preventDefault();
   await deletionAction(async () => signInWithEmailAndPassword(auth, $("#deletion-email").value.trim(), $("#deletion-password").value), "Account verified.");
 });
