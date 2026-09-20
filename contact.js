@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
-import { browserLocalPersistence, getAuth, GoogleAuthProvider, onAuthStateChanged, setPersistence, signInWithEmailAndPassword, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { browserLocalPersistence, getAuth, GoogleAuthProvider, onAuthStateChanged, setPersistence, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-functions.js";
 import { firebaseConfig } from "./config.js";
 
@@ -46,11 +46,6 @@ onAuthStateChanged(auth, (user) => {
   if (!user) $("#deletion-confirm").checked = false;
 });
 
-$("#deletion-signin-form")?.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  await deletionAction(async () => signInWithEmailAndPassword(auth, $("#deletion-email").value.trim(), $("#deletion-password").value), "Account verified.");
-});
-
 $("#deletion-google").addEventListener("click", async () => {
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt:"select_account" });
@@ -79,4 +74,4 @@ async function deletionAction(action, successMessage) {
   catch (error) { setDeletionStatus(friendlyDeletionError(error), true); }
 }
 function setDeletionStatus(text, isError) { const target=$("#deletion-status"); target.textContent=text; target.classList.toggle("error",isError); target.classList.toggle("success",!isError); }
-function friendlyDeletionError(error) { const code=String(error?.code||""); if(code.includes("wrong-password")||code.includes("invalid-credential"))return "The email or password is incorrect."; if(code.includes("popup-closed"))return "Google sign-in was closed before completion."; if(code.includes("permission-denied"))return "This account is not eligible to submit the request right now."; return error?.message||"Please try again."; }
+function friendlyDeletionError(error) { const code=String(error?.code||""); if(code.includes("popup-closed"))return "Google sign-in was closed before completion."; if(code.includes("permission-denied"))return "This account is not eligible to submit the request right now."; return error?.message||"Please try again."; }

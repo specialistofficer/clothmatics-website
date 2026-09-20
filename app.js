@@ -4,10 +4,7 @@ import {
   getAuth,
   GoogleAuthProvider,
   onAuthStateChanged,
-  sendEmailVerification,
-  sendPasswordResetEmail,
   setPersistence,
-  signInWithEmailAndPassword,
   signInWithPopup,
   signInWithRedirect,
   signOut,
@@ -175,7 +172,7 @@ function installParityUi() {
   if (!$("#quota-chip")) $(".app-topbar .user-chip")?.insertAdjacentHTML("beforebegin",'<button id="quota-chip" class="quota-chip" type="button" data-go-panel="profile" aria-label="Open plan and AI allowance"><b aria-hidden="true">AI</b><span>Loading…</span></button>');
   $("#panel-overview .companion-stats")?.insertAdjacentHTML("beforebegin",'<section id="today-pick" class="today-pick"></section><div class="quick-actions"><button data-go-panel="camera"><svg class="nav-icon" aria-hidden="true"><use href="#icon-camera"></use></svg><span><b>Camera</b><small>Add garment or Style Check</small></span></button><button data-go-panel="stylist"><svg class="nav-icon" aria-hidden="true"><use href="#icon-sparkles"></use></svg><span><b>AI outfit</b><small>Style clean pieces</small></span></button><button data-go-panel="planner"><svg class="nav-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg><span><b>Planner</b><small>Choose a date</small></span></button><button data-go-panel="purchase"><svg class="nav-icon" aria-hidden="true"><use href="#icon-bag"></use></svg><span><b>Smart Purchase</b><small>Compare before buying</small></span></button></div>');
   $("#panel-profile .section-intro p")?.replaceWith(Object.assign(document.createElement("p"),{textContent:"Keep your personal details, shopping sizes, style preferences and plan status in sync with the mobile app."}));
-  $("#panel-profile .profile-layout")?.insertAdjacentHTML("afterend",`<div class="profile-manage-grid"><form id="profile-form" class="profile-edit-card"><div class="profile-edit-heading"><div class="profile-heading-icon" aria-hidden="true"><svg class="nav-icon"><use href="#icon-user"></use></svg></div><div><span class="app-kicker">PERSONAL DETAILS</span><h3>Edit profile</h3><p>These details stay in sync with your ClothMatics mobile account.</p></div></div><fieldset class="profile-fieldset"><legend>About you</legend><div class="profile-form-grid"><label>Full name<input id="profile-name" maxlength="100" autocomplete="name"></label><label>Gender<select id="profile-gender"><option value="">Select gender</option><option>Male</option><option>Female</option><option>Other</option></select></label><label>Date of birth<input id="profile-dob" type="date"></label><label>Profession<input id="profile-profession" maxlength="100" autocomplete="organization-title"></label><label>Height (cm)<input id="profile-height" type="number" min="0" max="260" inputmode="decimal"></label><label>Weight (kg)<input id="profile-weight" type="number" min="0" max="400" inputmode="decimal"></label><label>City<input id="profile-city" maxlength="100" autocomplete="address-level2"></label><label><span class="field-label-row">Body type <button class="info-button" type="button" title="Choose the same self-reported body type used by the mobile profile." aria-label="About body type choices">i</button></span><select id="profile-body-type" aria-describedby="body-type-help"><option value="">Select gender first</option></select><small id="body-type-help">The choices match the mobile profile.</small></label></div></fieldset><fieldset class="profile-fieldset size-fieldset"><legend>Shopping sizes</legend><p>Use the same optional sizes available in the app. They help filter unsuitable product matches.</p><div class="profile-form-grid"><label>Top size<select id="size-top">${selectOptions(PROFILE_SIZE_OPTIONS.alpha,"Select top size")}</select></label><label>Bottom size<select id="size-bottom">${selectOptions(PROFILE_SIZE_OPTIONS.bottom,"Select bottom size")}</select></label><label id="profile-dress-field">Dress size<select id="size-dress">${selectOptions(PROFILE_SIZE_OPTIONS.alpha,"Select dress size")}</select></label><label>Shoe size<select id="size-shoes">${selectOptions(PROFILE_SIZE_OPTIONS.shoes,"Select UK / India size",true)}</select></label></div></fieldset><div class="profile-save-row"><button class="button button-primary" type="submit">Save profile</button><p id="profile-message" role="status"></p></div></form><section class="plan-card-web"><div class="plan-card-heading"><div class="plan-ai-mark" aria-hidden="true">AI</div><div class="section-intro"><span>PLAN &amp; AI</span><h3>Your allowance</h3></div></div><div id="quota-detail"></div><form id="coupon-redeem-form" class="coupon-redeem-form"><label>Coupon code<input id="coupon-redeem-code" maxlength="64" autocomplete="off" placeholder="Enter code"></label><button type="submit">Apply coupon</button><p id="coupon-redeem-message" role="status"></p></form><div class="account-actions"><button id="send-verification" type="button">Send verification email</button><button id="send-password-reset" type="button">Send password reset</button><a href="https://play.google.com/store/account/subscriptions" target="_blank" rel="noopener">Manage Google Play plan</a></div></section></div>`);
+  $("#panel-profile .profile-layout")?.insertAdjacentHTML("afterend",`<div class="profile-manage-grid"><form id="profile-form" class="profile-edit-card"><div class="profile-edit-heading"><div class="profile-heading-icon" aria-hidden="true"><svg class="nav-icon"><use href="#icon-user"></use></svg></div><div><span class="app-kicker">PERSONAL DETAILS</span><h3>Edit profile</h3><p>These details stay in sync with your ClothMatics mobile account.</p></div></div><fieldset class="profile-fieldset"><legend>About you</legend><div class="profile-form-grid"><label>Full name<input id="profile-name" maxlength="100" autocomplete="name"></label><label>Gender<select id="profile-gender"><option value="">Select gender</option><option>Male</option><option>Female</option><option>Other</option></select></label><label>Date of birth<input id="profile-dob" type="date"></label><label>Profession<input id="profile-profession" maxlength="100" autocomplete="organization-title"></label><label>Height (cm)<input id="profile-height" type="number" min="0" max="260" inputmode="decimal"></label><label>Weight (kg)<input id="profile-weight" type="number" min="0" max="400" inputmode="decimal"></label><label>City<input id="profile-city" maxlength="100" autocomplete="address-level2"></label><label><span class="field-label-row">Body type <button class="info-button" type="button" title="Choose the same self-reported body type used by the mobile profile." aria-label="About body type choices">i</button></span><select id="profile-body-type" aria-describedby="body-type-help"><option value="">Select gender first</option></select><small id="body-type-help">The choices match the mobile profile.</small></label></div></fieldset><fieldset class="profile-fieldset size-fieldset"><legend>Shopping sizes</legend><p>Use the same optional sizes available in the app. They help filter unsuitable product matches.</p><div class="profile-form-grid"><label>Top size<select id="size-top">${selectOptions(PROFILE_SIZE_OPTIONS.alpha,"Select top size")}</select></label><label>Bottom size<select id="size-bottom">${selectOptions(PROFILE_SIZE_OPTIONS.bottom,"Select bottom size")}</select></label><label id="profile-dress-field">Dress size<select id="size-dress">${selectOptions(PROFILE_SIZE_OPTIONS.alpha,"Select dress size")}</select></label><label>Shoe size<select id="size-shoes">${selectOptions(PROFILE_SIZE_OPTIONS.shoes,"Select UK / India size",true)}</select></label></div></fieldset><div class="profile-save-row"><button class="button button-primary" type="submit">Save profile</button><p id="profile-message" role="status"></p></div></form><section class="plan-card-web"><div class="plan-card-heading"><div class="plan-ai-mark" aria-hidden="true">AI</div><div class="section-intro"><span>PLAN &amp; AI</span><h3>Your allowance</h3></div></div><div id="quota-detail"></div><form id="coupon-redeem-form" class="coupon-redeem-form"><label>Coupon code<input id="coupon-redeem-code" maxlength="64" autocomplete="off" placeholder="Enter code"></label><button type="submit">Apply coupon</button><p id="coupon-redeem-message" role="status"></p></form><div class="account-actions"><a href="https://play.google.com/store/account/subscriptions" target="_blank" rel="noopener">Manage Google Play plan</a></div></section></div>`);
   $("#wardrobe-filter")?.insertAdjacentHTML("beforeend",'<option value="lookbook">Lookbook</option><option value="laundry">Laundry</option><option value="hidden">Hidden from AI</option>');
   if(!$("#open-camera-from-wardrobe")) $("#panel-wardrobe .panel-tools")?.insertAdjacentHTML("beforeend",'<button id="open-camera-from-wardrobe" class="button button-primary" type="button" data-go-panel="camera"><svg class="nav-icon" aria-hidden="true"><use href="#icon-camera"></use></svg>Add garment</button>');
   const wardrobeEmpty=$("#wardrobe-empty span");if(wardrobeEmpty)wardrobeEmpty.textContent="Add a clear photo of one garment to start your wardrobe.";
@@ -207,17 +204,6 @@ loadContent().catch(console.error);
 const authDialog = $("#auth-dialog");
 $$('[data-open-auth]').forEach((button) => button.addEventListener("click", () => authDialog.showModal()));
 $("#close-auth").addEventListener("click", () => authDialog.close());
-
-$("#auth-form")?.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  setAuthBusy(true);
-  try {
-    await signInWithEmailAndPassword(auth, $("#auth-email").value.trim(), $("#auth-password").value);
-    authDialog.close();
-  } catch (error) {
-    $("#auth-message").textContent = friendlyAuthError(error);
-  } finally { setAuthBusy(false); }
-});
 
 $("#google-signin").addEventListener("click", async () => {
   setAuthBusy(true);
@@ -774,8 +760,6 @@ $("#profile-gender").addEventListener("change",()=>syncProfileChoiceFields(""));
 $("#purchase-owned").addEventListener("change",useOwnedPurchaseExample);
 $("#notification-bell").addEventListener("click",()=>openPanel("notifications"));
 $("#mark-all-notifications").addEventListener("click",markAllNotificationsRead);
-$("#send-verification").addEventListener("click",async()=>{try{await sendEmailVerification(state.user);toast("Verification email sent.")}catch(error){toast(error.message)}});
-$("#send-password-reset").addEventListener("click",async()=>{try{await sendPasswordResetEmail(auth,state.user.email);toast("Password reset email sent.")}catch(error){toast(error.message)}});
 $("#close-garment-upload").addEventListener("click",closeGarmentUpload);
 $("#garment-photo").addEventListener("change",(event)=>selectGarmentFile(event.target.files?.[0]));
 $("#garment-upload-form").addEventListener("submit",processGarmentUpload);
@@ -1649,12 +1633,11 @@ function buildBadges(history,points,best,streak) { return [
 function safeUrl(value="") { try { const url=new URL(value); return url.protocol==="https:" ? url.href : ""; } catch { return ""; } }
 function safeAssetUrl(value="") { return /^\.\/assets\/[a-z0-9._-]+$/i.test(value) ? value : ""; }
 function escapeHtml(value="") { const div=document.createElement("div"); div.textContent=String(value); return div.innerHTML; }
-function setAuthBusy(busy) { const emailBtn=$("#email-signin"); if(emailBtn){emailBtn.disabled=busy;emailBtn.textContent=busy?"Signing in…":"Sign in";} const googleBtn=$("#google-signin"); if(googleBtn){googleBtn.disabled=busy;} const msg=$("#auth-message"); if(msg)msg.textContent=""; }
+function setAuthBusy(busy) { const googleBtn=$("#google-signin"); if(googleBtn){googleBtn.disabled=busy;} const msg=$("#auth-message"); if(msg)msg.textContent=""; }
 function friendlyAuthError(error) {
   const messages = {
-    "auth/invalid-credential": "The email or password is incorrect.",
-    "auth/unauthorized-domain": "Google sign-in is temporarily unavailable here. Please use email sign-in or contact support.",
-    "auth/operation-not-allowed": "This sign-in option is not available right now. Please try another option.",
+    "auth/unauthorized-domain": "Google sign-in is temporarily unavailable on this domain. Please contact support.",
+    "auth/operation-not-allowed": "Google sign-in is not enabled for this project right now.",
     "auth/popup-blocked": "Your browser blocked the Google sign-in window. Please allow pop-ups and try again.",
     "auth/popup-closed-by-user": "The Google sign-in window was closed before sign-in finished.",
     "auth/cancelled-popup-request": "Another sign-in window is already open.",

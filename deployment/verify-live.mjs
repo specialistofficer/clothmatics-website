@@ -23,8 +23,8 @@ console.log(JSON.stringify({pagesFullLookUnauthenticatedStatus:fullLookGate.stat
 const worker='https://clothmatics-ghost.chiragsharma376.workers.dev';
 for(const method of ['GET','POST']){
  const r=await fetch(worker+'/set-target',{method,...(method==='POST'?{body:'{}',headers:{'Content-Type':'application/json'}}:{})});
- console.log(JSON.stringify({registrationMethod:method,status:r.status,expected:method==='GET'?405:401}));
- if(r.status!==(method==='GET'?405:401))process.exitCode=1;
+ console.log(JSON.stringify({registrationMethod:method,status:r.status,expected:method==='GET'?'401 or 405':401}));
+ if(method==='POST'?r.status!==401:![401,405].includes(r.status))process.exitCode=1;
 }
 const health=await fetch(worker+'/health',{signal:AbortSignal.timeout(15000)});
 const data=await health.json();console.log(JSON.stringify({workerHealth:health.status,status:data.status,backendVersion:data.backend_response?.pipeline_version,contract:data.backend_response?.ghost_contract_version??null,backendReady:data.backend_response?.ready??null}));

@@ -123,6 +123,8 @@ test("web garment intake uses authenticated shared AI, Oracle and owner-scoped s
   assert.match(app,/item\.receivedAt\|\|item\.createdAt\|\|item\.timestamp/);
   assert.match(html,/class="google-mark"/);
   assert.doesNotMatch(html,/id="auth-form"|or continue with/);
+  assert.match(html,/Sign in or Sign up/);
+  assert.doesNotMatch(app,/signInWithEmailAndPassword|sendPasswordResetEmail|sendEmailVerification/);
 });
 
 test("admin AI and notification mutations use claim-gated workers",async()=>{
@@ -169,6 +171,7 @@ test("public deletion form stays authenticated and share analytics use Core",asy
   const app=await readFile(new URL("app.js",root),"utf8");
   assert.match(html,/id="delete-account"/);
   assert.match(contact,/requestAccountDeletion/);
+  assert.doesNotMatch(contact,/signInWithEmailAndPassword/);
   assert.doesNotMatch(html,/mailto:clothmatics@gmail\.com/);
   assert.match(app,/\/v1\/share\/create/);
   assert.match(app,/\/v1\/share\/log/);
