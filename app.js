@@ -46,7 +46,7 @@ import {prepareWornOutfit,usesWornOutfitPreparation,outfitGhostCategory} from '.
 import {hangerLoaderMarkup,updateHangerLoader,confirmDelete3D,outfitOrbitLoaderMarkup} from './garment-progress.mjs?v=20260912-site-orbit-loader-v1';
 import {renderGarmentEvidence,readGarmentEvidence} from './garment-review.mjs';
 import {createCompleteLookController} from './complete-look.js?v=20260912-site-orbit-loader-v1';
-import {generateFullLook,fullLookImageUrl} from './full-look.mjs?v=20260915-null-render-v1';
+import {generateFullLook,fullLookImageUrl} from './full-look.mjs?v=20260920-flux-v2';
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);

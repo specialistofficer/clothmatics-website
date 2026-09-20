@@ -68,10 +68,10 @@ export async function onRequestPost({request,env}){
     let result,attempts=0,cold=0,busy=0;
     while(true){attempts+=1;result=await fetch(fullLookGeneratorEndpoint(env),{method:'POST',body:makeForm(),redirect:'manual',signal:controller.signal});const retryCold=result.status===524&&cold<1,retryBusy=result.status===429&&busy<6;if(!retryCold&&!retryBusy)break;if(retryCold)cold+=1;else busy+=1;const delay=retryDelayMs(result,env);await result.body?.cancel().catch(()=>{});await wait(delay,controller.signal);}
     if(isRedirect(result))return json({error:{message:'The complete-look studio redirected unexpectedly.',code:'generation_redirect'}},502);
-    if(result.status===404||result.status===409)return json({error:{message:'The connected Kaggle engine needs the v9.4 full-look update.',code:'backend_upgrade_required'}},503);
+    if(result.status===404||result.status===409)return json({error:{message:'The complete-look studio needs an update.',code:'backend_upgrade_required'}},503);
     if(result.status===429)return json({error:{message:'The 3D studio stayed busy. Please retry shortly.',code:'gpu_busy'}},429);
-    if([502,503,520,521,522,523,524,525,526,530].includes(result.status))return json({error:{message:'The 3D GPU backend is offline. Restart the Kaggle backend connection, then retry.',code:'backend_offline'}},503);
-    if(!result.ok)return json({error:{message:'Kaggle could not generate this complete look.',code:'generation_failed'}},502);
+    if([502,503,520,521,522,523,524,525,526,530].includes(result.status))return json({error:{message:'The 3D complete-look studio is temporarily unavailable. Please retry in a moment.',code:'backend_offline'}},503);
+    if(!result.ok)return json({error:{message:'The complete-look studio could not generate this outfit. Please retry.',code:'generation_failed'}},502);
     const output=await boundedBytes(result,MAX_OUTPUT_BYTES);
     const isPng = output.length >= 8 && PNG.every((value,index)=>output[index]===value);
     const isJpeg = output.length >= 3 && output[0] === 0xFF && output[1] === 0xD8 && output[2] === 0xFF;
