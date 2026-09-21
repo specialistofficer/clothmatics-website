@@ -46,9 +46,8 @@
         <a class="button" href="./">Open wardrobe</a>
       </nav>
     </header>
-    <main class="support-main">
-      <section class="legal-hero" style="border-radius:24px;margin-bottom:32px;">
-        <span class="legal-kicker">CLOTHMATICS SUPPORT DESK</span>
+    <main>
+      <section class="legal-hero">
         <h1>ClothMatics Help &amp; Support</h1>
         <p>Prepare a support email below for account assistance, garment questions, AI styling help, or privacy requests. Never include your password or payment info.</p>
         <div class="support-promises" style="display:flex;gap:18px;margin-top:16px;font-size:12px;color:var(--muted);font-weight:700;flex-wrap:wrap;">
@@ -57,15 +56,16 @@
           <span>✓ Review before sending</span>
         </div>
       </section>
-      <section class="support-layout">
-        <aside class="support-guide">
-          <span>BEFORE YOU SEND</span><h2>Help us solve it faster</h2>
-          <ol><li><b>Choose the closest category</b><small>This helps us understand the type of problem.</small></li><li><b>Describe what you expected</b><small>Tell us what happened instead and when.</small></li><li><b>Include app details</b><small>Your app version and device type help us investigate.</small></li></ol>
-          <div><b>Account or privacy request?</b><p>Use the email connected to your ClothMatics account. We may request verification before changing or deleting account data.</p></div>
-        </aside>
-        <div class="support-card">
-          <form id="support-form">
-            <div class="form-heading"><span>CONTACT SUPPORT</span><h2>How can we help?</h2><p>Fields marked with * are required.</p></div>
+      <div class="support-main" style="padding-top:40px;">
+        <section class="support-layout" style="margin-top:0;">
+          <aside class="support-guide">
+            <h2>Help us solve it faster</h2>
+            <ol><li><b>Choose the closest category</b><small>This helps us understand the type of problem.</small></li><li><b>Describe what you expected</b><small>Tell us what happened instead and when.</small></li><li><b>Include app details</b><small>Your app version and device type help us investigate.</small></li></ol>
+            <div><b>Account or privacy request?</b><p>Use the email connected to your ClothMatics account. We may request verification before changing or deleting account data.</p></div>
+          </aside>
+          <div class="support-card">
+            <form id="support-form">
+              <div class="form-heading"><h2>How can we help?</h2><p>Fields marked with * are required.</p></div>
             <div class="form-grid">
               <label>Full name *<input id="support-name" name="name" maxlength="80" autocomplete="name" required /></label>
               <label>Reply email *<input id="support-email" name="email" type="email" maxlength="160" autocomplete="email" required /></label>
@@ -82,13 +82,14 @@
         </div>
       </section>
       <section id="delete-account" class="deletion-request-card" aria-labelledby="deletion-heading">
-        <div class="deletion-copy"><span class="legal-kicker">ACCOUNT DELETION</span><h2 id="deletion-heading">Request permanent account deletion</h2><p>Sign in with the same ClothMatics account you want deleted. After you submit, our authorized team will review the request.</p><ul><li>Deletes your sign-in account and profile</li><li>Deletes wardrobe items, images, outfits, plans, history, and related app data</li><li>This action is permanent after approval</li></ul></div>
+        <div class="deletion-copy"><h2 id="deletion-heading">Request permanent account deletion</h2><p>Sign in with the same ClothMatics account you want deleted. After you submit, our authorized team will review the request.</p><ul><li>Deletes your sign-in account and profile</li><li>Deletes wardrobe items, images, outfits, plans, history, and related app data</li><li>This action is permanent after approval</li></ul></div>
         <div class="deletion-auth-card">
           <div id="deletion-signed-out"><h3>Verify your account</h3><p>Sign in with your Google account to verify your identity.</p><button id="deletion-google" type="button" class="deletion-google">Continue with Google</button></div>
           <div id="deletion-signed-in" class="hidden"><span class="verified-label">VERIFIED ACCOUNT</span><h3 id="deletion-account-email"></h3><p>Only this signed-in account will be included in the request.</p><label class="consent-row"><input id="deletion-confirm" type="checkbox"><span>I understand that approval permanently deletes this account and its ClothMatics data.</span></label><button id="request-deletion" type="button" class="danger-action">Submit deletion request</button><button id="deletion-signout" type="button" class="text-action">Use another account</button></div>
           <p id="deletion-status" role="status" aria-live="polite"></p>
         </div>
       </section>
+      </div>
     </main>
     <footer class="legal-footer"><span>© 2026 ClothMatics</span><div><a href="./">Home</a><a href="./faq">FAQ</a><a href="./privacy">Privacy</a><a href="./terms">Terms</a></div></footer>
     <script type="module" src="./contact.js"></script>
