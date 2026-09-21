@@ -119,28 +119,28 @@
 
                 <!-- Scene 5 Title -->
                 <div class="cinema-title-block" data-scene="5">
-                  <span class="cinema-subheading">Scene 05 • The Recommendation</span>
-                  <h2 class="cinema-heading">Curated specifically<br /><span class="gradient-word">for today.</span></h2>
-                  <p class="cinema-lede">A balanced, elevated outfit tailored for your plans, 24°C weather, and pieces already in your wardrobe.</p>
+                  <span class="cinema-subheading">Scene 05 • Complete 3D Output</span>
+                  <h2 class="cinema-heading">Your complete look.<br /><span class="gradient-word">Generated in full 3D.</span></h2>
+                  <p class="cinema-lede">ClothMatics styles your outfit on a photorealistic 3D ghost mannequin—revealing layer depth, collar hollows, and fabric drape from every angle.</p>
                   <div class="cinema-feature-highlights">
-                    <span class="cinema-feat-chip">✦ 96/100 Look Match</span>
-                    <span class="cinema-feat-chip">✦ Ready To Wear</span>
+                    <span class="cinema-feat-chip">✦ Volumetric 3D Ghost Mannequin</span>
+                    <span class="cinema-feat-chip">✦ 360° Interactive Turntable</span>
                   </div>
                 </div>
 
                 <!-- Scene 6 Title & Final Message -->
                 <div class="cinema-title-block" data-scene="6">
-                  <span class="cinema-subheading">Scene 06 • The Experience</span>
-                  <h2 class="cinema-heading">Your wardrobe.<br /><span class="gradient-word">Understood by AI.</span></h2>
-                  <p class="cinema-lede">ClothMatics turns your closet into an intelligent personal stylist.</p>
+                  <span class="cinema-subheading">Scene 06 • Personal AI Stylist</span>
+                  <h2 class="cinema-heading">Your wardrobe.<br /><span class="gradient-word">Reimagined in 3D.</span></h2>
+                  <p class="cinema-lede">Transform everyday photos of your clothes into an intelligent 3D digital closet. See complete outfits before you get dressed.</p>
                   <div class="cinema-final-actions">
-                    <button class="cinema-btn-primary" data-open-auth>Explore Your Style <span>→</span></button>
+                    <button class="cinema-btn-primary" data-open-auth>Create Your 3D Closet Free <span>→</span></button>
                     <a class="cinema-btn-secondary" href="https://play.google.com/store/apps/details?id=com.clothmatics.app" target="_blank" rel="noopener noreferrer">Get the App</a>
                   </div>
                   <div class="cinema-trust-pill">
-                    <span>✓ Private Closet</span>
-                    <span>✓ Secure Processing</span>
-                    <span>✓ Web &amp; Mobile Sync</span>
+                    <span>⚡ Instant 3D Output</span>
+                    <span>🔒 100% Private Wardrobe</span>
+                    <span>✦ Free to Start</span>
                   </div>
                 </div>
               </div>
@@ -148,7 +148,7 @@
 
             <!-- Right Protected Column: 3D Visual Stage -->
             <div class="cinema-stage-col" id="cinema-stage-col">
-              <!-- 3D Floating Garment Nodes -->
+              <!-- 3D Floating Garment Nodes (Scenes 1-4) -->
               <div class="cinema-3d-space" id="cinema-3d-space" aria-hidden="true">
                 <div class="cinema-garment garment-overshirt" title="Navy Overshirt">
                   <div class="garment-hud-bracket"></div>
@@ -173,6 +173,37 @@
                 <div class="cinema-garment garment-accessory" title="Luxury Sapphire Watch">
                   <div class="garment-hud-bracket"></div>
                   <img src="./assets/cinematic/accessory.png" alt="Luxury Sapphire Timepiece" width="320" height="320" decoding="async" />
+                </div>
+              </div>
+
+              <!-- Complete 3D Ghost-Mannequin Turntable Showcase (Scenes 5 & 6) -->
+              <div class="cinema-3d-turntable" id="cinema-3d-turntable" aria-label="3D Ghost Mannequin Complete Look">
+                <!-- 3D Multi-Angle Viewer Stage -->
+                <div class="turntable-stage" id="turntable-stage">
+                  <!-- Holographic Pedestal Platform -->
+                  <div class="turntable-pedestal" aria-hidden="true">
+                    <div class="pedestal-disc"></div>
+                    <div class="pedestal-glow"></div>
+                    <div class="pedestal-grid"></div>
+                  </div>
+
+                  <div class="turntable-card-holo">
+                    <img class="look-3d-view look-3d-left" src="./assets/cinematic/look_3d_left.png" alt="3D Complete Look Left Angle" width="896" height="1200" decoding="async" />
+                    <img class="look-3d-view look-3d-front active" src="./assets/cinematic/look_3d_front.png" alt="3D Complete Look Front View" width="896" height="1200" decoding="async" />
+                    <img class="look-3d-view look-3d-right" src="./assets/cinematic/look_3d_right.png" alt="3D Complete Look Right Angle" width="896" height="1200" decoding="async" />
+                  </div>
+
+                  <!-- Floating 3D Telemetry & Interaction Badge -->
+                  <div class="turntable-hud" aria-hidden="true">
+                    <div class="turntable-pill-top">
+                      <span class="hud-dot"></span>
+                      <span>3D GHOST MANNEQUIN OUTPUT</span>
+                    </div>
+                    <div class="turntable-drag-pill" id="turntable-drag-pill">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg>
+                      <span>DRAG OR HOVER TO ROTATE 360°</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -239,19 +270,19 @@
               <!-- Luxury Recommendation Overlay (Scene 5) -->
               <div class="cinema-look-card" id="cinema-look-card">
                 <div class="look-header">
-                  <span class="look-kicker">TODAY'S LOOK</span>
-                  <span class="look-score">96 / 100</span>
+                  <span class="look-kicker">TODAY'S 3D LOOK</span>
+                  <span class="look-score">98 / 100</span>
                 </div>
-                <h3 class="look-title">Smart Casual Ensemble</h3>
+                <h3 class="look-title">Tailored Smart Casual</h3>
                 <div class="look-meta-chips">
                   <span class="look-chip">Occasion: Casual</span>
                   <span class="look-chip">Weather: 24°C</span>
                   <span class="look-chip">Style: Modern Classic</span>
                 </div>
                 <ul class="look-checklist">
-                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>Navy overshirt</li>
-                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>Crisp white tee</li>
-                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>Tailored beige trousers</li>
+                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>Navy overshirt (open drape)</li>
+                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>Crisp white crewneck tee</li>
+                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>Tailored stone chinos</li>
                   <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>Minimalist white sneakers</li>
                 </ul>
               </div>

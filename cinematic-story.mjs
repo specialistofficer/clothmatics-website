@@ -58,6 +58,48 @@ export function initCinematicStory() {
   const lookCard = container.querySelector("#cinema-look-card");
   const titleBlocks = container.querySelectorAll(".cinema-title-block");
 
+  // Complete 3D Ghost-Mannequin Turntable Elements
+  const turntable = container.querySelector("#cinema-3d-turntable");
+  const turntableStage = container.querySelector("#turntable-stage");
+  const turntableCard = container.querySelector(".turntable-card-holo");
+  const look3dFront = container.querySelector(".look-3d-front");
+  const look3dRight = container.querySelector(".look-3d-right");
+  const look3dLeft = container.querySelector(".look-3d-left");
+
+  // Turntable Interactive Drag & Tilt Controls
+  let manualAngle = null;
+  let isDraggingTurntable = false;
+  let startX = 0;
+  let startAngle = 0;
+
+  if (turntableStage) {
+    turntableStage.addEventListener("pointerdown", (e) => {
+      isDraggingTurntable = true;
+      startX = e.clientX;
+      startAngle = manualAngle !== null ? manualAngle : 0;
+      try {
+        turntableStage.setPointerCapture(e.pointerId);
+      } catch (_) {}
+    });
+
+    turntableStage.addEventListener("pointermove", (e) => {
+      if (!isDraggingTurntable) return;
+      const dx = e.clientX - startX;
+      manualAngle = clamp(-45, startAngle + dx * 0.45, 45);
+    });
+
+    const endDrag = (e) => {
+      if (isDraggingTurntable) {
+        isDraggingTurntable = false;
+        try {
+          turntableStage.releasePointerCapture(e.pointerId);
+        } catch (_) {}
+      }
+    };
+    turntableStage.addEventListener("pointerup", endDrag);
+    turntableStage.addEventListener("pointercancel", endDrag);
+  }
+
   // Continuous Film Loop Configuration:
   // 6 Scenes, 4.0s per scene = 24.0s total cycle time for relaxed luxury pacing
   const TOTAL_DURATION = 24000; // ms
@@ -101,6 +143,40 @@ export function initCinematicStory() {
     const float4 = Math.sin(t * 1.7 + 3.6) * 4;
     const float5 = Math.cos(t * 1.5 + 4.8) * 4;
     const float6 = Math.sin(t * 1.9 + 5.2) * 4;
+
+    // =========================================================================
+    // 3D TURNTABLE MULTI-ANGLE DYNAMICS & OSCILLATION
+    // =========================================================================
+    if (turntable && turntableCard) {
+      const autoAngle = Math.sin(t * 1.5) * 26; // Smooth continuous 3D oscillation (-26° to +26°)
+      if (manualAngle !== null) {
+        if (!isDraggingTurntable) {
+          manualAngle = lerp(manualAngle, autoAngle, 0.04);
+          if (Math.abs(manualAngle - autoAngle) < 0.4) {
+            manualAngle = null;
+          }
+        }
+      }
+      const activeAngle = manualAngle !== null ? manualAngle : autoAngle;
+
+      if (look3dFront && look3dRight && look3dLeft) {
+        if (activeAngle < -7) {
+          look3dLeft.classList.add("active");
+          look3dFront.classList.remove("active");
+          look3dRight.classList.remove("active");
+        } else if (activeAngle > 7) {
+          look3dRight.classList.add("active");
+          look3dFront.classList.remove("active");
+          look3dLeft.classList.remove("active");
+        } else {
+          look3dFront.classList.add("active");
+          look3dLeft.classList.remove("active");
+          look3dRight.classList.remove("active");
+        }
+      }
+
+      turntableCard.style.transform = `rotateY(${activeAngle * 0.45}deg) rotateX(${Math.cos(t * 1.2) * 2.5}deg) translateZ(10px)`;
+    }
 
     // =========================================================================
     // SCENE 1: YOUR WARDROBE (0.00 -> 0.167)
@@ -164,6 +240,11 @@ export function initCinematicStory() {
       contextTags.forEach((t) => (t.style.opacity = 0));
       criteriaPills.forEach((pill) => (pill.style.opacity = 0));
       if (lookCard) lookCard.classList.remove("active");
+      if (turntable) {
+        turntable.classList.remove("active");
+        turntable.classList.remove("shifted-desktop");
+        turntable.style.opacity = "0";
+      }
     }
 
     // =========================================================================
@@ -223,6 +304,11 @@ export function initCinematicStory() {
       contextTags.forEach((t) => (t.style.opacity = 0));
       criteriaPills.forEach((pill) => (pill.style.opacity = 0));
       if (lookCard) lookCard.classList.remove("active");
+      if (turntable) {
+        turntable.classList.remove("active");
+        turntable.classList.remove("shifted-desktop");
+        turntable.style.opacity = "0";
+      }
     }
 
     // =========================================================================
@@ -284,10 +370,15 @@ export function initCinematicStory() {
 
       criteriaPills.forEach((pill) => (pill.style.opacity = 0));
       if (lookCard) lookCard.classList.remove("active");
+      if (turntable) {
+        turntable.classList.remove("active");
+        turntable.classList.remove("shifted-desktop");
+        turntable.style.opacity = "0";
+      }
     }
 
     // =========================================================================
-    // SCENE 4: AI THINKING & ALIGNMENT (0.500 -> 0.667)
+    // SCENE 4: AI SYNTHESIS & 3D ASSEMBLY (0.500 -> 0.667)
     // =========================================================================
     else if (p < 0.667) {
       const s4Prog = (p - 0.500) / 0.167; // 0 -> 1
@@ -307,43 +398,59 @@ export function initCinematicStory() {
         garments.accessory.style.opacity = mapRange(s4Prog, 0.0, 0.35, 0.08, 0);
       }
 
-      // The selected 4 pieces (overshirt, tee, trousers, sneakers) restore clarity
-      // and smoothly glide into the vertical outfit stack
-      const outfitOpacity = mapRange(s4Prog, 0.05, 0.45, 0.08, 1);
+      // The selected 4 pieces smoothly fly inward into the center AI synthesis nexus,
+      // then dissolve directly into the Complete 3D Ghost-Mannequin Look
+      const flightProg = mapRange(s4Prog, 0.0, 0.62, 0, 1);
+      const flightEase = easeInOutCubic(flightProg);
+      const pieceFade = mapRange(s4Prog, 0.58, 0.90, 1, 0);
 
       if (garments.overshirt) {
-        const y = lerp(-40, isMobile ? -75 : -90, ease);
-        garments.overshirt.style.opacity = outfitOpacity;
+        const y = lerp(-40, -60, flightEase);
+        garments.overshirt.style.opacity = pieceFade;
         garments.overshirt.style.filter = "none";
-        garments.overshirt.style.transform = `translate3d(0px, ${y + float1}px, 35px) scale(${1.05 * baseScale})`;
+        garments.overshirt.style.transform = `translate3d(0px, ${y + float1}px, 35px) scale(${lerp(1.05, 0.88, flightEase) * baseScale})`;
       }
 
       if (garments.tee) {
-        const x = lerp(isMobile ? -100 : -200, 0, ease);
-        const y = lerp(-80, isMobile ? -70 : -85, ease);
-        garments.tee.style.opacity = outfitOpacity * 0.88;
+        const x = lerp(isMobile ? -100 : -200, -20, flightEase);
+        const y = lerp(-80, -55, flightEase);
+        garments.tee.style.opacity = pieceFade * 0.9;
         garments.tee.style.filter = "none";
-        garments.tee.style.transform = `translate3d(${x}px, ${y + float1}px, 10px) scale(${0.95 * baseScale})`;
+        garments.tee.style.transform = `translate3d(${x}px, ${y + float2}px, 10px) scale(${lerp(0.92, 0.84, flightEase) * baseScale})`;
       }
 
       if (garments.trousers) {
-        const y = lerp(160, isMobile ? 65 : 80, ease);
-        garments.trousers.style.opacity = outfitOpacity;
+        const y = lerp(160, 55, flightEase);
+        garments.trousers.style.opacity = pieceFade;
         garments.trousers.style.filter = "none";
-        garments.trousers.style.transform = `translate3d(0px, ${y + float5}px, 20px) scale(${0.98 * baseScale})`;
+        garments.trousers.style.transform = `translate3d(0px, ${y + float5}px, 20px) scale(${lerp(0.95, 0.88, flightEase) * baseScale})`;
       }
 
       if (garments.sneakers) {
-        const x = lerp(isMobile ? 95 : 180, 0, ease);
-        const y = lerp(160, isMobile ? 185 : 215, ease);
-        garments.sneakers.style.opacity = outfitOpacity;
+        const x = lerp(isMobile ? 95 : 180, 25, flightEase);
+        const y = lerp(160, 170, flightEase);
+        garments.sneakers.style.opacity = pieceFade;
         garments.sneakers.style.filter = "none";
-        garments.sneakers.style.transform = `translate3d(${x}px, ${y + float6}px, 5px) scale(${0.9 * baseScale})`;
+        garments.sneakers.style.transform = `translate3d(${x}px, ${y + float6}px, 5px) scale(${lerp(0.88, 0.82, flightEase) * baseScale})`;
+      }
+
+      // Complete 3D Turntable emerges directly out of the AI synthesis
+      if (turntable) {
+        turntable.classList.remove("shifted-desktop");
+        const ttProg = mapRange(s4Prog, 0.55, 0.94, 0, 1);
+        if (ttProg > 0.01) {
+          turntable.classList.add("active");
+          turntable.style.opacity = ttProg;
+          turntable.style.transform = `scale(${lerp(0.86, 1.0, ttProg)})`;
+        } else {
+          turntable.classList.remove("active");
+          turntable.style.opacity = "0";
+        }
       }
 
       // Criteria evaluation pills flash and verify
       criteriaPills.forEach((pill, idx) => {
-        const trigger = 0.1 + idx * 0.14;
+        const trigger = 0.08 + idx * 0.12;
         const pillProg = mapRange(s4Prog, trigger, trigger + 0.18, 0, 1);
         pill.style.opacity = pillProg;
         pill.style.transform = `scale(${lerp(0.85, 1, pillProg)})`;
@@ -353,36 +460,28 @@ export function initCinematicStory() {
     }
 
     // =========================================================================
-    // SCENE 5: THE RECOMMENDATION (0.667 -> 0.833)
+    // SCENE 5: THE COMPLETE 3D LOOK SHOWCASE (0.667 -> 0.833)
     // =========================================================================
     else if (p < 0.833) {
-      const s5Prog = (p - 0.667) / 0.166; // 0 -> 1
-      const ease = easeInOutCubic(s5Prog);
-
       if (profileNode) profileNode.style.opacity = 0;
       contextTags.forEach((t) => (t.style.opacity = 0));
       criteriaPills.forEach((pill) => (pill.style.opacity = 0));
       metaTags.forEach((t) => (t.style.opacity = 0));
 
-      // Assembled outfit shifts left on desktop to make generous room for Today's Look card
-      const shiftX = isMobile ? 0 : lerp(0, -140, ease);
-      const s5GarmentOpacity = isMobile ? 0 : 1; // On mobile, hide background clothes so card is 100% clean
+      // Hide individual 2D flat pieces in favor of the Complete 3D Look
+      Object.values(garments).forEach((el) => {
+        if (el) el.style.opacity = 0;
+      });
 
-      if (garments.overshirt) {
-        garments.overshirt.style.opacity = s5GarmentOpacity;
-        garments.overshirt.style.transform = `translate3d(${shiftX}px, ${-90 + float1}px, 35px) scale(${1.05 * baseScale})`;
-      }
-      if (garments.tee) {
-        garments.tee.style.opacity = s5GarmentOpacity * 0.88;
-        garments.tee.style.transform = `translate3d(${shiftX}px, ${-85 + float1}px, 10px) scale(${0.95 * baseScale})`;
-      }
-      if (garments.trousers) {
-        garments.trousers.style.opacity = s5GarmentOpacity;
-        garments.trousers.style.transform = `translate3d(${shiftX}px, ${80 + float5}px, 20px) scale(${0.98 * baseScale})`;
-      }
-      if (garments.sneakers) {
-        garments.sneakers.style.opacity = s5GarmentOpacity;
-        garments.sneakers.style.transform = `translate3d(${shiftX}px, ${215 + float6}px, 5px) scale(${0.9 * baseScale})`;
+      // The Complete 3D Ghost-Mannequin Turntable is the hero
+      if (turntable) {
+        turntable.classList.add("active");
+        turntable.style.opacity = 1;
+        if (!isMobile) {
+          turntable.classList.add("shifted-desktop");
+        } else {
+          turntable.classList.remove("shifted-desktop");
+        }
       }
 
       // Reveal Luxury Look Card
@@ -392,39 +491,25 @@ export function initCinematicStory() {
     }
 
     // =========================================================================
-    // SCENE 6: THE FINAL EXPERIENCE & WRAP-AROUND (0.833 -> 1.000)
+    // SCENE 6: PERSONAL AI STYLIST & CONVERSION FINALE (0.833 -> 1.000)
     // =========================================================================
     else {
-      const s6Prog = (p - 0.833) / 0.167; // 0 -> 1
-      const ease = easeInOutCubic(s6Prog);
-
       if (lookCard) lookCard.classList.remove("active");
       if (profileNode) profileNode.style.opacity = 0;
       contextTags.forEach((t) => (t.style.opacity = 0));
       criteriaPills.forEach((pill) => (pill.style.opacity = 0));
       metaTags.forEach((t) => (t.style.opacity = 0));
 
-      // Outfit recedes deep into 3D background
-      const pullScale = lerp(baseScale * 0.8, baseScale * 0.45, ease);
-      const pullZ = lerp(-50, -450, ease);
-      const shiftX = isMobile ? 0 : lerp(-140, 0, ease);
-      const finalOpacity = lerp(0.35, 0.15, ease);
+      // Individual garments stay hidden
+      Object.values(garments).forEach((el) => {
+        if (el) el.style.opacity = 0;
+      });
 
-      if (garments.overshirt) {
-        garments.overshirt.style.opacity = finalOpacity;
-        garments.overshirt.style.transform = `translate3d(${shiftX}px, -40px, ${pullZ + 35}px) scale(${pullScale})`;
-      }
-      if (garments.tee) {
-        garments.tee.style.opacity = finalOpacity * 0.85;
-        garments.tee.style.transform = `translate3d(${shiftX}px, -35px, ${pullZ + 10}px) scale(${pullScale * 0.95})`;
-      }
-      if (garments.trousers) {
-        garments.trousers.style.opacity = finalOpacity;
-        garments.trousers.style.transform = `translate3d(${shiftX}px, 70px, ${pullZ + 20}px) scale(${pullScale * 0.98})`;
-      }
-      if (garments.sneakers) {
-        garments.sneakers.style.opacity = finalOpacity;
-        garments.sneakers.style.transform = `translate3d(${shiftX}px, 175px, ${pullZ}px) scale(${pullScale * 0.9})`;
+      // Turntable returns to center stage on desktop to showcase the 3D look alongside the final CTA
+      if (turntable) {
+        turntable.classList.add("active");
+        turntable.classList.remove("shifted-desktop");
+        turntable.style.opacity = 1;
       }
     }
   }

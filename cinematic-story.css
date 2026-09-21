@@ -467,6 +467,183 @@
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 18px rgba(34, 197, 94, 0.25);
 }
 
+/* ==========================================================================
+   Complete 3D Ghost-Mannequin Turntable Showcase (Scenes 5 & 6)
+   ========================================================================== */
+.cinema-3d-turntable {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.92);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 22;
+}
+
+.cinema-3d-turntable.active {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+}
+
+/* On desktop Scene 5, shift turntable left so it pairs cleanly with the Today's Look card */
+.cinema-3d-turntable.shifted-desktop {
+  transform: translateX(-120px) scale(0.96);
+}
+
+.turntable-stage {
+  position: relative;
+  width: 320px;
+  height: 460px;
+  perspective: 1200px;
+  transform-style: preserve-3d;
+  cursor: grab;
+  user-select: none;
+  touch-action: pan-y;
+}
+
+.turntable-stage:active {
+  cursor: grabbing;
+}
+
+.turntable-card-holo {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: transform 0.15s ease-out;
+}
+
+.look-3d-view {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 25px 50px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 35px rgba(91, 61, 245, 0.35));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.look-3d-view.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Holographic Pedestal Base */
+.turntable-pedestal {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%) rotateX(72deg);
+  width: 300px;
+  height: 110px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.pedestal-disc {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid rgba(124, 58, 237, 0.5);
+  background: radial-gradient(ellipse at center, rgba(91, 61, 245, 0.35) 0%, rgba(236, 72, 153, 0.12) 55%, transparent 80%);
+  box-shadow: 0 0 35px rgba(91, 61, 245, 0.45), inset 0 0 25px rgba(124, 58, 237, 0.3);
+}
+
+.pedestal-glow {
+  position: absolute;
+  inset: 14%;
+  border-radius: 50%;
+  border: 1px dashed rgba(196, 181, 253, 0.45);
+  box-shadow: 0 0 15px rgba(124, 58, 237, 0.4);
+  animation: pedestalSpin 20s linear infinite;
+}
+
+.pedestal-grid {
+  position: absolute;
+  inset: 32%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(134, 239, 172, 0.25) 0%, transparent 70%);
+}
+
+@keyframes pedestalSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Turntable Telemetry & Drag Prompt */
+.turntable-hud {
+  position: absolute;
+  bottom: -44px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  z-index: 26;
+  pointer-events: none;
+}
+
+.turntable-pill-top {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background: rgba(14, 12, 25, 0.88);
+  border: 1px solid rgba(124, 58, 237, 0.4);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #c4b5fd;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+.hud-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 8px #22c55e;
+}
+
+.turntable-drag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.70rem;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: 0.05em;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.turntable-drag-pill svg {
+  width: 14px;
+  height: 14px;
+  color: #EC4899;
+}
+
 /* Scene 5: Luxury Recommendation Overlay */
 .cinema-look-card {
   position: absolute;
@@ -867,20 +1044,23 @@
   .crit-1 { top: 60% !important; left: 8px !important; padding: 6px 12px !important; font-size: 0.74rem !important; }
   .crit-2 { top: 60% !important; right: 8px !important; padding: 6px 12px !important; font-size: 0.74rem !important; }
 
-  /* Scene 5 Look Card on Mobile */
+  /* Compact mobile Look Card so 3D mannequin is fully visible */
   .cinema-look-card {
     position: absolute;
-    left: 12px !important;
-    right: 12px !important;
-    bottom: 20px !important;
+    left: 14px !important;
+    right: 14px !important;
+    bottom: 12px !important;
     top: auto !important;
     width: auto !important;
     max-width: none !important;
-    background: #0e0c1a !important;
-    border: 1px solid rgba(255, 255, 255, 0.18) !important;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.9), 0 0 25px rgba(91, 61, 245, 0.3) !important;
-    transform: translateY(20px) !important;
-    padding: 16px !important;
+    background: rgba(14, 12, 26, 0.92) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(124, 58, 237, 0.35) !important;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.9) !important;
+    border-radius: 14px !important;
+    padding: 10px 14px !important;
+    transform: translateY(16px) !important;
     z-index: 35 !important;
   }
 
@@ -888,19 +1068,106 @@
     transform: translateY(0) !important;
   }
 
+  .cinema-look-card .look-header {
+    margin-bottom: 2px !important;
+  }
 
+  .cinema-look-card .look-kicker {
+    font-size: 0.65rem !important;
+  }
+
+  .cinema-look-card .look-score {
+    font-size: 0.76rem !important;
+    padding: 2px 6px !important;
+  }
+
+  .cinema-look-card .look-title {
+    font-size: 0.98rem !important;
+    margin: 0 0 4px 0 !important;
+  }
+
+  .cinema-look-card .look-meta-chips {
+    margin-bottom: 0 !important;
+    gap: 4px !important;
+  }
+
+  .cinema-look-card .look-chip {
+    font-size: 0.64rem !important;
+    padding: 2px 6px !important;
+  }
+
+  .cinema-look-card .look-checklist {
+    display: none !important; /* Hide long vertical list on mobile so 3D mannequin is clearly visible */
+  }
+
+  /* Mobile Turntable Sizing */
+  .cinema-3d-turntable {
+    position: absolute !important;
+    inset: 0 !important;
+    height: 100% !important;
+    transform: scale(0.68) translateY(-30px) !important;
+    z-index: 22 !important;
+  }
+
+  .cinema-3d-turntable.shifted-desktop {
+    transform: scale(0.68) translateY(-30px) !important; /* Keep centered on mobile */
+  }
+
+  .turntable-stage {
+    width: 240px !important;
+    height: 350px !important;
+  }
+
+  .turntable-pedestal {
+    width: 210px !important;
+    height: 75px !important;
+    bottom: 12px !important;
+  }
+
+  .turntable-hud {
+    bottom: -36px !important;
+    transform: translateX(-50%) scale(0.85) !important;
+  }
+
+  .cinema-title-block[data-scene="6"] .cinema-heading {
+    font-size: 1.35rem !important;
+    line-height: 1.15 !important;
+  }
+
+  .cinema-title-block[data-scene="6"] .cinema-lede {
+    font-size: 0.78rem !important;
+    line-height: 1.3 !important;
+    margin: 4px auto 0 auto !important;
+    max-width: 290px !important;
+  }
+
+  .cinema-btn-primary {
+    padding: 10px 20px !important;
+    font-size: 0.84rem !important;
+  }
+
+  .cinema-btn-secondary {
+    padding: 9px 16px !important;
+    font-size: 0.80rem !important;
+  }
 
   .cinema-final-actions {
-    flex-direction: column;
-    width: 100%;
-    max-width: 300px;
-    margin: 14px auto 0 auto;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+    max-width: 320px !important;
+    margin: 8px auto 0 auto !important;
   }
 
   .cinema-trust-pill {
-    flex-direction: column;
-    gap: 4px;
-    margin-top: 10px;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    margin-top: 6px !important;
+    font-size: 0.66rem !important;
   }
 }
 
