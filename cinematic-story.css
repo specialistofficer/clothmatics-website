@@ -109,7 +109,7 @@
   position: relative;
   width: 100%;
   max-width: 1400px;
-  height: calc(100% - 60px);
+  height: 100%;
   margin: 0 auto;
   display: grid;
   grid-template-columns: 42% 58%;
@@ -366,17 +366,17 @@
 .meta-5 { top: 14%; right: 3%; }
 .meta-6 { bottom: 14%; left: 3%; top: auto; }
 
-.ctx-1 { top: 18%; left: 6%; }
-.ctx-2 { top: 18%; right: 6%; }
-.ctx-3 { bottom: 18%; left: 6%; top: auto; }
-.ctx-4 { bottom: 18%; right: 6%; top: auto; }
-.ctx-5 { bottom: 8%; left: 50%; top: auto; transform: translateX(-50%); }
+.ctx-1 { top: 16%; left: 12%; }
+.ctx-2 { top: 16%; right: 12%; }
+.ctx-3 { bottom: 16%; left: 12%; top: auto; }
+.ctx-4 { bottom: 16%; right: 12%; top: auto; }
+.ctx-5 { bottom: 6%; left: 50%; top: auto; transform: translateX(-50%); }
 
-.crit-1 { top: 20%; left: 8%; }
-.crit-2 { top: 20%; right: 8%; }
-.crit-3 { bottom: 20%; left: 8%; top: auto; }
-.crit-4 { bottom: 20%; right: 8%; top: auto; }
-.crit-5 { bottom: 8%; left: 50%; top: auto; transform: translateX(-50%); }
+.crit-1 { top: 18%; left: 10%; }
+.crit-2 { top: 18%; right: 10%; }
+.crit-3 { bottom: 18%; left: 10%; top: auto; }
+.crit-4 { bottom: 18%; right: 10%; top: auto; }
+.crit-5 { bottom: 6%; left: 50%; top: auto; transform: translateX(-50%); }
 
 /* Human Silhouette & Profile Node (Scene 3) */
 .cinema-profile-node {
@@ -741,94 +741,7 @@
   gap: 6px;
 }
 
-/* Interactive Timeline Navigation Scrubber & Play/Pause */
-.cinema-timeline-nav {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  z-index: 40;
-  background: rgba(14, 12, 25, 0.88);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  padding: 8px 18px;
-  border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-  pointer-events: auto;
-}
 
-.cinema-play-pause-btn {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 50%;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ffffff;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  padding: 0;
-  flex-shrink: 0;
-}
-
-.cinema-play-pause-btn:hover {
-  background: rgba(236, 72, 153, 0.3);
-  border-color: #EC4899;
-  transform: scale(1.08);
-}
-
-.timeline-bar {
-  width: 180px;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.14);
-  border-radius: 999px;
-  overflow: hidden;
-  cursor: pointer;
-}
-
-.timeline-progress {
-  width: 0%;
-  height: 100%;
-  background: linear-gradient(90deg, #5B3DF5, #EC4899);
-  border-radius: 999px;
-  transition: width 0.05s linear;
-}
-
-.timeline-scenes {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.timeline-dot {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: var(--cinema-text-dim);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 9999px;
-  transition: all 0.2s ease;
-}
-
-.timeline-dot:hover {
-  color: var(--cinema-text-high);
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.timeline-dot.active {
-  color: #EC4899;
-  background: rgba(236, 72, 153, 0.15);
-}
 
 /* Mobile & Tablet Adaptations */
 @media (max-width: 992px) {
@@ -948,11 +861,11 @@
     padding: 6px 10px !important;
   }
 
-  .ctx-1 { top: 64% !important; left: 10px !important; }
-  .ctx-2 { top: 64% !important; right: 10px !important; }
+  .ctx-1 { top: 60% !important; left: 8px !important; max-width: 165px !important; padding: 6px 10px !important; font-size: 0.74rem !important; }
+  .ctx-2 { top: 60% !important; right: 8px !important; max-width: 165px !important; padding: 6px 10px !important; font-size: 0.74rem !important; }
 
-  .crit-1 { top: 64% !important; left: 8px !important; }
-  .crit-2 { top: 64% !important; right: 8px !important; }
+  .crit-1 { top: 60% !important; left: 8px !important; padding: 6px 12px !important; font-size: 0.74rem !important; }
+  .crit-2 { top: 60% !important; right: 8px !important; padding: 6px 12px !important; font-size: 0.74rem !important; }
 
   /* Scene 5 Look Card on Mobile */
   .cinema-look-card {
@@ -975,13 +888,7 @@
     transform: translateY(0) !important;
   }
 
-  .timeline-bar {
-    width: 120px;
-  }
 
-  .timeline-scenes {
-    display: none !important;
-  }
 
   .cinema-final-actions {
     flex-direction: column;
