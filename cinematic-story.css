@@ -688,30 +688,7 @@
   box-shadow: 0 0 8px #22c55e;
 }
 
-.turntable-drag-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 14px;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.70rem;
-  font-weight: 600;
-  color: #ffffff;
-  letter-spacing: 0.05em;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-  transition: background 0.2s ease, transform 0.2s ease;
-}
 
-.turntable-drag-pill svg {
-  width: 14px;
-  height: 14px;
-  color: #EC4899;
-}
 
 /* Scene 5: Luxury Recommendation Overlay */
 .cinema-look-card {
@@ -970,30 +947,7 @@
   border-color: rgba(255, 255, 255, 0.3);
 }
 
-.cinema-replay-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 16px 22px;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  color: rgba(255, 255, 255, 0.78);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.95rem;
-  font-weight: 500;
-  text-decoration: none;
-  cursor: pointer;
-  backdrop-filter: blur(10px);
-  transition: all 0.25s ease;
-}
 
-.cinema-replay-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.3);
-  transform: translateY(-1px);
-}
 
 .cinema-trust-pill {
   margin-top: 24px;
@@ -1242,11 +1196,6 @@
   .cinema-btn-secondary {
     padding: 9px 16px !important;
     font-size: 0.80rem !important;
-  }
-
-  .cinema-replay-btn {
-    padding: 8px 14px !important;
-    font-size: 0.76rem !important;
   }
 
   .cinema-final-actions {

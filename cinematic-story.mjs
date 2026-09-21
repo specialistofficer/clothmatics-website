@@ -612,15 +612,6 @@ export function initCinematicStory() {
     },
   };
 
-  // Connect Replay Button in Scene 6 actions
-  const replayBtn = container.querySelector("#cinema-replay-btn");
-  if (replayBtn) {
-    replayBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      controller.replay();
-    });
-  }
-
   if (typeof window !== "undefined") {
     window.__clothmaticsCinema = controller;
   }
