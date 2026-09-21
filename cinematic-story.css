@@ -18,31 +18,32 @@
   --cinema-glass: rgba(255, 255, 255, 0.04);
 }
 
-/* 450vh tall scroll track */
+/* Natural hero section height, NO sticky scroll hijacking */
 .cinematic-hero-experience {
   position: relative;
   width: 100%;
-  height: 450vh;
+  height: 92vh;
+  min-height: 680px;
+  max-height: 900px;
   background: var(--cinema-bg);
   color: var(--cinema-text-high);
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
-/* Sticky 100vh viewport */
+/* Luxury Viewport */
 .cinematic-viewport {
-  position: sticky;
+  position: relative;
   top: 0;
   left: 0;
   width: 100%;
-  height: 100vh;
-  height: 100dvh;
+  height: 100%;
   overflow: hidden;
-  background: radial-gradient(circle at 50% 35%, #151128 0%, #08070e 65%, #050408 100%);
-  perspective: 1200px;
-  transform-style: preserve-3d;
+  background: radial-gradient(circle at 65% 45%, #16122d 0%, #08070e 65%, #050408 100%);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   user-select: none;
@@ -103,18 +104,43 @@
   pointer-events: none;
 }
 
-/* Main 3D Stage */
-.cinematic-stage {
+/* Split Stage Layout (42% Left Narrative, 58% Right 3D Visual Stage) */
+.cinema-split-stage {
   position: relative;
   width: 100%;
-  max-width: 1360px;
-  height: 100%;
-  max-height: 900px;
+  max-width: 1400px;
+  height: calc(100% - 60px);
   margin: 0 auto;
-  z-index: 2;
+  display: grid;
+  grid-template-columns: 42% 58%;
+  align-items: center;
+  padding: 0 48px;
+  z-index: 10;
+  box-sizing: border-box;
+}
+
+/* Left Narrative Column */
+.cinema-narrative-col {
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  z-index: 25;
+  pointer-events: auto;
+}
+
+/* Right 3D Stage Column */
+.cinema-stage-col {
+  position: relative;
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  perspective: 1200px;
+  transform-style: preserve-3d;
+  z-index: 15;
 }
 
 /* 3D Perspective Canvas for floating garments */
@@ -332,25 +358,25 @@
   color: #86efac;
 }
 
-/* Specific Tag Positions */
-.meta-1 { top: 38%; left: 42%; }
-.meta-2 { top: 34%; left: 14%; }
-.meta-3 { top: 72%; left: 42%; }
-.meta-4 { top: 74%; right: 16%; }
-.meta-5 { top: 32%; right: 14%; }
-.meta-6 { top: 70%; left: 16%; }
+/* Specific Tag Positions inside Right Stage */
+.meta-1 { top: 14%; left: 38%; }
+.meta-2 { top: 14%; left: 3%; }
+.meta-3 { bottom: 12%; left: 38%; top: auto; }
+.meta-4 { bottom: 14%; right: 3%; top: auto; }
+.meta-5 { top: 14%; right: 3%; }
+.meta-6 { bottom: 14%; left: 3%; top: auto; }
 
-.ctx-1 { top: 34%; left: 14%; }
-.ctx-2 { top: 34%; right: 14%; }
-.ctx-3 { top: 68%; left: 14%; }
-.ctx-4 { top: 68%; right: 14%; }
-.ctx-5 { top: 78%; left: 50%; transform: translateX(-50%); }
+.ctx-1 { top: 18%; left: 6%; }
+.ctx-2 { top: 18%; right: 6%; }
+.ctx-3 { bottom: 18%; left: 6%; top: auto; }
+.ctx-4 { bottom: 18%; right: 6%; top: auto; }
+.ctx-5 { bottom: 8%; left: 50%; top: auto; transform: translateX(-50%); }
 
-.crit-1 { top: 36%; left: 18%; }
-.crit-2 { top: 36%; right: 18%; }
-.crit-3 { top: 66%; left: 18%; }
-.crit-4 { top: 66%; right: 18%; }
-.crit-5 { top: 78%; left: 50%; transform: translateX(-50%); }
+.crit-1 { top: 20%; left: 8%; }
+.crit-2 { top: 20%; right: 8%; }
+.crit-3 { bottom: 20%; left: 8%; top: auto; }
+.crit-4 { bottom: 20%; right: 8%; top: auto; }
+.crit-5 { bottom: 8%; left: 50%; top: auto; transform: translateX(-50%); }
 
 /* Human Silhouette & Profile Node (Scene 3) */
 .cinema-profile-node {
@@ -444,12 +470,12 @@
 /* Scene 5: Luxury Recommendation Overlay */
 .cinema-look-card {
   position: absolute;
-  right: 5%;
+  right: 16px;
   top: 50%;
-  transform: translateY(-50%) translateX(30px);
-  width: 320px;
-  padding: 28px 26px;
-  background: rgba(14, 12, 25, 0.78);
+  transform: translateY(-50%) translateX(24px);
+  width: 290px;
+  padding: 24px 22px;
+  background: rgba(14, 12, 25, 0.84);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -463,8 +489,8 @@
 
 .cinema-look-card.active {
   opacity: 1;
-  transform: translateY(-50%) translateX(0);
   pointer-events: auto;
+  transform: translateY(-50%) translateX(0);
 }
 
 .look-header {
@@ -544,39 +570,40 @@
   flex-shrink: 0;
 }
 
-/* Editorial Typography & Scene Titles */
+/* Editorial Typography & Scene Titles in Left Narrative Column */
 .cinema-narratives {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 35;
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  min-height: 380px;
 }
 
 .cinema-title-block {
   position: absolute;
-  top: 96px;
-  left: 50%;
-  transform: translateX(-50%) translateY(16px);
-  text-align: center;
-  width: 90%;
-  max-width: 820px;
-  padding: 0 20px;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%) translateY(20px);
+  text-align: left;
+  width: 100%;
+  padding: 0;
   opacity: 0;
-  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .cinema-title-block.active {
   opacity: 1;
-  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+  transform: translateY(-50%) translateY(0);
 }
 
 .cinema-title-block[data-scene="6"] {
   top: 50%;
-  transform: translate(-50%, -50%) translateY(16px);
+  transform: translateY(-50%) translateY(20px);
 }
 
 .cinema-title-block[data-scene="6"].active {
-  transform: translate(-50%, -50%) translateY(0);
+  transform: translateY(-50%) translateY(0);
 }
 
 .cinema-subheading {
@@ -589,15 +616,15 @@
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: #EC4899;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .cinema-heading {
   font-family: 'Manrope', sans-serif;
-  font-size: clamp(2rem, 3.8vw, 3.2rem);
+  font-size: clamp(2rem, 3.2vw, 3rem);
   font-weight: 800;
   letter-spacing: -0.03em;
-  line-height: 1.14;
+  line-height: 1.15;
   color: #ffffff;
   margin: 0;
   text-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
@@ -611,11 +638,34 @@
 
 .cinema-lede {
   font-family: 'DM Sans', sans-serif;
-  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  font-size: clamp(0.95rem, 1.2vw, 1.12rem);
   color: var(--cinema-text-mid);
-  margin: 16px auto 0 auto;
-  max-width: 580px;
-  line-height: 1.5;
+  margin: 14px 0 0 0;
+  max-width: 480px;
+  line-height: 1.55;
+}
+
+.cinema-feature-highlights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.cinema-feat-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.74rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: #e2e8f0;
 }
 
 /* Scene 6: Final Brand Anthem & CTAs */
@@ -691,26 +741,55 @@
   gap: 6px;
 }
 
-/* Interactive Timeline Navigation Scrubber */
+/* Interactive Timeline Navigation Scrubber & Play/Pause */
 .cinema-timeline-nav {
   position: absolute;
-  bottom: 24px;
+  bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  z-index: 30;
+  gap: 14px;
+  z-index: 40;
+  background: rgba(14, 12, 25, 0.88);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  padding: 8px 18px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
   pointer-events: auto;
 }
 
+.cinema-play-pause-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.cinema-play-pause-btn:hover {
+  background: rgba(236, 72, 153, 0.3);
+  border-color: #EC4899;
+  transform: scale(1.08);
+}
+
 .timeline-bar {
-  width: 240px;
-  height: 3px;
-  background: rgba(255, 255, 255, 0.12);
+  width: 180px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.14);
   border-radius: 999px;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .timeline-progress {
@@ -718,79 +797,102 @@
   height: 100%;
   background: linear-gradient(90deg, #5B3DF5, #EC4899);
   border-radius: 999px;
-  transition: width 0.1s linear;
+  transition: width 0.05s linear;
 }
 
 .timeline-scenes {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 4px;
 }
 
 .timeline-dot {
   font-family: 'DM Sans', sans-serif;
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   color: var(--cinema-text-dim);
+  background: transparent;
+  border: none;
   cursor: pointer;
-  padding: 4px 6px;
-  border-radius: 4px;
-  transition: color 0.2s ease;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  transition: all 0.2s ease;
 }
 
 .timeline-dot:hover {
   color: var(--cinema-text-high);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .timeline-dot.active {
   color: #EC4899;
+  background: rgba(236, 72, 153, 0.15);
 }
 
 /* Mobile & Tablet Adaptations */
 @media (max-width: 992px) {
-  .cinema-heading {
-    font-size: clamp(1.8rem, 4.5vw, 2.4rem);
+  .cinema-split-stage {
+    grid-template-columns: 46% 54%;
+    padding: 0 24px;
   }
 
-  .cinema-sub {
+  .cinema-heading {
+    font-size: clamp(1.7rem, 3.6vw, 2.4rem);
+  }
+
+  .cinema-lede {
     font-size: 0.95rem;
   }
 
   .cinema-look-card {
-    right: 50%;
-    transform: translateY(-50%) translateX(50%);
-    width: 90%;
-    max-width: 320px;
-    padding: 20px;
-  }
-
-  .garment-overshirt { width: 190px; }
-  .garment-tee { width: 160px; }
-  .garment-trousers { width: 170px; }
-  .garment-sneakers { width: 160px; }
-  .garment-jacket { width: 200px; }
-  .garment-accessory { width: 120px; }
-
-  .timeline-scenes {
-    gap: 8px;
-  }
-
-  .timeline-dot {
-    font-size: 0.65rem;
+    width: 250px;
+    padding: 18px 16px;
   }
 }
 
 @media (max-width: 768px) {
-  .cinema-title-block {
-    top: 76px;
-    padding: 0 16px;
+  .cinematic-hero-experience {
+    height: auto;
+    min-height: 720px;
   }
 
-  .cinema-eyebrow {
-    font-size: 0.68rem;
-    letter-spacing: 0.2em;
-    margin-bottom: 6px;
+  .cinema-split-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 86px 16px 60px 16px;
+    height: auto;
+  }
+
+  .cinema-narrative-col {
+    width: 100%;
+    height: auto;
+    min-height: 240px;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .cinema-narratives {
+    max-width: 360px;
+    min-height: 240px;
+  }
+
+  .cinema-title-block {
+    text-align: center;
+    transform: translateY(12px);
+    top: 0 !important;
+  }
+
+  .cinema-title-block.active {
+    transform: translateY(0) !important;
+  }
+
+  .cinema-title-block[data-scene="6"],
+  .cinema-title-block[data-scene="6"].active {
+    top: 0 !important;
+    transform: translateY(0) !important;
   }
 
   .cinema-heading {
@@ -798,130 +900,83 @@
     line-height: 1.18;
   }
 
-  .cinema-sub {
+  .cinema-lede {
     font-size: 0.85rem;
     line-height: 1.38;
-    margin-top: 6px;
-    max-width: 340px;
+    margin: 8px auto 0 auto;
   }
 
-  .garment-overshirt { width: 165px; height: 165px; }
-  .garment-tee { width: 140px; height: 140px; }
-  .garment-trousers { width: 145px; height: 145px; }
-  .garment-sneakers { width: 135px; height: 135px; }
-  .garment-jacket { width: 165px; height: 165px; }
-  .garment-accessory { width: 105px; height: 105px; }
-
-  /* Scene 2: Keep only top 2 metadata cards to prevent crowding */
-  .meta-3, .meta-4, .meta-5, .meta-6 {
-    display: none !important;
+  .cinema-feature-highlights {
+    justify-content: center;
+    margin-top: 10px;
   }
 
-  .meta-1 {
-    top: 62% !important;
-    left: 12px !important;
-    right: auto !important;
-    max-width: 165px !important;
-    padding: 6px 10px !important;
+  .cinema-stage-col {
+    width: 100%;
+    height: 380px;
+    min-height: 380px;
   }
 
-  .meta-2 {
-    top: 62% !important;
-    right: 12px !important;
-    left: auto !important;
-    max-width: 165px !important;
-    padding: 6px 10px !important;
-  }
+  /* Garment sizes on mobile */
+  .garment-overshirt { width: 140px; height: 140px; }
+  .garment-tee { width: 120px; height: 120px; }
+  .garment-trousers { width: 125px; height: 125px; }
+  .garment-sneakers { width: 115px; height: 115px; }
+  .garment-jacket { width: 140px; height: 140px; }
+  .garment-accessory { width: 90px; height: 90px; }
 
-  .meta-label {
-    font-size: 0.58rem !important;
-  }
-
-  .meta-detail {
-    font-size: 0.72rem !important;
-  }
-
-  /* Scene 3: Keep primary context pills */
-  .ctx-3, .ctx-4, .ctx-5 {
-    display: none !important;
-  }
-
-  .ctx-1 {
-    top: 64% !important;
-    left: 14px !important;
-    right: auto !important;
-    padding: 6px 10px !important;
-    font-size: 0.72rem !important;
-  }
-
-  .ctx-2 {
-    top: 64% !important;
-    right: 14px !important;
-    left: auto !important;
-    padding: 6px 10px !important;
-    font-size: 0.72rem !important;
-  }
-
-  /* Scene 4: Keep verified criteria pills */
+  /* Suppress secondary tags on mobile to avoid overcrowding */
+  .meta-3, .meta-4, .meta-5, .meta-6,
+  .ctx-3, .ctx-4, .ctx-5,
   .crit-3, .crit-4, .crit-5 {
     display: none !important;
   }
 
-  .crit-1 {
-    top: 64% !important;
-    left: 10px !important;
+  .meta-1 {
+    top: 60% !important;
+    left: 8px !important;
     right: auto !important;
-    padding: 6px 12px !important;
-    font-size: 0.72rem !important;
+    max-width: 160px !important;
+    padding: 6px 10px !important;
   }
 
-  .crit-2 {
-    top: 64% !important;
-    right: 10px !important;
+  .meta-2 {
+    top: 60% !important;
+    right: 8px !important;
     left: auto !important;
-    padding: 6px 12px !important;
-    font-size: 0.72rem !important;
+    max-width: 160px !important;
+    padding: 6px 10px !important;
   }
+
+  .ctx-1 { top: 64% !important; left: 10px !important; }
+  .ctx-2 { top: 64% !important; right: 10px !important; }
+
+  .crit-1 { top: 64% !important; left: 8px !important; }
+  .crit-2 { top: 64% !important; right: 8px !important; }
 
   /* Scene 5 Look Card on Mobile */
   .cinema-look-card {
     position: absolute;
-    left: 16px !important;
-    right: 16px !important;
-    bottom: 56px !important;
+    left: 12px !important;
+    right: 12px !important;
+    bottom: 20px !important;
     top: auto !important;
     width: auto !important;
     max-width: none !important;
-    transform: none !important;
+    background: #0e0c1a !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.9), 0 0 25px rgba(91, 61, 245, 0.3) !important;
+    transform: translateY(20px) !important;
     padding: 16px !important;
+    z-index: 35 !important;
   }
 
-  .cinema-look-title {
-    font-size: 1.05rem;
-  }
-
-  .cinema-look-tags {
-    margin: 8px 0;
-  }
-
-  .cinema-look-tag {
-    font-size: 0.65rem;
-    padding: 3px 8px;
-  }
-
-  .cinema-look-items li {
-    font-size: 0.78rem;
-    margin-bottom: 3px;
-  }
-
-  /* Timeline Scrubber on Mobile */
-  .cinema-timeline-scrubber {
-    bottom: 12px;
-    gap: 6px;
+  .cinema-look-card.active {
+    transform: translateY(0) !important;
   }
 
   .timeline-bar {
-    width: 140px;
+    width: 120px;
   }
 
   .timeline-scenes {
@@ -931,22 +986,14 @@
   .cinema-final-actions {
     flex-direction: column;
     width: 100%;
-    max-width: 320px;
-    padding: 0 16px;
-    margin-top: 18px;
-  }
-
-  .cinema-btn-primary,
-  .cinema-btn-secondary {
-    width: 100%;
-    justify-content: center;
+    max-width: 300px;
+    margin: 14px auto 0 auto;
   }
 
   .cinema-trust-pill {
     flex-direction: column;
-    gap: 6px;
-    margin-top: 14px;
-    font-size: 0.75rem;
+    gap: 4px;
+    margin-top: 10px;
   }
 }
 

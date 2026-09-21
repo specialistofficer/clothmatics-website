@@ -1,6 +1,7 @@
 /**
  * ClothMatics Cinematic Storytelling Controller
- * Framer-Motion-grade scroll-linked physics engine for luxury fashion storytelling.
+ * Autonomous continuous luxury fashion film loop + interactive timeline scrub.
+ * Split-stage architecture guarantees zero text/garment collisions.
  */
 
 // Clamp helper
@@ -56,27 +57,41 @@ export function initCinematicStory() {
   const lookCard = container.querySelector("#cinema-look-card");
   const titleBlocks = container.querySelectorAll(".cinema-title-block");
   const timelineFill = container.querySelector("#cinema-progress-fill");
+  const timelineBar = container.querySelector(".timeline-bar");
   const timelineDots = container.querySelectorAll(".timeline-dot");
+  const playPauseBtn = container.querySelector("#cinema-play-btn");
+  const playIcon = playPauseBtn ? playPauseBtn.querySelector(".icon-play") : null;
+  const pauseIcon = playPauseBtn ? playPauseBtn.querySelector(".icon-pause") : null;
+  const viewport = container.querySelector(".cinematic-viewport");
 
-  let currentProgress = 0;
-  let targetProgress = 0;
-  let rafId = null;
-  let isRunning = false;
-
-  // Scene thresholds
+  // Scene thresholds:
   // Scene 1: 0.00 - 0.18 (Your Wardrobe)
   // Scene 2: 0.18 - 0.36 (ClothMatics Sees Your Wardrobe)
   // Scene 3: 0.36 - 0.54 (It Understands You)
   // Scene 4: 0.54 - 0.72 (AI Thinking)
   // Scene 5: 0.72 - 0.88 (The Recommendation)
   // Scene 6: 0.88 - 1.00 (The Final Message)
+  const SCENE_STARTS = [0.08, 0.26, 0.44, 0.62, 0.78, 0.94];
+  const TOTAL_DURATION = 21000; // 21 seconds full cycle (~3.5s per scene)
 
-  function updateTargetProgress() {
-    const rect = container.getBoundingClientRect();
-    const scrollableDistance = rect.height - window.innerHeight;
-    if (scrollableDistance <= 0) return;
-    const scrolled = -rect.top;
-    targetProgress = clamp(0, scrolled / scrollableDistance, 1);
+  let currentTime = 0; // ms
+  let currentProgress = 0;
+  let targetProgress = null; // null when playing automatically, float when seeking
+  let isPaused = false;
+  let isHovered = false;
+  let isTabHidden = false;
+  let isIntersecting = true;
+  let lastTimestamp = null;
+  let rafId = null;
+
+  function setPlayState(paused) {
+    isPaused = paused;
+    if (playPauseBtn) {
+      playPauseBtn.setAttribute("aria-label", isPaused ? "Play animation" : "Pause animation");
+      playPauseBtn.title = isPaused ? "Play animation" : "Pause animation";
+    }
+    if (playIcon) playIcon.style.display = isPaused ? "block" : "none";
+    if (pauseIcon) pauseIcon.style.display = isPaused ? "none" : "block";
   }
 
   function setActiveTitle(sceneIndex) {
@@ -97,13 +112,19 @@ export function initCinematicStory() {
     });
   }
 
+  function jumpToScene(sceneIndex) {
+    const p = SCENE_STARTS[sceneIndex] ?? 0;
+    targetProgress = p;
+    setPlayState(false);
+  }
+
   function render(p) {
-    // 1. Timeline Bar
+    // 1. Timeline Progress Bar
     if (timelineFill) {
       timelineFill.style.width = `${(p * 100).toFixed(1)}%`;
     }
 
-    // Determine Active Scene Title
+    // 2. Active Scene Title in Left Column
     let activeScene = 0;
     if (p < 0.18) activeScene = 0;
     else if (p < 0.36) activeScene = 1;
@@ -113,7 +134,7 @@ export function initCinematicStory() {
     else activeScene = 5;
     setActiveTitle(activeScene);
 
-    // Dynamic viewport responsive scale factor
+    // Responsive scaling
     const isMobile = window.innerWidth < 768;
     const baseScale = isMobile ? 0.72 : 1.0;
 
@@ -122,71 +143,70 @@ export function initCinematicStory() {
     // ==========================================
     if (p < 0.18) {
       const s1Prog = mapRange(p, 0.0, 0.18, 0, 1);
+      const baseY = isMobile ? 10 : 0;
 
-      const baseY = isMobile ? 150 : 110;
-
-      // Center overshirt emerges from dark (starts visible at 0.5 for immediate visual impact)
-      const overshirtOpacity = mapRange(s1Prog, 0, 0.35, 0.55, 1);
-      const overshirtScale = mapRange(s1Prog, 0, 0.7, 0.88 * baseScale, 1.05 * baseScale);
-      const overshirtZ = mapRange(s1Prog, 0, 0.7, -60, 0);
+      // Center overshirt emerges
+      const overshirtOpacity = mapRange(s1Prog, 0, 0.3, 0.6, 1);
+      const overshirtScale = mapRange(s1Prog, 0, 0.7, 0.9 * baseScale, 1.05 * baseScale);
+      const overshirtZ = mapRange(s1Prog, 0, 0.7, -40, 10);
 
       if (garments.overshirt) {
         garments.overshirt.style.opacity = overshirtOpacity;
         garments.overshirt.style.transform = `translate3d(0px, ${baseY}px, ${overshirtZ}px) scale(${overshirtScale})`;
       }
 
-      // Other garments expand outward into 3D suspended studio space
-      const expandProg = mapRange(s1Prog, 0.2, 1.0, 0, 1);
-      const outerOpacity = mapRange(expandProg, 0, 0.45, 0, 1);
+      // Other garments expand outward into suspended 3D studio orbit
+      const expandProg = mapRange(s1Prog, 0.15, 1.0, 0, 1);
+      const outerOpacity = mapRange(expandProg, 0, 0.4, 0, 1);
 
       // Tee (left)
       if (garments.tee) {
-        const x = lerp(0, isMobile ? -140 : -320, expandProg);
-        const y = lerp(baseY, isMobile ? 60 : 50, expandProg);
-        const z = lerp(-80, 20, expandProg);
-        const rot = lerp(0, -5, expandProg);
+        const x = lerp(0, isMobile ? -100 : -180, expandProg);
+        const y = lerp(baseY, isMobile ? -50 : -40, expandProg);
+        const z = lerp(-60, 20, expandProg);
+        const rot = lerp(0, -4, expandProg);
         garments.tee.style.opacity = outerOpacity;
         garments.tee.style.transform = `translate3d(${x}px, ${y}px, ${z}px) rotate(${rot}deg) scale(${0.92 * baseScale})`;
       }
 
       // Trousers (bottom center)
       if (garments.trousers) {
-        const y = lerp(baseY, isMobile ? 260 : 260, expandProg);
-        const z = lerp(-100, -10, expandProg);
+        const y = lerp(baseY, isMobile ? 120 : 160, expandProg);
+        const z = lerp(-80, -10, expandProg);
         garments.trousers.style.opacity = outerOpacity;
         garments.trousers.style.transform = `translate3d(0px, ${y}px, ${z}px) scale(${0.95 * baseScale})`;
       }
 
       // Sneakers (bottom right)
       if (garments.sneakers) {
-        const x = lerp(0, isMobile ? 130 : 270, expandProg);
-        const y = lerp(baseY, isMobile ? 260 : 270, expandProg);
-        const z = lerp(-120, 30, expandProg);
-        const rot = lerp(0, 6, expandProg);
+        const x = lerp(0, isMobile ? 100 : 170, expandProg);
+        const y = lerp(baseY, isMobile ? 125 : 170, expandProg);
+        const z = lerp(-100, 25, expandProg);
+        const rot = lerp(0, 5, expandProg);
         garments.sneakers.style.opacity = outerOpacity;
         garments.sneakers.style.transform = `translate3d(${x}px, ${y}px, ${z}px) rotate(${rot}deg) scale(${0.88 * baseScale})`;
       }
 
-      // Jacket (upper right)
+      // Jacket (top right)
       if (garments.jacket) {
-        const x = lerp(0, isMobile ? 140 : 320, expandProg);
-        const y = lerp(baseY, isMobile ? 50 : 40, expandProg);
-        const z = lerp(-140, -20, expandProg);
+        const x = lerp(0, isMobile ? 100 : 180, expandProg);
+        const y = lerp(baseY, isMobile ? -50 : -50, expandProg);
+        const z = lerp(-110, -20, expandProg);
         const rot = lerp(0, 4, expandProg);
         garments.jacket.style.opacity = outerOpacity;
         garments.jacket.style.transform = `translate3d(${x}px, ${y}px, ${z}px) rotate(${rot}deg) scale(${0.95 * baseScale})`;
       }
 
-      // Watch / Accessory (bottom left)
+      // Accessory / Watch (bottom left)
       if (garments.accessory) {
-        const x = lerp(0, isMobile ? -130 : -270, expandProg);
-        const y = lerp(baseY, isMobile ? 240 : 240, expandProg);
-        const z = lerp(-60, 40, expandProg);
+        const x = lerp(0, isMobile ? -95 : -170, expandProg);
+        const y = lerp(baseY, isMobile ? 115 : 150, expandProg);
+        const z = lerp(-50, 35, expandProg);
         garments.accessory.style.opacity = outerOpacity;
         garments.accessory.style.transform = `translate3d(${x}px, ${y}px, ${z}px) scale(${0.85 * baseScale})`;
       }
 
-      // Scanner, brackets, and overlays hidden
+      // Hide overlays from other scenes
       if (scanner) scanner.style.opacity = 0;
       container.querySelectorAll(".garment-hud-bracket").forEach((b) => (b.style.opacity = 0));
       metaTags.forEach((tag) => (tag.style.opacity = 0));
@@ -201,50 +221,50 @@ export function initCinematicStory() {
     // ==========================================
     else if (p < 0.36) {
       const s2Prog = mapRange(p, 0.18, 0.36, 0, 1);
+      const baseY = isMobile ? 10 : 0;
 
-      // Scanner beam moves smoothly from top to bottom
+      // Laser Scanner sweeps smoothly top to bottom inside right stage
       if (scanner) {
-        scanner.style.opacity = mapRange(s2Prog, 0, 0.08, 0, 1);
-        const scanY = lerp(-15, 38, s2Prog);
+        scanner.style.opacity = mapRange(s2Prog, 0, 0.1, 0, 1);
+        const scanY = lerp(-25, 25, s2Prog);
         scanner.style.transform = `translateY(${scanY}vh)`;
       }
 
-      // Garments stabilize in structured gallery formation
-      const galleryY = isMobile ? 135 : 95;
+      // Garments in locked gallery formation
       if (garments.overshirt) {
         garments.overshirt.style.opacity = 1;
-        garments.overshirt.style.transform = `translate3d(0px, ${galleryY}px, 20px) scale(${1.05 * baseScale})`;
+        garments.overshirt.style.transform = `translate3d(0px, ${baseY}px, 10px) scale(${1.05 * baseScale})`;
       }
       if (garments.tee) {
         garments.tee.style.opacity = 0.98;
-        garments.tee.style.transform = `translate3d(${isMobile ? -140 : -320}px, ${isMobile ? 50 : 50}px, 10px) rotate(-4deg) scale(${0.92 * baseScale})`;
+        garments.tee.style.transform = `translate3d(${isMobile ? -100 : -180}px, ${isMobile ? -50 : -40}px, 20px) rotate(-4deg) scale(${0.92 * baseScale})`;
       }
       if (garments.trousers) {
         garments.trousers.style.opacity = 0.98;
-        garments.trousers.style.transform = `translate3d(0px, ${isMobile ? 260 : 260}px, -10px) scale(${0.95 * baseScale})`;
+        garments.trousers.style.transform = `translate3d(0px, ${isMobile ? 120 : 160}px, -10px) scale(${0.95 * baseScale})`;
       }
       if (garments.sneakers) {
         garments.sneakers.style.opacity = 0.98;
-        garments.sneakers.style.transform = `translate3d(${isMobile ? 130 : 270}px, ${isMobile ? 260 : 270}px, 20px) rotate(6deg) scale(${0.88 * baseScale})`;
+        garments.sneakers.style.transform = `translate3d(${isMobile ? 100 : 170}px, ${isMobile ? 125 : 170}px, 25px) rotate(5deg) scale(${0.88 * baseScale})`;
       }
       if (garments.jacket) {
         garments.jacket.style.opacity = 0.98;
-        garments.jacket.style.transform = `translate3d(${isMobile ? 140 : 320}px, ${isMobile ? 40 : 40}px, -10px) rotate(4deg) scale(${0.95 * baseScale})`;
+        garments.jacket.style.transform = `translate3d(${isMobile ? 100 : 180}px, ${isMobile ? -50 : -50}px, -20px) rotate(4deg) scale(${0.95 * baseScale})`;
       }
       if (garments.accessory) {
         garments.accessory.style.opacity = 0.98;
-        garments.accessory.style.transform = `translate3d(${isMobile ? -130 : -270}px, ${isMobile ? 240 : 240}px, 30px) scale(${0.85 * baseScale})`;
+        garments.accessory.style.transform = `translate3d(${isMobile ? -95 : -170}px, ${isMobile ? 115 : 150}px, 35px) scale(${0.85 * baseScale})`;
       }
 
-      // Activate corner HUD brackets on garments during scan
+      // HUD brackets pulse on garments
       container.querySelectorAll(".garment-hud-bracket").forEach((bracket) => {
-        bracket.style.opacity = mapRange(s2Prog, 0.15, 0.85, 0, 1);
+        bracket.style.opacity = mapRange(s2Prog, 0.1, 0.85, 0, 1);
       });
 
-      // Metadata telemetry labels pop in sequentially
+      // Metadata telemetry cards appear sequentially
       metaTags.forEach((tag, idx) => {
-        const triggerPoint = 0.12 + idx * 0.12;
-        const tagProg = mapRange(s2Prog, triggerPoint, triggerPoint + 0.15, 0, 1);
+        const triggerPoint = 0.1 + idx * 0.12;
+        const tagProg = mapRange(s2Prog, triggerPoint, triggerPoint + 0.16, 0, 1);
         tag.style.opacity = tagProg;
         tag.style.transform = `translateY(${lerp(8, 0, tagProg)}px)`;
       });
@@ -263,11 +283,12 @@ export function initCinematicStory() {
 
       if (scanner) scanner.style.opacity = 0;
       metaTags.forEach((tag) => (tag.style.opacity = 0));
+      container.querySelectorAll(".garment-hud-bracket").forEach((b) => (b.style.opacity = 0));
 
-      // Garments pull back in 3D depth
-      const pushZ = lerp(-20, -320, s3Prog);
-      const pushOpacity = lerp(0.95, 0.35, s3Prog);
-      const blurVal = lerp(0, 3, s3Prog);
+      // Garments pull back into 3D background with subtle blur
+      const pushZ = lerp(-20, -280, s3Prog);
+      const pushOpacity = lerp(0.95, 0.28, s3Prog);
+      const blurVal = lerp(0, 2.5, s3Prog);
 
       Object.values(garments).forEach((el) => {
         if (!el) return;
@@ -276,32 +297,35 @@ export function initCinematicStory() {
       });
 
       if (garments.overshirt) {
-        garments.overshirt.style.transform = `translate3d(0px, -40px, ${pushZ}px) scale(${0.8 * baseScale})`;
+        garments.overshirt.style.transform = `translate3d(0px, -30px, ${pushZ}px) scale(${0.8 * baseScale})`;
       }
       if (garments.tee) {
-        garments.tee.style.transform = `translate3d(-260px, -80px, ${pushZ}px) scale(${0.75 * baseScale})`;
+        garments.tee.style.transform = `translate3d(-170px, -70px, ${pushZ}px) scale(${0.75 * baseScale})`;
       }
       if (garments.trousers) {
-        garments.trousers.style.transform = `translate3d(0px, 180px, ${pushZ}px) scale(${0.75 * baseScale})`;
+        garments.trousers.style.transform = `translate3d(0px, 140px, ${pushZ}px) scale(${0.75 * baseScale})`;
       }
       if (garments.sneakers) {
-        garments.sneakers.style.transform = `translate3d(240px, 190px, ${pushZ}px) scale(${0.75 * baseScale})`;
+        garments.sneakers.style.transform = `translate3d(160px, 150px, ${pushZ}px) scale(${0.75 * baseScale})`;
       }
       if (garments.jacket) {
-        garments.jacket.style.transform = `translate3d(270px, -110px, ${pushZ}px) scale(${0.75 * baseScale})`;
+        garments.jacket.style.transform = `translate3d(170px, -80px, ${pushZ}px) scale(${0.75 * baseScale})`;
+      }
+      if (garments.accessory) {
+        garments.accessory.style.transform = `translate3d(-160px, 130px, ${pushZ}px) scale(${0.75 * baseScale})`;
       }
 
-      // Human profile silhouette fades and scales in
+      // Human profile silhouette fades and scales in center of stage
       if (profileNode) {
-        const profOpacity = mapRange(s3Prog, 0.05, 0.5, 0, 1);
-        const profScale = mapRange(s3Prog, 0, 0.6, 0.85, 1.0);
+        const profOpacity = mapRange(s3Prog, 0.05, 0.45, 0, 1);
+        const profScale = mapRange(s3Prog, 0, 0.55, 0.85, 1.0);
         profileNode.style.opacity = profOpacity;
-        profileNode.style.transform = `translate3d(0px, 30px, 0px) scale(${profScale * baseScale})`;
+        profileNode.style.transform = `translate3d(0px, 10px, 0px) scale(${profScale * baseScale})`;
       }
 
-      // Context tags orbit in
+      // Context tags orbit around silhouette inside right stage
       contextTags.forEach((tag, idx) => {
-        const tagTrigger = 0.15 + idx * 0.12;
+        const tagTrigger = 0.12 + idx * 0.12;
         const tagProg = mapRange(s3Prog, tagTrigger, tagTrigger + 0.18, 0, 1);
         tag.style.opacity = tagProg;
         tag.style.transform = `translateY(${lerp(12, 0, tagProg)}px)`;
@@ -317,58 +341,57 @@ export function initCinematicStory() {
     else if (p < 0.72) {
       const s4Prog = mapRange(p, 0.54, 0.72, 0, 1);
 
-      // Fade profile node
+      // Fade profile node & context tags
       if (profileNode) {
-        profileNode.style.opacity = mapRange(s4Prog, 0, 0.3, 1, 0);
+        profileNode.style.opacity = mapRange(s4Prog, 0, 0.25, 1, 0);
       }
       contextTags.forEach((tag) => (tag.style.opacity = 0));
 
-      // AI dynamic flux: in the first half of scene 4 (0.0 -> 0.55), rapid magnetic exploration
-      // In second half (0.55 -> 1.0), pieces smoothly settle and assemble
-      const isFluxing = s4Prog < 0.6;
+      // AI dynamic flux: first half rapid magnetic exploration, second half snap align
+      const isFluxing = s4Prog < 0.58;
       const settleProg = mapRange(s4Prog, 0.55, 1.0, 0, 1);
 
-      // Incompatible pieces fade out (blazer and watch)
+      // Non-matching pieces fade out (blazer and watch)
       if (garments.jacket) {
-        garments.jacket.style.opacity = mapRange(s4Prog, 0, 0.4, 0.35, 0);
-        garments.jacket.style.transform = `translate3d(320px, -140px, -400px) scale(${0.5 * baseScale})`;
+        garments.jacket.style.opacity = mapRange(s4Prog, 0, 0.35, 0.28, 0);
+        garments.jacket.style.transform = `translate3d(220px, -120px, -350px) scale(${0.5 * baseScale})`;
       }
       if (garments.accessory) {
-        garments.accessory.style.opacity = mapRange(s4Prog, 0, 0.4, 0.35, 0);
+        garments.accessory.style.opacity = mapRange(s4Prog, 0, 0.35, 0.28, 0);
       }
 
-      // Reset filters on core outfit
+      // Restore crisp filters on matching outfit
       Object.values(garments).forEach((el) => {
         if (!el) return;
-        el.style.filter = `drop-shadow(0 20px 30px rgba(0,0,0,0.6))`;
+        el.style.filter = "drop-shadow(0 18px 30px rgba(0,0,0,0.65))";
       });
 
       if (isFluxing) {
-        // High-velocity orbital choreography
+        // High-velocity orbital choreography inside right stage
         const angle = s4Prog * Math.PI * 4;
-        const radius = lerp(200, 70, s4Prog / 0.6);
+        const radius = lerp(140, 50, s4Prog / 0.58);
 
         if (garments.overshirt) {
           const ox = Math.cos(angle) * radius;
-          const oy = Math.sin(angle) * (radius * 0.5) + 30;
+          const oy = Math.sin(angle) * (radius * 0.45) + 10;
           garments.overshirt.style.opacity = 1;
-          garments.overshirt.style.transform = `translate3d(${ox}px, ${oy}px, 50px) scale(${1.0 * baseScale})`;
+          garments.overshirt.style.transform = `translate3d(${ox}px, ${oy}px, 40px) scale(${1.0 * baseScale})`;
         }
         if (garments.tee) {
           const tx = Math.cos(angle + Math.PI * 0.5) * radius;
-          const ty = Math.sin(angle + Math.PI * 0.5) * (radius * 0.5) + 30;
+          const ty = Math.sin(angle + Math.PI * 0.5) * (radius * 0.45) + 10;
           garments.tee.style.opacity = 0.9;
           garments.tee.style.transform = `translate3d(${tx}px, ${ty}px, 20px) scale(${0.9 * baseScale})`;
         }
         if (garments.trousers) {
           const px = Math.cos(angle + Math.PI) * radius;
-          const py = Math.sin(angle + Math.PI) * (radius * 0.5) + 30;
+          const py = Math.sin(angle + Math.PI) * (radius * 0.45) + 10;
           garments.trousers.style.opacity = 1;
-          garments.trousers.style.transform = `translate3d(${px}px, ${py}px, 10px) scale(${0.95 * baseScale})`;
+          garments.trousers.style.transform = `translate3d(${px}px, ${py}px, 15px) scale(${0.95 * baseScale})`;
         }
         if (garments.sneakers) {
           const sx = Math.cos(angle + Math.PI * 1.5) * radius;
-          const sy = Math.sin(angle + Math.PI * 1.5) * (radius * 0.5) + 30;
+          const sy = Math.sin(angle + Math.PI * 1.5) * (radius * 0.45) + 10;
           garments.sneakers.style.opacity = 1;
           garments.sneakers.style.transform = `translate3d(${sx}px, ${sy}px, 30px) scale(${0.88 * baseScale})`;
         }
@@ -376,27 +399,27 @@ export function initCinematicStory() {
         // Magnetic snap into aligned column
         const ease = easeInOut(settleProg);
 
-        // Overshirt center upper
+        // Overshirt upper center
         if (garments.overshirt) {
-          const y = lerp(30, -70, ease);
+          const y = lerp(10, isMobile ? -80 : -90, ease);
           garments.overshirt.style.opacity = 1;
           garments.overshirt.style.transform = `translate3d(0px, ${y}px, 40px) scale(${1.05 * baseScale})`;
         }
         // Tee layered beneath
         if (garments.tee) {
-          const y = lerp(30, -60, ease);
+          const y = lerp(10, isMobile ? -70 : -80, ease);
           garments.tee.style.opacity = lerp(0.9, 0.85, ease);
           garments.tee.style.transform = `translate3d(0px, ${y}px, 10px) scale(${0.95 * baseScale})`;
         }
         // Trousers lower
         if (garments.trousers) {
-          const y = lerp(30, 100, ease);
+          const y = lerp(10, isMobile ? 60 : 75, ease);
           garments.trousers.style.opacity = 1;
           garments.trousers.style.transform = `translate3d(0px, ${y}px, 20px) scale(${0.98 * baseScale})`;
         }
         // Sneakers bottom
         if (garments.sneakers) {
-          const y = lerp(30, 240, ease);
+          const y = lerp(10, isMobile ? 180 : 205, ease);
           garments.sneakers.style.opacity = 1;
           garments.sneakers.style.transform = `translate3d(0px, ${y}px, 0px) scale(${0.9 * baseScale})`;
         }
@@ -404,8 +427,8 @@ export function initCinematicStory() {
 
       // Criteria evaluation pills flash and verify
       criteriaPills.forEach((pill, idx) => {
-        const triggerPoint = 0.1 + idx * 0.15;
-        const pillProg = mapRange(s4Prog, triggerPoint, triggerPoint + 0.2, 0, 1);
+        const triggerPoint = 0.08 + idx * 0.14;
+        const pillProg = mapRange(s4Prog, triggerPoint, triggerPoint + 0.18, 0, 1);
         pill.style.opacity = pillProg;
         pill.style.transform = `scale(${lerp(0.85, 1, pillProg)})`;
       });
@@ -417,32 +440,31 @@ export function initCinematicStory() {
     // SCENE 5: The Recommendation (0.72 -> 0.88)
     // ==========================================
     else if (p < 0.88) {
-      const s5Prog = mapRange(p, 0.72, 0.88, 0, 1);
-
       criteriaPills.forEach((pill) => (pill.style.opacity = 0));
 
-      // Assembled outfit locked into high-fashion column, shifted left for luxury look card
-      const shiftX = isMobile ? 0 : -160;
-      const outfitY = isMobile ? -110 : -70;
+      // Assembled outfit shifts left inside the right stage, making room for Today's Look card on the right
+      const shiftX = isMobile ? 0 : -130;
+      const outfitY = isMobile ? -75 : -90;
+      const s5OutfitOpacity = isMobile ? 0 : 1;
 
       if (garments.overshirt) {
-        garments.overshirt.style.opacity = 1;
+        garments.overshirt.style.opacity = s5OutfitOpacity;
         garments.overshirt.style.transform = `translate3d(${shiftX}px, ${outfitY}px, 40px) scale(${1.05 * baseScale})`;
       }
       if (garments.tee) {
-        garments.tee.style.opacity = 0.88;
+        garments.tee.style.opacity = s5OutfitOpacity * 0.88;
         garments.tee.style.transform = `translate3d(${shiftX}px, ${outfitY + 10}px, 10px) scale(${0.95 * baseScale})`;
       }
       if (garments.trousers) {
-        garments.trousers.style.opacity = 1;
-        garments.trousers.style.transform = `translate3d(${shiftX}px, ${outfitY + 170}px, 20px) scale(${0.98 * baseScale})`;
+        garments.trousers.style.opacity = s5OutfitOpacity;
+        garments.trousers.style.transform = `translate3d(${shiftX}px, ${outfitY + 165}px, 20px) scale(${0.98 * baseScale})`;
       }
       if (garments.sneakers) {
-        garments.sneakers.style.opacity = 1;
-        garments.sneakers.style.transform = `translate3d(${shiftX}px, ${outfitY + 310}px, 0px) scale(${0.9 * baseScale})`;
+        garments.sneakers.style.opacity = s5OutfitOpacity;
+        garments.sneakers.style.transform = `translate3d(${shiftX}px, ${outfitY + 295}px, 0px) scale(${0.9 * baseScale})`;
       }
 
-      // Reveal Luxury Look Card
+      // Reveal Luxury Look Card on right edge of stage
       if (lookCard) {
         lookCard.classList.add("active");
       }
@@ -457,37 +479,53 @@ export function initCinematicStory() {
       if (lookCard) lookCard.classList.remove("active");
 
       // Wide angle pull-back camera deep into 3D background
-      const pullScale = lerp(baseScale * 0.65, baseScale * 0.42, s6Prog);
-      const pullZ = lerp(-120, -520, s6Prog);
-      const shiftX = isMobile ? 0 : lerp(-160, 0, s6Prog);
-      const finalOutfitOpacity = lerp(0.3, 0.1, s6Prog);
+      const pullScale = lerp(baseScale * 0.7, baseScale * 0.45, s6Prog);
+      const pullZ = lerp(-100, -480, s6Prog);
+      const shiftX = isMobile ? 0 : lerp(-130, 0, s6Prog);
+      const finalOutfitOpacity = lerp(0.32, 0.12, s6Prog);
 
       if (garments.overshirt) {
         garments.overshirt.style.opacity = finalOutfitOpacity;
         garments.overshirt.style.transform = `translate3d(${shiftX}px, -40px, ${pullZ + 40}px) scale(${pullScale})`;
       }
       if (garments.tee) {
-        garments.tee.style.opacity = finalOutfitOpacity * 0.8;
+        garments.tee.style.opacity = finalOutfitOpacity * 0.85;
         garments.tee.style.transform = `translate3d(${shiftX}px, -30px, ${pullZ + 10}px) scale(${pullScale * 0.95})`;
       }
       if (garments.trousers) {
         garments.trousers.style.opacity = finalOutfitOpacity;
-        garments.trousers.style.transform = `translate3d(${shiftX}px, 110px, ${pullZ + 20}px) scale(${pullScale * 0.98})`;
+        garments.trousers.style.transform = `translate3d(${shiftX}px, 90px, ${pullZ + 20}px) scale(${pullScale * 0.98})`;
       }
       if (garments.sneakers) {
         garments.sneakers.style.opacity = finalOutfitOpacity;
-        garments.sneakers.style.transform = `translate3d(${shiftX}px, 240px, ${pullZ}px) scale(${pullScale * 0.9})`;
+        garments.sneakers.style.transform = `translate3d(${shiftX}px, 210px, ${pullZ}px) scale(${pullScale * 0.9})`;
       }
     }
   }
 
-  function loop() {
-    // Spring lerp factor (0.08 produces luxury fluid damping)
-    currentProgress = lerp(currentProgress, targetProgress, 0.085);
+  function loop(timestamp) {
+    if (lastTimestamp === null) {
+      lastTimestamp = timestamp;
+    }
+    const dt = timestamp - lastTimestamp;
+    lastTimestamp = timestamp;
 
-    // If within epsilon, clamp to target
-    if (Math.abs(currentProgress - targetProgress) < 0.0002) {
-      currentProgress = targetProgress;
+    // Advance timeline only when visible and not paused
+    if (!isTabHidden && isIntersecting) {
+      if (targetProgress !== null) {
+        // User seeking / jumping to scene
+        currentProgress = lerp(currentProgress, targetProgress, 0.12);
+        currentTime = currentProgress * TOTAL_DURATION;
+        if (Math.abs(currentProgress - targetProgress) < 0.002) {
+          currentProgress = targetProgress;
+          currentTime = currentProgress * TOTAL_DURATION;
+          targetProgress = null; // Seek complete, return to autonomous flow
+        }
+      } else if (!isPaused && !isHovered) {
+        // Autonomous continuous play
+        currentTime = (currentTime + dt) % TOTAL_DURATION;
+        currentProgress = currentTime / TOTAL_DURATION;
+      }
     }
 
     render(currentProgress);
@@ -495,44 +533,78 @@ export function initCinematicStory() {
     rafId = requestAnimationFrame(loop);
   }
 
-  function onScroll() {
-    updateTargetProgress();
+  // Event Listeners: Play / Pause toggle
+  if (playPauseBtn) {
+    playPauseBtn.addEventListener("click", () => {
+      setPlayState(!isPaused);
+    });
   }
 
-  // Clickable Timeline Navigation
+  // Hover pause / resume (only on desktop pointer devices)
+  if (viewport && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+    viewport.addEventListener("mouseenter", () => {
+      isHovered = true;
+    });
+    viewport.addEventListener("mouseleave", () => {
+      isHovered = false;
+    });
+  }
+
+  // Interactive Timeline Dot Navigation
   timelineDots.forEach((dot) => {
-    dot.addEventListener("click", (e) => {
+    dot.addEventListener("click", () => {
       const sceneIndex = parseInt(dot.getAttribute("data-scene"), 10) - 1;
-      const sceneProgresses = [0.08, 0.26, 0.45, 0.63, 0.80, 0.95];
-      const targetP = sceneProgresses[sceneIndex] ?? 0;
-
-      const rect = container.getBoundingClientRect();
-      const scrollableDistance = rect.height - window.innerHeight;
-      const targetScrollY = window.scrollY + rect.top + targetP * scrollableDistance;
-
-      window.scrollTo({
-        top: targetScrollY,
-        behavior: "smooth",
-      });
+      jumpToScene(sceneIndex);
     });
   });
 
-  // Start Listener & RAF Loop
-  window.addEventListener("scroll", onScroll, { passive: true });
-  window.addEventListener("resize", updateTargetProgress, { passive: true });
+  // Timeline Progress Bar Scrubbing
+  if (timelineBar) {
+    timelineBar.addEventListener("click", (e) => {
+      const rect = timelineBar.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const scrubP = clamp(0, clickX / rect.width, 0.999);
+      targetProgress = scrubP;
+      setPlayState(false);
+    });
+  }
 
-  updateTargetProgress();
-  currentProgress = targetProgress;
-  isRunning = true;
+  // Tab Visibility optimization (don't waste battery when hidden)
+  const onVisibilityChange = () => {
+    isTabHidden = document.hidden;
+    if (!isTabHidden) {
+      lastTimestamp = null; // Prevent frame delta spike
+    }
+  };
+  document.addEventListener("visibilitychange", onVisibilityChange);
+
+  // IntersectionObserver: Pause RAF updates when hero is off-screen
+  let observer = null;
+  if (typeof IntersectionObserver !== "undefined") {
+    observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]) {
+          isIntersecting = entries[0].isIntersecting;
+          if (isIntersecting) lastTimestamp = null;
+        }
+      },
+      { threshold: 0.05 }
+    );
+    observer.observe(container);
+  }
+
+  // Start Autonomous Loop
   rafId = requestAnimationFrame(loop);
 
   return {
     destroy() {
-      isRunning = false;
       if (rafId) cancelAnimationFrame(rafId);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", updateTargetProgress);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      if (observer) observer.disconnect();
     },
+    jumpToScene,
+    pause() { setPlayState(true); },
+    play() { setPlayState(false); },
   };
 }
 
