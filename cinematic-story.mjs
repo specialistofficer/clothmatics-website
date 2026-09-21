@@ -384,9 +384,10 @@ export function initCinematicStory() {
       const s4Prog = (p - 0.500) / 0.167; // 0 -> 1
       const ease = easeInOutCubic(s4Prog);
 
-      // Fade out silhouette and context tags
+      // Front mannequin stays visible as garments begin flying toward it, then dissolves smoothly into the Complete 3D Look
       if (profileNode) {
-        profileNode.style.opacity = mapRange(s4Prog, 0.0, 0.25, 1, 0);
+        profileNode.style.opacity = mapRange(s4Prog, 0.35, 0.65, 1, 0);
+        profileNode.style.transform = `translate3d(0px, ${float1 * 0.5}px, 0px) scale(${baseScale})`;
       }
       contextTags.forEach((t) => (t.style.opacity = 0));
 
@@ -515,6 +516,7 @@ export function initCinematicStory() {
   }
 
   let isPaused = false;
+  let isFinished = false;
 
   function loop(timestamp) {
     if (lastTimestamp === null) {
@@ -524,10 +526,16 @@ export function initCinematicStory() {
     lastTimestamp = timestamp;
 
     // Advance timeline continuously when tab is active and visible
-    // Never stop on mouse move or hover!
-    if (!isTabHidden && isIntersecting && !isPaused) {
-      currentTime = (currentTime + dt) % TOTAL_DURATION;
-      currentProgress = currentTime / TOTAL_DURATION;
+    // Runs strictly ONE time through the story, then permanently rests on the 3D mannequin finale!
+    if (!isTabHidden && isIntersecting && !isPaused && !isFinished) {
+      currentTime += dt;
+      if (currentTime >= TOTAL_DURATION) {
+        currentTime = TOTAL_DURATION;
+        currentProgress = 1.0;
+        isFinished = true;
+      } else {
+        currentProgress = currentTime / TOTAL_DURATION;
+      }
     }
 
     render(currentProgress, timestamp);
@@ -571,6 +579,7 @@ export function initCinematicStory() {
     seek(p) {
       currentProgress = clamp(0, p, 1);
       currentTime = currentProgress * TOTAL_DURATION;
+      isFinished = currentProgress >= 1.0;
       render(currentProgress, performance.now());
     },
     pause() {
@@ -579,7 +588,27 @@ export function initCinematicStory() {
     resume() {
       isPaused = false;
     },
+    replay() {
+      currentTime = 0;
+      currentProgress = 0;
+      isFinished = false;
+      isPaused = false;
+      lastTimestamp = null;
+      render(0, performance.now());
+    },
+    get isFinished() {
+      return isFinished;
+    },
   };
+
+  // Connect Replay Button in Scene 6 actions
+  const replayBtn = container.querySelector("#cinema-replay-btn");
+  if (replayBtn) {
+    replayBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      controller.replay();
+    });
+  }
 
   if (typeof window !== "undefined") {
     window.__clothmaticsCinema = controller;
