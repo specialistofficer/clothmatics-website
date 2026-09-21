@@ -1,17 +1,17 @@
 .admin-sidebar nav{min-height:0;overflow-y:auto}
 .ai-control-card{margin-bottom:14px;border-color:#d9d3ff}
 .ai-control-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
-.ai-control-heading span,.detail-security>div:first-child span{color:var(--purple);font-size:9px;font-weight:800;letter-spacing:1.2px}
-.ai-control-heading h3,.detail-security h3{margin:5px 0;font:800 20px Manrope}
-.ai-control-heading p,.detail-security p{margin:0;color:var(--muted);font-size:10px;line-height:1.5}
-.ai-control-heading strong{padding:7px 10px;border-radius:999px;font-size:10px;white-space:nowrap}
+.ai-control-heading span,.detail-security>div:first-child span{display:none}
+.ai-control-heading h3,.detail-security h3{margin:0 0 6px;font-family:var(--font-display);font-weight:800;font-size:20px;letter-spacing:-0.02em}
+.ai-control-heading p,.detail-security p{margin:0;color:var(--muted);font-family:var(--font-sans);font-size:12px;line-height:1.55}
+.ai-control-heading strong{padding:7px 12px;border-radius:999px;font-family:var(--font-sans);font-size:11px;font-weight:700;white-space:nowrap}
 .ai-control-heading strong.enabled{color:#166534;background:#ecfdf3}
 .ai-control-heading strong.disabled{color:#b42318;background:#fff1f2}
 .ai-control-fields{display:grid;grid-template-columns:.45fr 1.55fr;gap:12px;margin-top:16px}
-.ai-control-fields label,.detail-security label{display:grid;gap:6px;font-size:11px;font-weight:800}
-.ai-control-fields input,.detail-security input{min-width:0;padding:11px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.ai-control-fields label,.detail-security label{display:grid;gap:6px;font-family:var(--font-sans);font-size:12px;font-weight:600}
+.ai-control-fields input,.detail-security input{min-width:0;padding:11px 14px;border:1px solid var(--line);border-radius:10px;background:#fff;font-family:var(--font-sans);font-size:13px;font-weight:500}
 .ai-control-actions,.detail-security-actions{display:flex;gap:8px;margin-top:12px}
-.danger-admin-button{padding:13px;border:0;border-radius:12px;color:#fff;background:#d92d20;font-weight:800;cursor:pointer}
+.danger-admin-button{padding:12px 18px;border:0;border-radius:12px;color:#fff;background:#d92d20;font-family:var(--font-sans);font-size:13px;font-weight:700;cursor:pointer;transition:opacity 0.15s ease}
 .danger-admin-button.restore{background:#168a48}
 .danger-admin-button:disabled{opacity:.5;cursor:not-allowed}
 #ai-control-message,#detail-security-status{min-height:16px;margin:10px 0 0;font-size:11px}

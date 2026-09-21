@@ -9,7 +9,7 @@
     <link rel="icon" type="image/png" href="./assets/clothmatics-logo.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./admin.css" />
     <link rel="stylesheet" href="./admin-coupons.css" />
     <link rel="stylesheet" href="./admin-parity.css" />
@@ -20,7 +20,6 @@
     <div id="admin-gate" class="admin-gate">
       <div class="gate-card">
         <img src="./assets/clothmatics-logo.png" alt="ClothMatics" />
-        <span>SECURE ADMIN</span>
         <h1>Checking access…</h1>
         <p id="gate-message">Verifying your Firebase session and administrator claim.</p>
         <a id="gate-action" class="gate-action hidden" href="./">Return to sign in</a>
@@ -46,7 +45,7 @@
 
       <main class="admin-main">
         <header class="admin-header">
-          <div><span>OPERATIONS</span><h1>Activity dashboard</h1><p>Monitor ClothMatics activity and manage premium coupons.</p></div>
+          <div><h1>Activity dashboard</h1><p>Monitor ClothMatics activity and manage premium coupons.</p></div>
           <div class="header-actions"><span id="last-updated">Not loaded</span><button id="refresh-admin">Refresh data</button></div>
         </header>
 
@@ -62,20 +61,20 @@
               <article><span>AI ACTIVITY</span><b id="metric-ai">0</b><small>responses and style checks</small></article>
             </div>
             <div class="overview-grid">
-              <article class="admin-card"><div class="card-heading"><div><span>ENGAGEMENT</span><h2>Platform usage</h2></div></div><div id="engagement-bars" class="bar-list"></div></article>
-              <article class="admin-card health-card"><div class="card-heading"><div><span>API HEALTH</span><h2>Service reliability</h2></div></div><div class="health-score"><b id="health-rate">—</b><span>successful requests</span></div><div class="health-meta"><p><b id="health-total">0</b><span>total calls</span></p><p><b id="health-today">0</b><span>calls today</span></p><p><b id="health-latency">—</b><span>avg. response</span></p><p><b id="health-failures">0</b><span>failures</span></p></div></article>
+              <article class="admin-card"><div class="card-heading"><div><h2>Platform usage</h2></div></div><div id="engagement-bars" class="bar-list"></div></article>
+              <article class="admin-card health-card"><div class="card-heading"><div><h2>Service reliability</h2></div></div><div class="health-score"><b id="health-rate">—</b><span>successful requests</span></div><div class="health-meta"><p><b id="health-total">0</b><span>total calls</span></p><p><b id="health-today">0</b><span>calls today</span></p><p><b id="health-latency">—</b><span>avg. response</span></p><p><b id="health-failures">0</b><span>failures</span></p></div></article>
             </div>
           </section>
 
           <section id="users" class="admin-section">
-            <div class="section-title"><div><span>COMMUNITY</span><h2>Users</h2></div><div class="user-tools"><label class="admin-search"><span>Search</span><input id="user-search" type="search" placeholder="Name, email, or UID" /></label><button id="export-users" class="secondary-admin-button">Export CSV</button></div></div>
+            <div class="section-title"><div><h2>Users</h2></div><div class="user-tools"><label class="admin-search"><span>Search</span><input id="user-search" type="search" placeholder="Name, email, or UID" /></label><button id="export-users" class="secondary-admin-button">Export CSV</button></div></div>
             <div class="table-wrap"><table><thead><tr><th>User</th><th>Profile</th><th>Plan / coupon</th><th>Joined</th><th>Garments</th><th>Saved looks</th><th>AI actions</th><th>Last activity</th><th></th></tr></thead><tbody id="users-body"></tbody></table><div id="users-empty" class="table-empty hidden">No matching users.</div></div>
             <div class="pagination" id="users-pagination" aria-label="User list pagination"><button id="users-prev" type="button">Previous</button><span id="users-page-info">Page 1</span><button id="users-next" type="button">Next</button></div>
           </section>
 
           <section id="deletion-requests" class="admin-section">
             <div class="section-title">
-              <div><span>PRIVACY OPERATIONS</span><h2>Account deletion requests</h2></div>
+              <div><h2>Account deletion requests</h2></div>
               <b id="deletion-request-count" class="request-count">0 pending</b>
             </div>
             <article class="admin-card deletion-notice">
@@ -95,7 +94,7 @@
 
           <section id="data-export-requests" class="admin-section">
             <div class="section-title">
-              <div><span>PRIVACY OPERATIONS (DPDP ACT)</span><h2>Personal data export requests</h2></div>
+              <div><h2>Personal data export requests</h2></div>
               <b id="data-export-request-count" class="request-count">0 pending</b>
             </div>
             <article class="admin-card deletion-notice" style="border-color:#bbf7d0;color:#166534;background:#f0fdf4;">
@@ -115,7 +114,6 @@
             <article class="admin-card audit-log-purge-card" style="margin-top:24px;">
               <div class="card-heading">
                 <div>
-                  <span>DATA RETENTION (DPDP ACT)</span>
                   <h3 style="margin:4px 0 8px;">Audit &amp; Processing Logs (Cloudflare D1)</h3>
                   <p style="color:var(--muted);font-size:13px;line-height:1.5;">
                     Pseudonymous operational and compliance logs are stored in Cloudflare D1. The administrator can manually purge logs older than 30 days at any time.
@@ -136,20 +134,19 @@
           </section>
 
           <section id="activity" class="admin-section">
-            <div class="section-title"><div><span>RECENT EVENTS</span><h2>User activity</h2></div><div class="activity-filters"><input id="activity-from" type="date" aria-label="Activity from date" /><input id="activity-to" type="date" aria-label="Activity to date" /><select id="activity-filter"><option value="all">All activity</option><option value="wardrobe">Wardrobe</option><option value="outfit">Outfits</option><option value="ai">AI activity</option><option value="account">Accounts</option></select><button id="clear-activity-dates" type="button">Clear dates</button></div></div>
+            <div class="section-title"><div><h2>User activity</h2></div><div class="activity-filters"><input id="activity-from" type="date" aria-label="Activity from date" /><input id="activity-to" type="date" aria-label="Activity to date" /><select id="activity-filter"><option value="all">All activity</option><option value="wardrobe">Wardrobe</option><option value="outfit">Outfits</option><option value="ai">AI activity</option><option value="account">Accounts</option></select><button id="clear-activity-dates" type="button">Clear dates</button></div></div>
             <div id="activity-summary" class="activity-summary"></div>
             <div id="activity-feed" class="activity-feed"></div>
             <div class="pagination" id="activity-pagination" aria-label="Activity pagination"><button id="activity-prev" type="button">Previous</button><span id="activity-page-info">Page 1</span><button id="activity-next" type="button">Next</button></div>
           </section>
 
           <section id="services" class="admin-section">
-            <div class="section-title"><div><span>INFRASTRUCTURE</span><h2>AI and service usage</h2></div></div>
-            <article class="admin-card ai-control-card" aria-labelledby="ai-control-title"><div class="ai-control-heading"><div><span>SERVER-ENFORCED SAFETY</span><h3 id="ai-control-title">Global AI controls</h3><p>A user-specific daily limit overrides the global value. Zero blocks AI calls for that user or globally.</p></div><strong id="ai-control-status">Loading…</strong></div><div class="ai-control-fields"><label>Default calls per user per day<input id="global-ai-limit" type="number" min="0" max="10000" step="1" value="5"></label><label>Message shown while AI is disabled<input id="global-ai-message" maxlength="240" value="AI features are temporarily unavailable. Please try again later."></label></div><div class="ai-control-actions"><button id="save-enable-ai" type="button" class="primary-admin-button">Save and enable AI</button><button id="kill-all-ai" type="button" class="danger-admin-button">Disable all app AI</button></div><p id="ai-control-message" role="status"></p></article>
+            <div class="section-title"><div><h2>AI and service usage</h2></div></div>
+            <article class="admin-card ai-control-card" aria-labelledby="ai-control-title"><div class="ai-control-heading"><div><h3 id="ai-control-title">Global AI controls</h3><p>A user-specific daily limit overrides the global value. Zero blocks AI calls for that user or globally.</p></div><strong id="ai-control-status">Loading…</strong></div><div class="ai-control-fields"><label>Default calls per user per day<input id="global-ai-limit" type="number" min="0" max="10000" step="1" value="5"></label><label>Message shown while AI is disabled<input id="global-ai-message" maxlength="240" value="AI features are temporarily unavailable. Please try again later."></label></div><div class="ai-control-actions"><button id="save-enable-ai" type="button" class="primary-admin-button">Save and enable AI</button><button id="kill-all-ai" type="button" class="danger-admin-button">Disable all app AI</button></div><p id="ai-control-message" role="status"></p></article>
 
             <article class="admin-card shopping-monitor-card" id="shopping-monitor-card">
               <div class="card-heading">
                 <div>
-                  <span>SEARCH &amp; SHOPPING PROVIDERS</span>
                   <h2>Shopping API monitoring &amp; live diagnostics</h2>
                   <p class="service-description">Real-time configuration, failover status, and interactive diagnostics for Serper.dev (server.dev) and SerpApi.</p>
                 </div>
@@ -233,7 +230,7 @@
             <div class="service-grid"><article class="admin-card"><h3>AI providers and services</h3><p class="service-description">Requests grouped by provider or processing service.</p><div id="provider-bars" class="bar-list compact"></div><h4 class="service-subheading">AI features used</h4><div id="feature-bars" class="bar-list compact"></div></article><article class="admin-card model-card"><h3>Model-level performance</h3><p class="service-description">Calls, reliability, response time, features, and latest use for each recorded model.</p><div id="model-list" class="model-list"></div></article></div>
           </section>
           <section id="coupons" class="admin-section">
-            <div class="section-title"><div><span>PREMIUM ACCESS</span><h2>Create coupons</h2></div></div>
+            <div class="section-title"><div><h2>Create coupons</h2></div></div>
             <div class="coupon-layout">
               <form id="coupon-form" class="admin-card coupon-form">
                 <div><h3>New coupon</h3><p>Create a code that grants premium access in the ClothMatics mobile app.</p></div>
@@ -243,7 +240,7 @@
                 <div id="coupon-message" class="coupon-message hidden" role="status"></div>
                 <button id="create-coupon" class="primary-admin-button" type="submit">Create coupon</button>
               </form>
-              <article class="admin-card coupon-list-card"><div class="card-heading"><div><span>AVAILABLE CODES</span><h2>Coupon library</h2></div><b id="coupon-count">0</b></div><div id="coupon-list" class="coupon-list"></div></article>
+              <article class="admin-card coupon-list-card"><div class="card-heading"><div><h2>Coupon library</h2></div><b id="coupon-count">0</b></div><div id="coupon-list" class="coupon-list"></div></article>
             </div>
           </section>
         </div>
@@ -252,9 +249,9 @@
     <div id="user-detail" class="user-detail hidden" role="dialog" aria-modal="true" aria-labelledby="detail-user-name">
       <button id="close-user-detail" class="detail-backdrop" aria-label="Close user details"></button>
       <section class="detail-panel">
-        <header class="detail-header"><div><span>USER EXPLORER</span><h2 id="detail-user-name">User details</h2><p id="detail-user-email"></p></div><button id="detail-close-button" aria-label="Close">×</button></header>
+        <header class="detail-header"><div><h2 id="detail-user-name">User details</h2><p id="detail-user-email"></p></div><button id="detail-close-button" aria-label="Close">×</button></header>
         <div id="detail-profile" class="detail-profile"></div>
-        <form id="detail-security" class="detail-security"><div><span>ACCOUNT SECURITY</span><h3>User access and AI limits</h3><p>These controls are enforced by Firebase Authentication and the shared mobile AI quota function.</p></div><label>Daily AI calls <span>Blank uses global limit; zero blocks AI for this user</span><input id="detail-ai-limit" type="number" min="0" max="10000" step="1" placeholder="Use global limit"></label><div class="detail-security-actions"><button id="save-user-security" type="submit" class="primary-admin-button">Save AI limit</button><button id="toggle-user-login" type="button" class="danger-admin-button">Block user login</button></div><p id="detail-security-status" role="status"></p></form>
+        <form id="detail-security" class="detail-security"><div><h3>User access and AI limits</h3><p>These controls are enforced by Firebase Authentication and the shared mobile AI quota function.</p></div><label>Daily AI calls <span>Blank uses global limit; zero blocks AI for this user</span><input id="detail-ai-limit" type="number" min="0" max="10000" step="1" placeholder="Use global limit"></label><div class="detail-security-actions"><button id="save-user-security" type="submit" class="primary-admin-button">Save AI limit</button><button id="toggle-user-login" type="button" class="danger-admin-button">Block user login</button></div><p id="detail-security-status" role="status"></p></form>
         <div class="detail-stats" id="detail-stats"></div>
         <div class="detail-date-tools"><b>Activity period</b><input id="detail-from" type="date" /><input id="detail-to" type="date" /><button id="detail-clear-dates">All time</button></div>
         <nav class="detail-tabs"><button class="active" data-detail-tab="activity">Activity</button><button data-detail-tab="closet">Closet</button><button data-detail-tab="outfits">Saved outfits</button></nav>
