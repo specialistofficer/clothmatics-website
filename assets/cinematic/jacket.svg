@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 480" fill="none">
+  <defs>
+    <linearGradient id="blazer-body" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#242229"/>
+      <stop offset="60%" stop-color="#18171b"/>
+      <stop offset="100%" stop-color="#0e0d10"/>
+    </linearGradient>
+    <linearGradient id="lapel-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#322f38"/>
+      <stop offset="100%" stop-color="#1a1820"/>
+    </linearGradient>
+    <linearGradient id="ai-jacket-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#5B3DF5" stop-opacity="0.8"/>
+      <stop offset="50%" stop-color="#7C3AED" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#EC4899" stop-opacity="0.8"/>
+    </linearGradient>
+    <filter id="blazer-shadow" x="-20%" y="-10%" width="140%" height="130%">
+      <feDropShadow dx="0" dy="24" stdDeviation="20" flood-color="#000000" flood-opacity="0.6"/>
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#7C3AED" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+
+  <g class="garment-base" filter="url(#blazer-shadow)">
+    <!-- Back Collar & Interior -->
+    <path d="M145 78 C 175 66, 225 66, 255 78 C 245 95, 155 95, 145 78 Z" fill="#0b0a0d"/>
+
+    <!-- Sleeves -->
+    <path d="M120 95 L40 220 C 35 240, 68 250, 85 235 L130 160 Z" fill="url(#blazer-body)"/>
+    <path d="M280 95 L360 220 C 365 240, 332 250, 315 235 L270 160 Z" fill="url(#blazer-body)"/>
+
+    <!-- Sleeve button accents -->
+    <circle cx="58" cy="225" r="2.5" fill="#3a3742"/>
+    <circle cx="63" cy="228" r="2.5" fill="#3a3742"/>
+    <circle cx="68" cy="231" r="2.5" fill="#3a3742"/>
+    <circle cx="342" cy="225" r="2.5" fill="#3a3742"/>
+    <circle cx="337" cy="228" r="2.5" fill="#3a3742"/>
+    <circle cx="332" cy="231" r="2.5" fill="#3a3742"/>
+
+    <!-- Main Jacket Body -->
+    <path d="M120 95 L145 78 C 175 88, 225 88, 255 78 L280 95 L275 390 C 275 400, 250 405, 200 405 C 150 405, 125 400, 125 390 Z" fill="url(#blazer-body)"/>
+
+    <!-- Left Notched Lapel -->
+    <path d="M145 78 L180 145 L165 155 L198 250 L175 250 L145 130 Z" fill="url(#lapel-grad)" stroke="#3e3a47" stroke-width="1.2"/>
+    <!-- Right Notched Lapel -->
+    <path d="M255 78 L220 145 L235 155 L202 250 L225 250 L255 130 Z" fill="url(#lapel-grad)" stroke="#3e3a47" stroke-width="1.2"/>
+
+    <!-- Welt Breast Pocket -->
+    <rect x="140" y="165" width="45" height="8" rx="1.5" transform="rotate(-6 140 165)" fill="#2a2730" stroke="#3d3947" stroke-width="1"/>
+
+    <!-- Flap Pockets -->
+    <rect x="135" y="290" width="55" height="12" rx="2" fill="#222026" stroke="#383442" stroke-width="1"/>
+    <rect x="210" y="290" width="55" height="12" rx="2" fill="#222026" stroke="#383442" stroke-width="1"/>
+
+    <!-- Front Horn Buttons -->
+    <circle cx="198" cy="265" r="5" fill="#383540" stroke="#1c1a20" stroke-width="1"/>
+    <circle cx="198" cy="315" r="5" fill="#383540" stroke="#1c1a20" stroke-width="1"/>
+  </g>
+
+  <!-- AI Wireframe Overlay -->
+  <g class="garment-ai-mesh" opacity="0">
+    <path d="M120 95 L145 78 L255 78 L280 95 L275 390 L125 390 Z" stroke="url(#ai-jacket-glow)" stroke-width="1.5" stroke-dasharray="6 4" fill="none"/>
+    <circle cx="200" cy="78" r="3" fill="#EC4899"/>
+    <circle cx="120" cy="95" r="3" fill="#5B3DF5"/>
+    <circle cx="280" cy="95" r="3" fill="#5B3DF5"/>
+    <circle cx="198" cy="265" r="3" fill="#7C3AED"/>
+  </g>
+</svg>

@@ -1,0 +1,988 @@
+/* ==========================================================================
+   ClothMatics Cinematic Storytelling Experience
+   Luxury fashion film + Apple product reveal + futuristic AI storytelling
+   ========================================================================== */
+
+:root {
+  --cinema-bg: #07060c;
+  --cinema-surface: #0e0c18;
+  --cinema-violet: #5B3DF5;
+  --cinema-purple: #7C3AED;
+  --cinema-pink: #EC4899;
+  --cinema-lavender: #c4b5fd;
+  --cinema-text-high: #f8fafc;
+  --cinema-text-mid: #94a3b8;
+  --cinema-text-dim: #64748b;
+  --cinema-border: rgba(255, 255, 255, 0.12);
+  --cinema-card-bg: rgba(14, 12, 24, 0.72);
+  --cinema-glass: rgba(255, 255, 255, 0.04);
+}
+
+/* 450vh tall scroll track */
+.cinematic-hero-experience {
+  position: relative;
+  width: 100%;
+  height: 450vh;
+  background: var(--cinema-bg);
+  color: var(--cinema-text-high);
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Sticky 100vh viewport */
+.cinematic-viewport {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 35%, #151128 0%, #08070e 65%, #050408 100%);
+  perspective: 1200px;
+  transform-style: preserve-3d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+/* Volumetric studio lights & ambient film grain */
+.cinematic-backdrop {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.cinema-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.45;
+  transition: opacity 0.8s ease, transform 0.8s ease;
+  will-change: transform, opacity;
+}
+
+.cinema-glow-purple {
+  width: 55vw;
+  height: 55vw;
+  top: -10%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.45) 0%, rgba(91, 61, 245, 0.15) 50%, transparent 70%);
+}
+
+.cinema-glow-pink {
+  width: 40vw;
+  height: 40vw;
+  bottom: -5%;
+  right: -5%;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.35) 0%, transparent 70%);
+}
+
+.cinema-beam {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(236, 72, 153, 0.4) 0%, rgba(91, 61, 245, 0.2) 60%, transparent 100%);
+  filter: blur(1px);
+  opacity: 0.3;
+}
+
+.cinema-grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+/* Main 3D Stage */
+.cinematic-stage {
+  position: relative;
+  width: 100%;
+  max-width: 1360px;
+  height: 100%;
+  max-height: 900px;
+  margin: 0 auto;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 3D Perspective Canvas for floating garments */
+.cinema-3d-space {
+  position: absolute;
+  inset: 0;
+  perspective: 1200px;
+  transform-style: preserve-3d;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Top Fixed Luxury Header */
+.site-header {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  max-width: none !important;
+  background: rgba(7, 6, 12, 0.85) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  z-index: 1000 !important;
+}
+
+.site-header .brand,
+.site-header .desktop-nav a {
+  color: #f8fafc !important;
+}
+
+.site-header .button-ghost {
+  background: transparent !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+}
+
+.site-header .button-ghost:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Individual Garment Nodes */
+.cinema-garment {
+  position: absolute;
+  transform-origin: center center;
+  will-change: transform, opacity, filter;
+  transition: filter 0.4s ease;
+  cursor: pointer;
+  pointer-events: auto;
+  background: transparent !important;
+  border: none !important;
+}
+
+.cinema-garment img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: contrast(1.1) brightness(1.02) drop-shadow(0 20px 35px rgba(0, 0, 0, 0.7));
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* HUD Corner Brackets */
+.garment-hud-bracket {
+  position: absolute;
+  inset: -6px;
+  border-radius: 14px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.garment-hud-bracket::before,
+.garment-hud-bracket::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #EC4899;
+}
+
+.garment-hud-bracket::before {
+  top: -2px;
+  left: -2px;
+  border-right: 0;
+  border-bottom: 0;
+}
+
+.garment-hud-bracket::after {
+  bottom: -2px;
+  right: -2px;
+  border-left: 0;
+  border-top: 0;
+}
+
+/* Base sizes for photorealistic clothing pieces */
+.garment-overshirt {
+  width: 290px;
+  height: 290px;
+  z-index: 10;
+}
+
+.garment-tee {
+  width: 260px;
+  height: 260px;
+  z-index: 9;
+}
+
+.garment-trousers {
+  width: 250px;
+  height: 290px;
+  z-index: 8;
+}
+
+.garment-sneakers {
+  width: 250px;
+  height: 250px;
+  z-index: 7;
+}
+
+.garment-jacket {
+  width: 290px;
+  height: 290px;
+  z-index: 6;
+}
+
+.garment-accessory {
+  width: 190px;
+  height: 190px;
+  z-index: 5;
+}
+
+/* Scanning Beam (Scene 2) */
+.cinema-scanner {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  pointer-events: none;
+  z-index: 20;
+  opacity: 0;
+  transform: translateY(-50vh);
+  background: linear-gradient(90deg, transparent 0%, rgba(91, 61, 245, 0.9) 20%, #EC4899 50%, rgba(124, 58, 237, 0.9) 80%, transparent 100%);
+  box-shadow: 0 0 28px #EC4899, 0 0 60px rgba(91, 61, 245, 0.7);
+  transition: opacity 0.4s ease;
+}
+
+.scanner-aura {
+  position: absolute;
+  top: -70px;
+  left: 0;
+  width: 100%;
+  height: 140px;
+  background: linear-gradient(180deg, transparent 0%, rgba(91, 61, 245, 0.12) 40%, rgba(236, 72, 153, 0.28) 50%, rgba(124, 58, 237, 0.12) 60%, transparent 100%);
+}
+
+.scanner-readout {
+  position: absolute;
+  right: 5vw;
+  top: -26px;
+  font-family: 'DM Sans', monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: #EC4899;
+  text-shadow: 0 0 10px #EC4899;
+}
+
+/* Elegant Metadata Telemetry Cards (Scene 2) */
+.cinema-meta-tag {
+  position: absolute;
+  padding: 10px 18px;
+  border-radius: 14px;
+  background: rgba(14, 12, 26, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), 0 0 20px rgba(91, 61, 245, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  z-index: 25;
+}
+
+.meta-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #EC4899;
+}
+
+.meta-detail {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #f8fafc;
+}
+
+.meta-badge {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #86efac;
+}
+
+/* Specific Tag Positions */
+.meta-1 { top: 38%; left: 42%; }
+.meta-2 { top: 34%; left: 14%; }
+.meta-3 { top: 72%; left: 42%; }
+.meta-4 { top: 74%; right: 16%; }
+.meta-5 { top: 32%; right: 14%; }
+.meta-6 { top: 70%; left: 16%; }
+
+.ctx-1 { top: 34%; left: 14%; }
+.ctx-2 { top: 34%; right: 14%; }
+.ctx-3 { top: 68%; left: 14%; }
+.ctx-4 { top: 68%; right: 14%; }
+.ctx-5 { top: 78%; left: 50%; transform: translateX(-50%); }
+
+.crit-1 { top: 36%; left: 18%; }
+.crit-2 { top: 36%; right: 18%; }
+.crit-3 { top: 66%; left: 18%; }
+.crit-4 { top: 66%; right: 18%; }
+.crit-5 { top: 78%; left: 50%; transform: translateX(-50%); }
+
+/* Human Silhouette & Profile Node (Scene 3) */
+.cinema-profile-node {
+  position: absolute;
+  width: 320px;
+  height: 420px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.85);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  z-index: 12;
+}
+
+.cinema-profile-svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 25px rgba(91, 61, 245, 0.4));
+}
+
+/* Context Badges (Scene 3) */
+.cinema-context-tag {
+  position: absolute;
+  padding: 8px 16px;
+  border-radius: 12px;
+  background: rgba(18, 15, 32, 0.88);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(124, 58, 237, 0.3);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 16px rgba(124, 58, 237, 0.2);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  z-index: 16;
+}
+
+.cinema-context-tag span {
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cinema-lavender);
+  font-weight: 600;
+}
+
+.cinema-context-tag b {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+/* Scene 4: Criteria Evaluation Badges */
+.cinema-criteria-cloud {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 18;
+}
+
+.criteria-pill {
+  position: absolute;
+  padding: 8px 18px;
+  border-radius: 9999px;
+  background: rgba(15, 13, 26, 0.9);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(236, 72, 153, 0.35);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #ffffff;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(236, 72, 153, 0.25);
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.criteria-pill.pill-verified {
+  border-color: rgba(34, 197, 94, 0.4);
+  color: #86efac;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 18px rgba(34, 197, 94, 0.25);
+}
+
+/* Scene 5: Luxury Recommendation Overlay */
+.cinema-look-card {
+  position: absolute;
+  right: 5%;
+  top: 50%;
+  transform: translateY(-50%) translateX(30px);
+  width: 320px;
+  padding: 28px 26px;
+  background: rgba(14, 12, 25, 0.78);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7), 0 0 35px rgba(91, 61, 245, 0.2);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 25;
+}
+
+.cinema-look-card.active {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+  pointer-events: auto;
+}
+
+.look-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.look-kicker {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #EC4899;
+}
+
+.look-score {
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.12);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.look-title {
+  font-family: 'Manrope', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 10px 0;
+  line-height: 1.25;
+}
+
+.look-meta-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.look-chip {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem;
+  color: var(--cinema-lavender);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.look-checklist {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.look-checklist li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.86rem;
+  color: #e2e8f0;
+}
+
+.look-checklist li svg {
+  width: 16px;
+  height: 16px;
+  color: #EC4899;
+  flex-shrink: 0;
+}
+
+/* Editorial Typography & Scene Titles */
+.cinema-narratives {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 35;
+}
+
+.cinema-title-block {
+  position: absolute;
+  top: 96px;
+  left: 50%;
+  transform: translateX(-50%) translateY(16px);
+  text-align: center;
+  width: 90%;
+  max-width: 820px;
+  padding: 0 20px;
+  opacity: 0;
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cinema-title-block.active {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.cinema-title-block[data-scene="6"] {
+  top: 50%;
+  transform: translate(-50%, -50%) translateY(16px);
+}
+
+.cinema-title-block[data-scene="6"].active {
+  transform: translate(-50%, -50%) translateY(0);
+}
+
+.cinema-subheading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #EC4899;
+  margin-bottom: 10px;
+}
+
+.cinema-heading {
+  font-family: 'Manrope', sans-serif;
+  font-size: clamp(2rem, 3.8vw, 3.2rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.14;
+  color: #ffffff;
+  margin: 0;
+  text-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
+}
+
+.cinema-heading .gradient-word {
+  background: linear-gradient(135deg, #a78bfa 0%, #EC4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.cinema-lede {
+  font-family: 'DM Sans', sans-serif;
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  color: var(--cinema-text-mid);
+  margin: 16px auto 0 auto;
+  max-width: 580px;
+  line-height: 1.5;
+}
+
+/* Scene 6: Final Brand Anthem & CTAs */
+.cinema-final-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 32px;
+  pointer-events: auto;
+}
+
+.cinema-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 36px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #5B3DF5 0%, #EC4899 100%);
+  color: #ffffff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 16px 36px rgba(91, 61, 245, 0.45);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.cinema-btn-primary:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 20px 45px rgba(236, 72, 153, 0.5);
+}
+
+.cinema-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 28px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1.02rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.cinema-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.cinema-trust-pill {
+  margin-top: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  color: var(--cinema-text-mid);
+}
+
+.cinema-trust-pill span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Interactive Timeline Navigation Scrubber */
+.cinema-timeline-nav {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 30;
+  pointer-events: auto;
+}
+
+.timeline-bar {
+  width: 240px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.timeline-progress {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #5B3DF5, #EC4899);
+  border-radius: 999px;
+  transition: width 0.1s linear;
+}
+
+.timeline-scenes {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.timeline-dot {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--cinema-text-dim);
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: color 0.2s ease;
+}
+
+.timeline-dot:hover {
+  color: var(--cinema-text-high);
+}
+
+.timeline-dot.active {
+  color: #EC4899;
+}
+
+/* Mobile & Tablet Adaptations */
+@media (max-width: 992px) {
+  .cinema-heading {
+    font-size: clamp(1.8rem, 4.5vw, 2.4rem);
+  }
+
+  .cinema-sub {
+    font-size: 0.95rem;
+  }
+
+  .cinema-look-card {
+    right: 50%;
+    transform: translateY(-50%) translateX(50%);
+    width: 90%;
+    max-width: 320px;
+    padding: 20px;
+  }
+
+  .garment-overshirt { width: 190px; }
+  .garment-tee { width: 160px; }
+  .garment-trousers { width: 170px; }
+  .garment-sneakers { width: 160px; }
+  .garment-jacket { width: 200px; }
+  .garment-accessory { width: 120px; }
+
+  .timeline-scenes {
+    gap: 8px;
+  }
+
+  .timeline-dot {
+    font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .cinema-title-block {
+    top: 76px;
+    padding: 0 16px;
+  }
+
+  .cinema-eyebrow {
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
+    margin-bottom: 6px;
+  }
+
+  .cinema-heading {
+    font-size: 1.55rem;
+    line-height: 1.18;
+  }
+
+  .cinema-sub {
+    font-size: 0.85rem;
+    line-height: 1.38;
+    margin-top: 6px;
+    max-width: 340px;
+  }
+
+  .garment-overshirt { width: 165px; height: 165px; }
+  .garment-tee { width: 140px; height: 140px; }
+  .garment-trousers { width: 145px; height: 145px; }
+  .garment-sneakers { width: 135px; height: 135px; }
+  .garment-jacket { width: 165px; height: 165px; }
+  .garment-accessory { width: 105px; height: 105px; }
+
+  /* Scene 2: Keep only top 2 metadata cards to prevent crowding */
+  .meta-3, .meta-4, .meta-5, .meta-6 {
+    display: none !important;
+  }
+
+  .meta-1 {
+    top: 62% !important;
+    left: 12px !important;
+    right: auto !important;
+    max-width: 165px !important;
+    padding: 6px 10px !important;
+  }
+
+  .meta-2 {
+    top: 62% !important;
+    right: 12px !important;
+    left: auto !important;
+    max-width: 165px !important;
+    padding: 6px 10px !important;
+  }
+
+  .meta-label {
+    font-size: 0.58rem !important;
+  }
+
+  .meta-detail {
+    font-size: 0.72rem !important;
+  }
+
+  /* Scene 3: Keep primary context pills */
+  .ctx-3, .ctx-4, .ctx-5 {
+    display: none !important;
+  }
+
+  .ctx-1 {
+    top: 64% !important;
+    left: 14px !important;
+    right: auto !important;
+    padding: 6px 10px !important;
+    font-size: 0.72rem !important;
+  }
+
+  .ctx-2 {
+    top: 64% !important;
+    right: 14px !important;
+    left: auto !important;
+    padding: 6px 10px !important;
+    font-size: 0.72rem !important;
+  }
+
+  /* Scene 4: Keep verified criteria pills */
+  .crit-3, .crit-4, .crit-5 {
+    display: none !important;
+  }
+
+  .crit-1 {
+    top: 64% !important;
+    left: 10px !important;
+    right: auto !important;
+    padding: 6px 12px !important;
+    font-size: 0.72rem !important;
+  }
+
+  .crit-2 {
+    top: 64% !important;
+    right: 10px !important;
+    left: auto !important;
+    padding: 6px 12px !important;
+    font-size: 0.72rem !important;
+  }
+
+  /* Scene 5 Look Card on Mobile */
+  .cinema-look-card {
+    position: absolute;
+    left: 16px !important;
+    right: 16px !important;
+    bottom: 56px !important;
+    top: auto !important;
+    width: auto !important;
+    max-width: none !important;
+    transform: none !important;
+    padding: 16px !important;
+  }
+
+  .cinema-look-title {
+    font-size: 1.05rem;
+  }
+
+  .cinema-look-tags {
+    margin: 8px 0;
+  }
+
+  .cinema-look-tag {
+    font-size: 0.65rem;
+    padding: 3px 8px;
+  }
+
+  .cinema-look-items li {
+    font-size: 0.78rem;
+    margin-bottom: 3px;
+  }
+
+  /* Timeline Scrubber on Mobile */
+  .cinema-timeline-scrubber {
+    bottom: 12px;
+    gap: 6px;
+  }
+
+  .timeline-bar {
+    width: 140px;
+  }
+
+  .timeline-scenes {
+    display: none !important;
+  }
+
+  .cinema-final-actions {
+    flex-direction: column;
+    width: 100%;
+    max-width: 320px;
+    padding: 0 16px;
+    margin-top: 18px;
+  }
+
+  .cinema-btn-primary,
+  .cinema-btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .cinema-trust-pill {
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 14px;
+    font-size: 0.75rem;
+  }
+}
+
+/* Reduced Motion Safety */
+@media (prefers-reduced-motion: reduce) {
+  .cinematic-hero-experience {
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .cinematic-viewport {
+    position: relative;
+    height: auto;
+    min-height: 100vh;
+    padding: 80px 20px;
+  }
+
+  .cinema-scanner {
+    display: none !important;
+  }
+
+  .cinema-title-block {
+    position: relative !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .cinema-3d-space {
+    position: relative;
+    height: 480px;
+  }
+
+  .cinema-look-card {
+    position: relative;
+    opacity: 1 !important;
+    transform: none !important;
+    margin: 20px auto;
+  }
+}

@@ -39,6 +39,7 @@
     <meta name="mitgo-verification" content="13dabed9-6ec3-4acb-8ebf-815604226289" />
       <link rel="stylesheet" href="./complete-look.css?v=20260913-responsive-v1" />
       <link rel="stylesheet" href="./garment-studio.css?v=20260913-responsive-v1" />
+      <link rel="stylesheet" href="./cinematic-story.css?v=20260921-v1" />
   </head>
   <body>
     <div class="noise"></div>
@@ -56,33 +57,193 @@
     </header>
 
     <main id="marketing-view">
-      <section class="hero section" id="top">
-        <div class="hero-copy reveal">
-          <div class="eyebrow"><span></span> AI styling, built around what you own</div>
-          <h1>Your wardrobe.<br /><span class="gradient-text">Endless possibilities.</span></h1>
-          <p class="hero-lede">ClothMatics understands your closet, your plans, and the weather—then creates outfits that feel unmistakably you.</p>
-          <div class="hero-actions">
-            <button class="button button-primary button-large" data-open-auth>Open my wardrobe <span>→</span></button>
-            <a class="text-link" href="#how">See how it works <span>↓</span></a>
+      <section class="cinematic-hero-experience" id="top" aria-label="ClothMatics Cinematic Experience">
+        <div class="cinematic-viewport">
+          <!-- Ambient Studio Backdrop & Volumetric Lighting -->
+          <div class="cinematic-backdrop" aria-hidden="true">
+            <div class="cinema-glow cinema-glow-purple"></div>
+            <div class="cinema-glow cinema-glow-pink"></div>
+            <div class="cinema-beam"></div>
+            <div class="cinema-grain"></div>
           </div>
-          <div class="trust-row"><span>✓ Your wardrobe stays private</span><span>✓ Secure cloud processing</span><span>✓ One wardrobe across web and mobile</span></div>
-        </div>
-        <div class="hero-visual reveal">
-          <div class="orb orb-one"></div><div class="orb orb-two"></div>
-          <div class="phone-shell">
-            <div class="phone-top"><span>9:41</span><span>● ● ●</span></div>
-            <div class="mini-brand"><img src="./assets/clothmatics-logo.png" alt="" /> ClothMatics</div>
-            <div class="phone-greeting">Good morning</div>
-            <div class="phone-title">Styled for today</div>
-            <div class="outfit-preview">
-              <div class="garment garment-shirt">⌁</div><div class="garment garment-trouser">Ⅱ</div>
-              <div class="score">92<span>/100</span></div>
+
+          <!-- 3D Stage -->
+          <div class="cinematic-stage">
+            <!-- 3D Floating Garment Nodes -->
+            <div class="cinema-3d-space" id="cinema-3d-space" aria-hidden="true">
+              <div class="cinema-garment garment-overshirt" title="Navy Overshirt">
+                <div class="garment-hud-bracket"></div>
+                <img src="./assets/cinematic/overshirt.png" alt="Luxury Navy Overshirt" width="400" height="400" decoding="async" />
+              </div>
+              <div class="cinema-garment garment-tee" title="Crisp White Tee">
+                <div class="garment-hud-bracket"></div>
+                <img src="./assets/cinematic/tee.png" alt="Crisp White Tee" width="400" height="400" decoding="async" />
+              </div>
+              <div class="cinema-garment garment-trousers" title="Tailored Beige Trousers">
+                <div class="garment-hud-bracket"></div>
+                <img src="./assets/cinematic/trousers.png" alt="Tailored Beige Trousers" width="400" height="400" decoding="async" />
+              </div>
+              <div class="cinema-garment garment-sneakers" title="Minimalist White Sneakers">
+                <div class="garment-hud-bracket"></div>
+                <img src="./assets/cinematic/sneakers.png" alt="Minimalist White Sneakers" width="400" height="400" decoding="async" />
+              </div>
+              <div class="cinema-garment garment-jacket" title="Charcoal Tailored Blazer">
+                <div class="garment-hud-bracket"></div>
+                <img src="./assets/cinematic/jacket.png" alt="Charcoal Tailored Blazer" width="400" height="400" decoding="async" />
+              </div>
+              <div class="cinema-garment garment-accessory" title="Luxury Sapphire Watch">
+                <div class="garment-hud-bracket"></div>
+                <img src="./assets/cinematic/accessory.png" alt="Luxury Sapphire Timepiece" width="320" height="320" decoding="async" />
+              </div>
             </div>
-            <div class="phone-meta"><strong>Polished summer casual</strong><span>Office · 29°C</span></div>
-            <button>View complete outfit →</button>
+
+            <!-- Scanning Laser Beam (Scene 2) -->
+            <div class="cinema-scanner" id="cinema-scanner" aria-hidden="true">
+              <div class="scanner-aura"></div>
+              <div class="scanner-grid"></div>
+              <div class="scanner-readout">SCANNING WARDROBE SPECTRUM // 480NM</div>
+            </div>
+
+            <!-- Intelligent Metadata Detection Labels (Scene 2) -->
+            <div class="cinema-meta-tag meta-1 tag-cyan" aria-hidden="true">
+              <span class="meta-label">TOP // OVERSHIRT</span>
+              <span class="meta-detail">100% Cotton Twill • Deep Navy</span>
+              <span class="meta-badge">CONFIDENCE 99.8%</span>
+            </div>
+            <div class="cinema-meta-tag meta-2 tag-violet" aria-hidden="true">
+              <span class="meta-label">BASE // CREW TEE</span>
+              <span class="meta-detail">240 GSM Heavyweight • Pure White</span>
+              <span class="meta-badge">CONFIDENCE 99.4%</span>
+            </div>
+            <div class="cinema-meta-tag meta-3" aria-hidden="true">
+              <span class="meta-label">BOTTOM // PLEATED CHINO</span>
+              <span class="meta-detail">Relaxed Taper • Sand Beige</span>
+              <span class="meta-badge">CONFIDENCE 98.9%</span>
+            </div>
+            <div class="cinema-meta-tag meta-4 tag-cyan" aria-hidden="true">
+              <span class="meta-label">FOOTWEAR // LOW SNEAKER</span>
+              <span class="meta-detail">Calfskin Leather • Crisp White</span>
+              <span class="meta-badge">CONFIDENCE 99.1%</span>
+            </div>
+            <div class="cinema-meta-tag meta-5" aria-hidden="true">
+              <span class="meta-label">OUTER // STRUCTURED BLAZER</span>
+              <span class="meta-detail">Virgin Wool • Charcoal</span>
+              <span class="meta-badge">CONFIDENCE 98.6%</span>
+            </div>
+            <div class="cinema-meta-tag meta-6 tag-violet" aria-hidden="true">
+              <span class="meta-label">ACCESSORY // CHRONO 40MM</span>
+              <span class="meta-detail">Sapphire Crystal • Leather Strap</span>
+              <span class="meta-badge">CONFIDENCE 99.5%</span>
+            </div>
+
+            <!-- Human Silhouette Profile & Neural Node (Scene 3) -->
+            <div class="cinema-profile-node" id="cinema-profile-node" aria-hidden="true">
+              <img class="cinema-profile-svg" src="./assets/cinematic/silhouette.png" alt="Personal Style Profile" width="400" height="400" decoding="async" />
+            </div>
+
+            <!-- Contextual Intelligence Badges (Scene 3) -->
+            <div class="cinema-context-tag ctx-1" aria-hidden="true"><span>Body Type</span><b>Athletic &amp; Balanced</b></div>
+            <div class="cinema-context-tag ctx-2" aria-hidden="true"><span>Skin Tone</span><b>Warm Neutral Undertone</b></div>
+            <div class="cinema-context-tag ctx-3" aria-hidden="true"><span>Personal Style</span><b>Modern Minimalist</b></div>
+            <div class="cinema-context-tag ctx-4" aria-hidden="true"><span>Occasion</span><b>Casual Evening</b></div>
+            <div class="cinema-context-tag ctx-5" aria-hidden="true"><span>Live Weather</span><b>24°C • Clear Skies</b></div>
+
+            <!-- Criteria Evaluation Cloud (Scene 4) -->
+            <div class="cinema-criteria-cloud" id="cinema-criteria-cloud" aria-hidden="true">
+              <div class="criteria-pill crit-1 pill-verified">✓ Color Harmony: 98%</div>
+              <div class="criteria-pill crit-2 pill-verified">✓ Weather Matched: Optimal</div>
+              <div class="criteria-pill crit-3 pill-verified">✓ Silhouette Balance: True</div>
+              <div class="criteria-pill crit-4 pill-verified">✓ Formality: Smart Casual</div>
+              <div class="criteria-pill crit-5 pill-verified">✓ Outfit Symmetry: High</div>
+            </div>
+
+            <!-- Luxury Recommendation Overlay (Scene 5) -->
+            <div class="cinema-look-card" id="cinema-look-card">
+              <div class="look-header">
+                <span class="look-kicker">TODAY'S LOOK</span>
+                <span class="look-score">96 / 100</span>
+              </div>
+              <h3 class="look-title">Smart Casual Ensemble</h3>
+              <div class="look-meta-chips">
+                <span class="look-chip">Occasion: Casual</span>
+                <span class="look-chip">Weather: 24°C</span>
+                <span class="look-chip">Style: Modern Classic</span>
+              </div>
+              <ul class="look-checklist">
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>Navy overshirt</li>
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>Crisp white tee</li>
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>Tailored beige trousers</li>
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>Minimalist white sneakers</li>
+              </ul>
+            </div>
+
+            <!-- Editorial Typography & Scene Narratives -->
+            <div class="cinema-narratives" id="cinema-narratives">
+              <!-- Scene 1 Title -->
+              <div class="cinema-title-block active" data-scene="1">
+                <span class="cinema-subheading">Scene 01 • Your Wardrobe</span>
+                <h1 class="cinema-heading">Your wardrobe already has<br /><span class="gradient-word">everything you need.</span></h1>
+                <p class="cinema-lede">Every great outfit starts with pieces you already own—waiting to be seen in a new light.</p>
+              </div>
+
+              <!-- Scene 2 Title -->
+              <div class="cinema-title-block" data-scene="2">
+                <span class="cinema-subheading">Scene 02 • Intelligent Vision</span>
+                <h2 class="cinema-heading">ClothMatics understands<br /><span class="gradient-word">what you own.</span></h2>
+                <p class="cinema-lede">Every fabric, cut, color, and silhouette is recognized and structured into your digital closet.</p>
+              </div>
+
+              <!-- Scene 3 Title -->
+              <div class="cinema-title-block" data-scene="3">
+                <span class="cinema-subheading">Scene 03 • Personal Context</span>
+                <h2 class="cinema-heading">Then it gets to<br /><span class="gradient-word">know you.</span></h2>
+                <p class="cinema-lede">Your body type, skin tone, personal style, weather, and schedule unite into one intelligent profile.</p>
+              </div>
+
+              <!-- Scene 4 Title -->
+              <div class="cinema-title-block" data-scene="4">
+                <span class="cinema-subheading">Scene 04 • AI Thinking</span>
+                <h2 class="cinema-heading">Thousands of possibilities.<br /><span class="gradient-word">One outfit that feels right.</span></h2>
+                <p class="cinema-lede">AI evaluates color harmony, weather, fit, and occasion in real time until the ideal look locks in.</p>
+              </div>
+
+              <!-- Scene 5 Title -->
+              <div class="cinema-title-block" data-scene="5">
+                <span class="cinema-subheading">Scene 05 • The Recommendation</span>
+                <h2 class="cinema-heading">Curated specifically<br /><span class="gradient-word">for today.</span></h2>
+                <p class="cinema-lede">A balanced, elevated outfit tailored for your plans, 24°C weather, and pieces already in your wardrobe.</p>
+              </div>
+
+              <!-- Scene 6 Title & Final Message -->
+              <div class="cinema-title-block" data-scene="6">
+                <span class="cinema-subheading">Scene 06 • The Experience</span>
+                <h2 class="cinema-heading">Your wardrobe.<br /><span class="gradient-word">Understood by AI.</span></h2>
+                <p class="cinema-lede">ClothMatics turns your closet into an intelligent personal stylist.</p>
+                <div class="cinema-final-actions">
+                  <button class="cinema-btn-primary" data-open-auth>Explore Your Style <span>→</span></button>
+                  <a class="cinema-btn-secondary" href="https://play.google.com/store/apps/details?id=com.clothmatics.app" target="_blank" rel="noopener noreferrer">Get the App</a>
+                </div>
+                <div class="cinema-trust-pill">
+                  <span>✓ Private Closet</span>
+                  <span>✓ Secure Processing</span>
+                  <span>✓ Web &amp; Mobile Sync</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Interactive Timeline Navigation -->
+            <nav class="cinema-timeline-nav" aria-label="Story Chapters">
+              <div class="timeline-bar"><div class="timeline-progress" id="cinema-progress-fill"></div></div>
+              <div class="timeline-scenes">
+                <span class="timeline-dot active" data-scene="1">01 Wardrobe</span>
+                <span class="timeline-dot" data-scene="2">02 Vision</span>
+                <span class="timeline-dot" data-scene="3">03 You</span>
+                <span class="timeline-dot" data-scene="4">04 AI</span>
+                <span class="timeline-dot" data-scene="5">05 Look</span>
+                <span class="timeline-dot" data-scene="6">06 ClothMatics</span>
+              </div>
+            </nav>
           </div>
-          <div class="float-card float-weather"><b>☀ 29°C</b><span>Weather matched</span></div>
-          <div class="float-card float-closet"><b>48 pieces</b><span>Ready to style</span></div>
         </div>
       </section>
 
@@ -253,6 +414,7 @@
       <symbol id="icon-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></symbol>
     </svg>
     <script src="./install-prompt.js" defer></script>
+    <script type="module" src="./cinematic-story.mjs?v=20260921-v1"></script>
     <script type="module" src="./app.js?v=20260920-flux-v2"></script>
   </body>
 </html>

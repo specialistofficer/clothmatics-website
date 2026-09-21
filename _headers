@@ -56,6 +56,12 @@
 /garment-studio.css
   Cache-Control: no-store
 
+/cinematic-story.css
+  Cache-Control: no-store
+
+/cinematic-story.mjs
+  Cache-Control: no-store
+
 /ghost-ui.mjs
   Cache-Control: no-store
 

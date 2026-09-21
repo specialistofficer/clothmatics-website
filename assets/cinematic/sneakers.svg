@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 320" fill="none">
+  <defs>
+    <linearGradient id="leather-white" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="70%" stop-color="#f0f2f7"/>
+      <stop offset="100%" stop-color="#dfe3ec"/>
+    </linearGradient>
+    <linearGradient id="sole-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fbfbfa"/>
+      <stop offset="100%" stop-color="#d6d9e0"/>
+    </linearGradient>
+    <linearGradient id="ai-sneaker-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#5B3DF5" stop-opacity="0.8"/>
+      <stop offset="50%" stop-color="#7C3AED" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#EC4899" stop-opacity="0.8"/>
+    </linearGradient>
+    <filter id="sneaker-shadow" x="-20%" y="-10%" width="140%" height="130%">
+      <feDropShadow dx="0" dy="20" stdDeviation="16" flood-color="#000000" flood-opacity="0.5"/>
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#5B3DF5" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <g class="garment-base" filter="url(#sneaker-shadow)">
+    <!-- Heel collar inner -->
+    <path d="M80 145 C 90 120, 130 115, 150 140 C 130 148, 95 152, 80 145 Z" fill="#cfd4e2"/>
+
+    <!-- Main Upper Leather -->
+    <path d="M70 180 C 65 145, 80 125, 100 125 C 130 125, 150 145, 190 165 C 240 185, 290 195, 345 200 C 355 208, 355 225, 340 230 L70 230 Z" fill="url(#leather-white)"/>
+
+    <!-- Suede / Nubuck Mudguard Overlay -->
+    <path d="M250 205 C 280 208, 320 212, 345 218 C 342 228, 325 230, 290 230 C 265 230, 245 220, 250 205 Z" fill="#ebeef5" stroke="#d3d7e4" stroke-width="1"/>
+
+    <!-- Heel counter tab (Contrast suede / leather) -->
+    <path d="M68 180 C 66 150, 75 130, 95 125 L95 150 C 80 152, 70 165, 68 180 Z" fill="#2b314d"/>
+
+    <!-- Lacing Eyestay & Tongue -->
+    <path d="M125 135 L190 170 C 185 178, 175 182, 160 175 L115 142 Z" fill="#eaedf5" stroke="#cbd0df" stroke-width="1"/>
+    <!-- Eyelets -->
+    <circle cx="130" cy="142" r="2.5" fill="#a4adc4"/>
+    <circle cx="145" cy="150" r="2.5" fill="#a4adc4"/>
+    <circle cx="160" cy="158" r="2.5" fill="#a4adc4"/>
+    <circle cx="175" cy="166" r="2.5" fill="#a4adc4"/>
+
+    <!-- Cotton Flat Laces -->
+    <path d="M130 142 Q 138 140 145 150" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+    <path d="M145 150 Q 153 148 160 158" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+    <path d="M160 158 Q 168 156 175 166" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+
+    <!-- Cupsole / Rubber Outsole -->
+    <path d="M65 230 L345 230 C 352 230, 355 240, 345 252 C 320 262, 120 262, 60 252 C 55 240, 58 230, 65 230 Z" fill="url(#sole-grad)" stroke="#c2c7d4" stroke-width="1.2"/>
+    <!-- Sole stitch groove -->
+    <path d="M66 236 L342 236" stroke="#b2b8c7" stroke-width="1.5" stroke-dasharray="3 2"/>
+    <path d="M75 254 L330 254" stroke="#dbe0eb" stroke-width="1"/>
+  </g>
+
+  <!-- AI Wireframe Overlay -->
+  <g class="garment-ai-mesh" opacity="0">
+    <path d="M65 230 L345 230 L345 252 L60 252 Z" stroke="url(#ai-sneaker-glow)" stroke-width="1.5" stroke-dasharray="4 3" fill="none"/>
+    <circle cx="95" cy="125" r="3" fill="#5B3DF5"/>
+    <circle cx="190" cy="165" r="3" fill="#EC4899"/>
+    <circle cx="345" cy="230" r="3" fill="#7C3AED"/>
+  </g>
+</svg>

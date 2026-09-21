@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 480" fill="none">
+  <defs>
+    <linearGradient id="chinos-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#dfd7c5"/>
+      <stop offset="40%" stop-color="#cfc5b0"/>
+      <stop offset="100%" stop-color="#b5aa93"/>
+    </linearGradient>
+    <linearGradient id="waist-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#e5decb"/>
+      <stop offset="100%" stop-color="#c4b9a1"/>
+    </linearGradient>
+    <linearGradient id="ai-pants-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#5B3DF5" stop-opacity="0.8"/>
+      <stop offset="50%" stop-color="#7C3AED" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#EC4899" stop-opacity="0.8"/>
+    </linearGradient>
+    <filter id="pants-shadow" x="-20%" y="-10%" width="140%" height="130%">
+      <feDropShadow dx="0" dy="24" stdDeviation="20" flood-color="#000000" flood-opacity="0.5"/>
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#5B3DF5" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <g class="garment-base" filter="url(#pants-shadow)">
+    <!-- Waistband -->
+    <path d="M135 60 L265 60 L268 95 L132 95 Z" fill="url(#waist-grad)" stroke="#a89d85" stroke-width="1.5"/>
+    <!-- Belt loops -->
+    <rect x="145" y="58" width="6" height="38" rx="1.5" fill="#c0b59c" stroke="#9a8f78" stroke-width="0.8"/>
+    <rect x="180" y="58" width="6" height="38" rx="1.5" fill="#c0b59c" stroke="#9a8f78" stroke-width="0.8"/>
+    <rect x="214" y="58" width="6" height="38" rx="1.5" fill="#c0b59c" stroke="#9a8f78" stroke-width="0.8"/>
+    <rect x="249" y="58" width="6" height="38" rx="1.5" fill="#c0b59c" stroke="#9a8f78" stroke-width="0.8"/>
+
+    <!-- Tab extension button -->
+    <circle cx="200" cy="77" r="4" fill="#6c5a3d" stroke="#3d3221" stroke-width="0.8"/>
+
+    <!-- Left Leg -->
+    <path d="M132 95 L188 190 L186 425 C 186 430, 140 430, 140 425 L115 140 C 115 110, 125 95, 132 95 Z" fill="url(#chinos-grad)"/>
+    <!-- Right Leg -->
+    <path d="M268 95 L212 190 L214 425 C 214 430, 260 430, 260 425 L285 140 C 285 110, 275 95, 268 95 Z" fill="url(#chinos-grad)"/>
+
+    <!-- Crotch & fly seam -->
+    <path d="M200 95 L200 170 C 200 185, 192 195, 188 190" stroke="#9b9077" stroke-width="1.8"/>
+    <path d="M204 95 L204 150 C 204 165, 198 175, 190 180" stroke="#b2a68e" stroke-width="1" stroke-dasharray="3 2"/>
+
+    <!-- Tailored front center crease line (Press fold) -->
+    <!-- Left Crease -->
+    <line x1="156" y1="95" x2="163" y2="425" stroke="#f2ecde" stroke-width="1.2" opacity="0.8"/>
+    <line x1="157" y1="95" x2="164" y2="425" stroke="#9e927a" stroke-width="1.2" opacity="0.6"/>
+    <!-- Right Crease -->
+    <line x1="244" y1="95" x2="237" y2="425" stroke="#f2ecde" stroke-width="1.2" opacity="0.8"/>
+    <line x1="243" y1="95" x2="236" y2="425" stroke="#9e927a" stroke-width="1.2" opacity="0.6"/>
+
+    <!-- Slash Pockets -->
+    <path d="M132 105 L120 150" stroke="#9b9077" stroke-width="2"/>
+    <path d="M268 105 L280 150" stroke="#9b9077" stroke-width="2"/>
+
+    <!-- Turn-up Hem cuffs -->
+    <rect x="139" y="415" width="48" height="12" rx="2" fill="#c7bca5" stroke="#9c9077" stroke-width="1"/>
+    <rect x="213" y="415" width="48" height="12" rx="2" fill="#c7bca5" stroke="#9c9077" stroke-width="1"/>
+  </g>
+
+  <!-- AI Wireframe Overlay -->
+  <g class="garment-ai-mesh" opacity="0">
+    <path d="M135 60 L265 60 L285 140 L260 425 L214 425 L200 190 L186 425 L140 425 L115 140 Z" stroke="url(#ai-pants-glow)" stroke-width="1.5" stroke-dasharray="6 4" fill="none"/>
+    <circle cx="200" cy="77" r="3" fill="#EC4899"/>
+    <circle cx="163" cy="425" r="3" fill="#5B3DF5"/>
+    <circle cx="237" cy="425" r="3" fill="#5B3DF5"/>
+  </g>
+</svg>

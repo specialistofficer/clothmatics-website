@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 480" fill="none">
+  <defs>
+    <linearGradient id="tee-body" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fdfdfd"/>
+      <stop offset="60%" stop-color="#f3f4f8"/>
+      <stop offset="100%" stop-color="#e2e5ee"/>
+    </linearGradient>
+    <linearGradient id="rib-collar" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#d9dce6"/>
+    </linearGradient>
+    <linearGradient id="ai-tee-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#5B3DF5" stop-opacity="0.8"/>
+      <stop offset="50%" stop-color="#7C3AED" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#EC4899" stop-opacity="0.8"/>
+    </linearGradient>
+    <filter id="tee-shadow" x="-20%" y="-10%" width="140%" height="130%">
+      <feDropShadow dx="0" dy="24" stdDeviation="20" flood-color="#000000" flood-opacity="0.5"/>
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#5B3DF5" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <g class="garment-base" filter="url(#tee-shadow)">
+    <!-- Back inner neck -->
+    <path d="M160 85 C 180 75, 220 75, 240 85 C 230 96, 170 96, 160 85 Z" fill="#cfd3e0"/>
+
+    <!-- Sleeves -->
+    <path d="M130 98 L60 160 C 50 178, 75 195, 95 180 L135 140 Z" fill="url(#tee-body)"/>
+    <path d="M62 165 L90 182" stroke="#d5d8e6" stroke-width="1.5"/>
+    <path d="M270 98 L340 160 C 350 178, 325 195, 305 180 L265 140 Z" fill="url(#tee-body)"/>
+    <path d="M338 165 L310 182" stroke="#d5d8e6" stroke-width="1.5"/>
+
+    <!-- Main Torso -->
+    <path d="M130 98 L155 85 C 180 98, 220 98, 245 85 L270 98 L265 375 C 265 385, 250 388, 200 388 C 150 388, 135 385, 135 375 Z" fill="url(#tee-body)"/>
+
+    <!-- Crew Neck Ribbing -->
+    <path d="M155 85 C 175 104, 225 104, 245 85 C 248 89, 242 97, 225 108 C 205 116, 195 116, 175 108 C 158 97, 152 89, 155 85 Z" fill="url(#rib-collar)" stroke="#c2c7d9" stroke-width="1"/>
+
+    <!-- Gentle Studio Drape Folds -->
+    <path d="M150 200 Q 170 240 155 310" stroke="#d7dbe8" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+    <path d="M250 200 Q 230 240 245 310" stroke="#d7dbe8" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+    <path d="M140 375 C 170 382, 230 382, 260 375" stroke="#d2d7e6" stroke-width="2" stroke-dasharray="3 3"/>
+  </g>
+
+  <!-- AI Wireframe Overlay -->
+  <g class="garment-ai-mesh" opacity="0">
+    <path d="M130 98 L155 85 L245 85 L270 98 L265 375 L135 375 Z" stroke="url(#ai-tee-glow)" stroke-width="1.5" stroke-dasharray="6 4" fill="none"/>
+    <circle cx="200" cy="98" r="3" fill="#EC4899"/>
+    <circle cx="130" cy="98" r="3" fill="#5B3DF5"/>
+    <circle cx="270" cy="98" r="3" fill="#5B3DF5"/>
+    <circle cx="200" cy="375" r="3" fill="#7C3AED"/>
+  </g>
+</svg>
