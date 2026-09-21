@@ -266,12 +266,6 @@
   z-index: 7;
 }
 
-.garment-jacket {
-  width: 290px;
-  height: 290px;
-  z-index: 6;
-}
-
 .garment-accessory {
   width: 190px;
   height: 190px;
@@ -358,13 +352,12 @@
   color: #86efac;
 }
 
-/* Specific Tag Positions inside Right Stage */
-.meta-1 { top: 14%; left: 38%; }
-.meta-2 { top: 14%; left: 3%; }
-.meta-3 { bottom: 12%; left: 38%; top: auto; }
-.meta-4 { bottom: 14%; right: 3%; top: auto; }
-.meta-5 { top: 14%; right: 3%; }
-.meta-6 { bottom: 14%; left: 3%; top: auto; }
+/* Specific Tag Positions inside Right Stage (5 Garments) */
+.meta-1 { top: 12%; left: 14%; }
+.meta-2 { top: 12%; right: 14%; }
+.meta-3 { bottom: 12%; left: 12%; top: auto; }
+.meta-4 { bottom: 12%; right: 12%; top: auto; }
+.meta-6 { top: 48%; right: 4%; }
 
 .ctx-1 { top: 16%; left: 12%; }
 .ctx-2 { top: 16%; right: 12%; }
@@ -378,26 +371,101 @@
 .crit-4 { bottom: 18%; right: 10%; top: auto; }
 .crit-5 { bottom: 6%; left: 50%; top: auto; transform: translateX(-50%); }
 
-/* Front-Facing 3D Male Mannequin Profile (Scene 3) */
-.cinema-profile-node {
+/* Holographic Style Intelligence Core (Scene 3 - Abstract Luxury AI Matrix) */
+.cinema-biometric-core {
   position: absolute;
-  width: 320px;
-  height: 480px;
+  width: 240px;
+  height: 240px;
   display: flex;
   align-items: center;
   justify-content: center;
   pointer-events: none;
   opacity: 0;
-  transform: scale(0.9);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  transform: scale(0.85);
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 12;
 }
 
-.cinema-profile-svg {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  filter: drop-shadow(0 0 28px rgba(124, 58, 237, 0.45));
+.core-radial-pulse {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.4) 0%, rgba(236, 72, 153, 0.18) 45%, transparent 72%);
+  filter: blur(14px);
+  animation: corePulse 3.5s ease-in-out infinite alternate;
+}
+
+@keyframes corePulse {
+  0% { transform: scale(0.88); opacity: 0.55; }
+  100% { transform: scale(1.22); opacity: 0.95; }
+}
+
+.core-neural-ring {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.core-neural-ring.ring-1 {
+  width: 170px;
+  height: 170px;
+  border: 1px dashed rgba(91, 61, 245, 0.5);
+  animation: coreSpin 18s linear infinite;
+}
+
+.core-neural-ring.ring-2 {
+  width: 230px;
+  height: 230px;
+  border: 1px dotted rgba(236, 72, 153, 0.4);
+  animation: coreSpinRev 24s linear infinite;
+}
+
+@keyframes coreSpin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes coreSpinRev {
+  to { transform: rotate(-360deg); }
+}
+
+.core-crosshair {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  transform: rotate(45deg);
+}
+
+.core-ai-emblem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: 9999px;
+  background: rgba(18, 15, 32, 0.88);
+  border: 1px solid rgba(124, 58, 237, 0.5);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 0 28px rgba(124, 58, 237, 0.45);
+  z-index: 2;
+}
+
+.core-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 10px #10B981;
+}
+
+.core-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.74rem;
+  letter-spacing: 0.12em;
+  color: #ffffff;
+  font-weight: 600;
 }
 
 /* Context Badges (Scene 3) */
@@ -1033,16 +1101,15 @@
     min-height: 380px;
   }
 
-  /* Garment sizes on mobile */
+  /* Garment sizes on mobile (5 pieces) */
   .garment-overshirt { width: 140px; height: 140px; }
   .garment-tee { width: 120px; height: 120px; }
   .garment-trousers { width: 125px; height: 125px; }
   .garment-sneakers { width: 115px; height: 115px; }
-  .garment-jacket { width: 140px; height: 140px; }
   .garment-accessory { width: 90px; height: 90px; }
 
   /* Suppress secondary tags on mobile to avoid overcrowding */
-  .meta-3, .meta-4, .meta-5, .meta-6,
+  .meta-3, .meta-4, .meta-6,
   .ctx-3, .ctx-4, .ctx-5,
   .crit-3, .crit-4, .crit-5 {
     display: none !important;
