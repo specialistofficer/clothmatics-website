@@ -128,7 +128,7 @@ async function loadDashboard() {
   $("#admin-content").classList.add("hidden");
   $("#admin-error").classList.add("hidden");
   try {
-    const names = ["users", "wardrobe", "savedOutfits", "outfitHistory", "outfitWear", "styleChallengeSubmissions", "aiResponses", "coupons", "accountDeletionRequests", "ghostGenerationRequests", "pushCampaigns", "festivalCampaigns", "shareLinks", "shareAttribution", "appConfig"];
+    const names = ["users", "wardrobe", "savedOutfits", "outfitHistory", "outfitWear", "styleChallengeSubmissions", "aiResponses", "coupons", "accountDeletionRequests", "dataExportRequests", "ghostGenerationRequests", "pushCampaigns", "festivalCampaigns", "shareLinks", "shareAttribution", "appConfig"];
     const snapshots = await Promise.all(names.map((name) => getDocs(collection(db, name)).catch((error)=>{console.warn(`Optional admin collection ${name} unavailable`,error.code);return{docs:[]}})));
     state.datasets = Object.fromEntries(names.map((name, i) => [name, snapshots[i].docs.map((doc) => ({ id: doc.id, ...doc.data() }))]));
     const apiSnapshot = await getDocs(collection(db, "analytics", "apiCalls", "logs"));
@@ -169,6 +169,8 @@ function buildDashboard() {
   renderAiControls(d.appConfig?.find((entry) => entry.id === "aiControls") || {});
   renderCoupons(d.coupons);
   renderDeletionRequests(d.accountDeletionRequests, d.users);
+  renderDataExportRequests(d.dataExportRequests || [], d.users);
+  void loadProcessingLogsStatus();
   renderPushCampaigns(d.pushCampaigns||[]);
   enhancePushCampaignActions(d.pushCampaigns||[]);
   renderShareMetrics(d.shareLinks||[],d.shareAttribution||[]);
@@ -244,6 +246,115 @@ async function processDeletionRequest(userId, action, button) {
     showDeletionMessage(`Request could not be processed: ${error.message}`, true);
     rowButtons.forEach((item) => { item.disabled = false; });
     button.textContent = action === "approve" ? "Delete account & data" : "Reject";
+  }
+}
+
+function renderDataExportRequests(requests = [], users = []) {
+  const usersById = new Map(users.map((user) => [user.id, user]));
+  const pending = requests
+    .filter((request) => request.status === "pending")
+    .sort((a, b) => timeOf(b.requestedAt) - timeOf(a.requestedAt));
+  const countEl = $("#data-export-request-count");
+  if (countEl) countEl.textContent = `${pending.length} pending`;
+  const bodyEl = $("#data-export-requests-body");
+  if (bodyEl) {
+    bodyEl.innerHTML = pending.map((request) => {
+      const user = usersById.get(request.userId) || {};
+      const name = request.userName || user.fullName || user.displayName || "ClothMatics User";
+      const email = request.userEmail || user.email || request.userId;
+      return `<tr>
+        <td><div class="user-cell"><span class="user-avatar">${escapeHtml(name.charAt(0).toUpperCase())}</span><div><b>${escapeHtml(name)}</b><small>${escapeHtml(request.userId)}</small></div></div></td>
+        <td>${escapeHtml(email)}</td>
+        <td>${escapeHtml(formatDateTime(timeOf(request.requestedAt)))}</td>
+        <td><span class="request-status" style="background:#e0f2fe;color:#0369a1;">Pending (15d)</span></td>
+        <td><div class="request-actions"><button type="button" class="approve-export" data-complete-export="${escapeHtml(request.userId)}">Mark completed</button><button type="button" class="reject-export" data-reject-export="${escapeHtml(request.userId)}">Reject</button></div></td>
+      </tr>`;
+    }).join("");
+  }
+  const emptyEl = $("#data-export-requests-empty");
+  if (emptyEl) emptyEl.classList.toggle("hidden", pending.length > 0);
+}
+
+function showDataExportMessage(text, isError) {
+  const target = $("#data-export-request-message");
+  if (!target) return;
+  target.textContent = text;
+  target.classList.remove("hidden", "error", "success");
+  target.classList.add(isError ? "error" : "success");
+}
+
+async function processDataExportRequest(userId, action, button) {
+  const user = state.datasets.users.find((entry) => entry.id === userId);
+  const label = user?.email || user?.fullName || userId;
+  const prompt = action === "complete"
+    ? `Mark data export completed for ${label}? Confirm that the structured data package has been sent to the user.`
+    : `Reject the data export request for ${label}?`;
+  if (!window.confirm(prompt)) return;
+
+  const rowButtons = button.closest("tr").querySelectorAll("button");
+  rowButtons.forEach((item) => { item.disabled = true; });
+  button.textContent = action === "complete" ? "Completing…" : "Rejecting…";
+  try {
+    await callCoreApi(auth.currentUser, "/v1/admin/data-export/review", {
+      userId,
+      action,
+    });
+    showDataExportMessage(
+      action === "complete"
+        ? `The data export request for ${label} was marked completed.`
+        : `The data export request for ${label} was rejected.`,
+      false
+    );
+    await loadDashboard();
+  } catch (error) {
+    console.error("Export review", error);
+    showDataExportMessage(`Request could not be processed: ${error.message}`, true);
+    rowButtons.forEach((item) => { item.disabled = false; });
+    button.textContent = action === "complete" ? "Mark completed" : "Reject";
+  }
+}
+
+async function loadProcessingLogsStatus() {
+  const statusEl = $("#processing-logs-status");
+  if (!statusEl) return;
+  try {
+    const stats = await callCoreApi(auth.currentUser, "/v1/admin/processing-logs/stats").catch(() => null);
+    if (!stats || stats.configured === false) {
+      statusEl.textContent = "D1 database not connected yet (pending migration).";
+      return;
+    }
+    const count = Number(stats.count || 0);
+    const oldestStr = stats.oldestTs ? new Date(stats.oldestTs * 1000).toLocaleDateString() : "None";
+    statusEl.textContent = `${count} total logs in D1 (Oldest: ${oldestStr})`;
+  } catch (err) {
+    statusEl.textContent = "Status unavailable.";
+  }
+}
+
+async function handlePurgeProcessingLogs() {
+  if (!window.confirm("Purge all pseudonymous processing logs older than 30 days from Cloudflare D1? This action cannot be undone.")) return;
+  const button = $("#purge-processing-logs");
+  const msg = $("#purge-processing-logs-message");
+  if (button) button.disabled = true;
+  if (msg) {
+    msg.textContent = "Purging logs older than 30 days…";
+    msg.classList.remove("hidden", "error", "success");
+  }
+  try {
+    const result = await callCoreApi(auth.currentUser, "/v1/admin/processing-logs/purge", { days: 30 });
+    const count = result.deleted ?? 0;
+    if (msg) {
+      msg.textContent = `Successfully purged ${count} log entries older than 30 days.`;
+      msg.classList.add("success");
+    }
+    await loadProcessingLogsStatus();
+  } catch (error) {
+    if (msg) {
+      msg.textContent = `Purge failed: ${error.message}`;
+      msg.classList.add("error");
+    }
+  } finally {
+    if (button) button.disabled = false;
   }
 }
 
@@ -765,6 +876,14 @@ $("#deletion-requests-body").addEventListener("click", (event) => {
   if (approve) processDeletionRequest(approve.dataset.approveDeletion, "approve", approve);
   if (reject) processDeletionRequest(reject.dataset.rejectDeletion, "reject", reject);
 });
+$("#data-export-requests-body")?.addEventListener("click", (event) => {
+  const complete = event.target.closest("[data-complete-export]");
+  const reject = event.target.closest("[data-reject-export]");
+  if (complete) processDataExportRequest(complete.dataset.completeExport, "complete", complete);
+  if (reject) processDataExportRequest(reject.dataset.rejectExport, "reject", reject);
+});
+$("#purge-processing-logs")?.addEventListener("click", handlePurgeProcessingLogs);
+$("#refresh-processing-logs")?.addEventListener("click", loadProcessingLogsStatus);
 $("#export-users").addEventListener("click", exportUsersCsv);
 $("#close-user-detail").addEventListener("click", closeUserDetail);
 $("#detail-close-button").addEventListener("click", closeUserDetail);

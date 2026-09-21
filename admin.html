@@ -34,6 +34,7 @@
           <a class="active" href="#overview" title="Overview" aria-label="Overview"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13h6V4H4v9Zm0 7h6v-4H4v4Zm10 0h6v-9h-6v9Zm0-16v4h6V4h-6Z"/></svg><span>Overview</span></a>
           <a href="#users" title="Users" aria-label="Users"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Users</span></a>
           <a href="#deletion-requests" title="Deletion requests" aria-label="Deletion requests"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 15H6L5 6M10 11v5M14 11v5"/></svg><span>Deletion requests</span></a>
+          <a href="#data-export-requests" title="Data export requests" aria-label="Data export requests"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg><span>Data export requests</span></a>
           <a href="#activity" title="Activity" aria-label="Activity"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg><span>Activity</span></a>
           <a href="#services" title="AI & services" aria-label="AI & services"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 1.7 4.3L18 8l-4.3 1.7L12 14l-1.7-4.3L6 8l4.3-1.7L12 2ZM19 14l.9 2.1L22 17l-2.1.9L19 20l-.9-2.1L16 17l2.1-.9L19 14Z"/></svg><span>AI & services</span></a>
           <a href="#push-campaigns" title="Push notifications" aria-label="Push notifications"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 16-7v16L3 13v-2Zm5 3v5h4v-3"/></svg><span>Push notifications</span></a>
@@ -90,6 +91,48 @@
               <div id="deletion-requests-empty" class="table-empty hidden">No pending deletion requests.</div>
             </div>
             <p id="deletion-request-message" class="deletion-request-message hidden" role="status"></p>
+          </section>
+
+          <section id="data-export-requests" class="admin-section">
+            <div class="section-title">
+              <div><span>PRIVACY OPERATIONS (DPDP ACT)</span><h2>Personal data export requests</h2></div>
+              <b id="data-export-request-count" class="request-count">0 pending</b>
+            </div>
+            <article class="admin-card deletion-notice" style="border-color:#bbf7d0;color:#166534;background:#f0fdf4;">
+              Under Section 11 of the Digital Personal Data Protection Act, 2023, data principals
+              have the right to access their personal data. Review pending requests and mark completed
+              once the structured data package has been compiled and delivered to the user.
+            </article>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>User</th><th>Email / UID</th><th>Requested</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody id="data-export-requests-body"></tbody>
+              </table>
+              <div id="data-export-requests-empty" class="table-empty hidden">No pending export requests.</div>
+            </div>
+            <p id="data-export-request-message" class="deletion-request-message hidden" role="status"></p>
+
+            <article class="admin-card audit-log-purge-card" style="margin-top:24px;">
+              <div class="card-heading">
+                <div>
+                  <span>DATA RETENTION (DPDP ACT)</span>
+                  <h3 style="margin:4px 0 8px;">Audit &amp; Processing Logs (Cloudflare D1)</h3>
+                  <p style="color:var(--muted);font-size:13px;line-height:1.5;">
+                    Pseudonymous operational and compliance logs are stored in Cloudflare D1. The administrator can manually purge logs older than 30 days at any time.
+                  </p>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);">
+                <div>
+                  <b id="processing-logs-status" style="font-size:13px;color:var(--muted);">Checking log status…</b>
+                </div>
+                <div style="display:flex;gap:10px;">
+                  <button id="refresh-processing-logs" type="button" class="secondary-admin-button" style="padding:8px 14px;font-size:12px;">Refresh status</button>
+                  <button id="purge-processing-logs" type="button" class="danger-admin-button" style="padding:8px 14px;font-size:12px;">Purge logs older than 30 days</button>
+                </div>
+              </div>
+              <p id="purge-processing-logs-message" class="deletion-request-message hidden" role="status" style="margin-top:12px;"></p>
+            </article>
           </section>
 
           <section id="activity" class="admin-section">
