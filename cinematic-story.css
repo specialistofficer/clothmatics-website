@@ -359,40 +359,32 @@
 .meta-4 { bottom: 12%; right: 12%; top: auto; }
 .meta-6 { top: 48%; right: 4%; }
 
-.ctx-1 { top: 16%; left: 12%; }
-.ctx-2 { top: 16%; right: 12%; }
-.ctx-3 { bottom: 16%; left: 12%; top: auto; }
-.ctx-4 { bottom: 16%; right: 12%; top: auto; }
-.ctx-5 { bottom: 6%; left: 50%; top: auto; transform: translateX(-50%); }
+.ctx-1 { top: 18%; left: 8%; }
+.ctx-2 { top: 18%; right: 8%; }
+.ctx-3 { bottom: 14%; left: 50%; top: auto; transform: translateX(-50%); }
 
-.crit-1 { top: 18%; left: 10%; }
-.crit-2 { top: 18%; right: 10%; }
-.crit-3 { bottom: 18%; left: 10%; top: auto; }
-.crit-4 { bottom: 18%; right: 10%; top: auto; }
-.crit-5 { bottom: 6%; left: 50%; top: auto; transform: translateX(-50%); }
-
-/* Holographic Style Intelligence Core (Scene 3 - Abstract Luxury AI Matrix) */
+/* Holographic Style Intelligence Core (Scenes 3 & 4 - Radiant 3D Synthesis Halo) */
 .cinema-biometric-core {
   position: absolute;
-  width: 240px;
-  height: 240px;
+  width: 260px;
+  height: 260px;
   display: flex;
   align-items: center;
   justify-content: center;
   pointer-events: none;
   opacity: 0;
   transform: scale(0.85);
-  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 12;
+  will-change: transform, opacity;
 }
 
 .core-radial-pulse {
   position: absolute;
-  width: 200px;
-  height: 200px;
+  width: 240px;
+  height: 240px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(124, 58, 237, 0.4) 0%, rgba(236, 72, 153, 0.18) 45%, transparent 72%);
-  filter: blur(14px);
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.45) 0%, rgba(236, 72, 153, 0.22) 45%, transparent 72%);
+  filter: blur(16px);
   animation: corePulse 3.5s ease-in-out infinite alternate;
 }
 
@@ -408,15 +400,15 @@
 }
 
 .core-neural-ring.ring-1 {
-  width: 170px;
-  height: 170px;
+  width: 190px;
+  height: 190px;
   border: 1px dashed rgba(91, 61, 245, 0.5);
   animation: coreSpin 18s linear infinite;
 }
 
 .core-neural-ring.ring-2 {
-  width: 230px;
-  height: 230px;
+  width: 250px;
+  height: 250px;
   border: 1px dotted rgba(236, 72, 153, 0.4);
   animation: coreSpinRev 24s linear infinite;
 }
@@ -431,28 +423,30 @@
 
 .core-crosshair {
   position: absolute;
-  width: 100px;
-  height: 100px;
+  width: 110px;
+  height: 110px;
   border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 8px;
+  border-radius: 10px;
   transform: rotate(45deg);
 }
 
-.core-ai-emblem {
+.synthesis-badge {
   position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 18px;
+  padding: 8px 20px;
   border-radius: 9999px;
-  background: rgba(18, 15, 32, 0.88);
-  border: 1px solid rgba(124, 58, 237, 0.5);
-  backdrop-filter: blur(14px);
-  box-shadow: 0 0 28px rgba(124, 58, 237, 0.45);
+  background: rgba(18, 15, 32, 0.92);
+  border: 1px solid rgba(236, 72, 153, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 0 28px rgba(236, 72, 153, 0.35), 0 10px 25px rgba(0, 0, 0, 0.5);
   z-index: 2;
+  white-space: nowrap;
 }
 
-.core-dot {
+.synthesis-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
@@ -460,12 +454,12 @@
   box-shadow: 0 0 10px #10B981;
 }
 
-.core-label {
-  font-family: 'DM Mono', monospace;
+.synthesis-text {
+  font-family: 'DM Sans', sans-serif;
   font-size: 0.74rem;
   letter-spacing: 0.12em;
-  color: #ffffff;
-  font-weight: 600;
+  color: #f8fafc;
+  font-weight: 700;
 }
 
 /* Context Badges (Scene 3) */
@@ -548,20 +542,13 @@
   justify-content: center;
   opacity: 0;
   pointer-events: none;
-  transform: scale(0.92);
-  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translate3d(0, 0, 0) scale(0.92);
   z-index: 22;
+  will-change: transform, opacity;
 }
 
 .cinema-3d-turntable.active {
-  opacity: 1;
   pointer-events: auto;
-  transform: scale(1);
-}
-
-/* On desktop Scene 5, shift turntable left so it pairs cleanly with the Today's Look card */
-.cinema-3d-turntable.shifted-desktop {
-  transform: translateX(-120px) scale(0.96);
 }
 
 .turntable-stage {
@@ -1070,26 +1057,28 @@
   }
 
   .meta-1 {
-    top: 60% !important;
+    top: 4% !important;
     left: 8px !important;
     right: auto !important;
-    max-width: 160px !important;
-    padding: 6px 10px !important;
+    max-width: 155px !important;
+    padding: 5px 8px !important;
   }
 
   .meta-2 {
-    top: 60% !important;
+    top: 4% !important;
     right: 8px !important;
     left: auto !important;
-    max-width: 160px !important;
-    padding: 6px 10px !important;
+    max-width: 155px !important;
+    padding: 5px 8px !important;
   }
 
-  .ctx-1 { top: 60% !important; left: 8px !important; max-width: 165px !important; padding: 6px 10px !important; font-size: 0.74rem !important; }
-  .ctx-2 { top: 60% !important; right: 8px !important; max-width: 165px !important; padding: 6px 10px !important; font-size: 0.74rem !important; }
+  .ctx-1 { top: 4% !important; left: 8px !important; max-width: 155px !important; padding: 5px 8px !important; font-size: 0.7rem !important; }
+  .ctx-2 { top: 4% !important; right: 8px !important; max-width: 155px !important; padding: 5px 8px !important; font-size: 0.7rem !important; }
 
-  .crit-1 { top: 60% !important; left: 8px !important; padding: 6px 12px !important; font-size: 0.74rem !important; }
-  .crit-2 { top: 60% !important; right: 8px !important; padding: 6px 12px !important; font-size: 0.74rem !important; }
+  .synthesis-badge {
+    padding: 6px 14px !important;
+    font-size: 0.68rem !important;
+  }
 
   /* Compact mobile Look Card so 3D mannequin is fully visible */
   .cinema-look-card {

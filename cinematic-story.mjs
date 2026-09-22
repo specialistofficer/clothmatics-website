@@ -28,6 +28,26 @@ function easeInOutCubic(t) {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
+// Perlin smootherstep (C2 continuous: continuous 1st and 2nd derivatives, zero jerk)
+function smootherstep(edge0, edge1, x) {
+  const t = clamp(0, (x - edge0) / (edge1 - edge0), 1);
+  return t * t * t * (t * (t * 6 - 15) + 10);
+}
+
+// Hermite smoothstep (C1 continuous)
+function smoothstep(edge0, edge1, x) {
+  const t = clamp(0, (x - edge0) / (edge1 - edge0), 1);
+  return t * t * (3 - 2 * t);
+}
+
+// Smooth continuous pulse: rises smoothly, holds, falls smoothly
+function smoothPulse(p, inStart, inEnd, outStart, outEnd) {
+  if (p <= inStart || p >= outEnd) return 0;
+  if (p >= inEnd && p <= outStart) return 1;
+  if (p < inEnd) return smootherstep(inStart, inEnd, p);
+  return 1 - smootherstep(outStart, outEnd, p);
+}
+
 export function initCinematicStory() {
   const container = document.getElementById("top");
   if (!container || !container.classList.contains("cinematic-hero-experience")) {
@@ -178,350 +198,245 @@ export function initCinematicStory() {
     }
 
     // =========================================================================
-    // SCENE 1: YOUR WARDROBE (0.00 -> 0.167)
-    // Clean, balanced 5-item luxury editorial arrangement (zero blazer)
+    // 1. SCANNER BEAM & METADATA DETECTION (Scene 2: p ~ 0.16 -> 0.35)
     // =========================================================================
-    if (p < 0.167) {
-      const s1Prog = p / 0.167; // 0 -> 1
-      const ease = easeInOutCubic(s1Prog);
-      const enterOpacity = mapRange(s1Prog, 0.0, 0.25, 0.6, 1);
-
-      // Overshirt (Top Center-Left)
-      if (garments.overshirt) {
-        const x = lerp(isMobile ? -45 : -80, isMobile ? -50 : -90, ease);
-        const y = lerp(isMobile ? -45 : -55, isMobile ? -50 : -60, ease);
-        garments.overshirt.style.opacity = enterOpacity;
-        garments.overshirt.style.filter = "none";
-        garments.overshirt.style.transform = `translate3d(${x}px, ${y + float1}px, 20px) rotate(-3deg) scale(${1.02 * baseScale})`;
+    if (scanner) {
+      const scanOpacity = smoothPulse(p, 0.16, 0.20, 0.30, 0.34);
+      scanner.style.opacity = scanOpacity;
+      if (scanOpacity > 0.001) {
+        const scanT = smootherstep(0.18, 0.32, p);
+        const scanY = lerp(-26, 26, scanT);
+        scanner.style.transform = `translateY(${scanY.toFixed(1)}vh)`;
       }
+    }
 
-      // Tee (Top Right)
-      if (garments.tee) {
-        const x = lerp(isMobile ? 55 : 120, isMobile ? 60 : 130, ease);
-        const y = lerp(isMobile ? -45 : -50, isMobile ? -50 : -55, ease);
-        garments.tee.style.opacity = enterOpacity * 0.98;
-        garments.tee.style.filter = "none";
-        garments.tee.style.transform = `translate3d(${x}px, ${y + float2}px, 10px) rotate(4deg) scale(${0.96 * baseScale})`;
+    // Garment HUD Corner Brackets
+    const bracketOpacity = smoothPulse(p, 0.18, 0.22, 0.30, 0.33);
+    container.querySelectorAll(".garment-hud-bracket").forEach((b) => {
+      b.style.opacity = bracketOpacity;
+    });
+
+    // Telemetry Tags (Staggered scan reveal -> smooth unified fade)
+    metaTags.forEach((tag, idx) => {
+      const inStart = 0.19 + idx * 0.022;
+      const inEnd = inStart + 0.035;
+      const tagOpacity = smoothPulse(p, inStart, inEnd, 0.31, 0.345);
+      tag.style.opacity = tagOpacity;
+      if (tagOpacity > 0.001) {
+        const enterY = lerp(10, 0, smootherstep(inStart, inEnd, p));
+        const exitY = lerp(0, -6, smootherstep(0.31, 0.345, p));
+        tag.style.transform = `translateY(${(enterY + exitY).toFixed(1)}px)`;
       }
+    });
 
-      // Trousers (Lower Left)
-      if (garments.trousers) {
-        const x = lerp(isMobile ? -45 : -80, isMobile ? -50 : -90, ease);
-        const y = lerp(isMobile ? 105 : 120, isMobile ? 110 : 130, ease);
-        garments.trousers.style.opacity = enterOpacity * 0.98;
-        garments.trousers.style.filter = "none";
-        garments.trousers.style.transform = `translate3d(${x}px, ${y + float3}px, -10px) rotate(2deg) scale(${0.96 * baseScale})`;
+    // =========================================================================
+    // 2. HOLOGRAPHIC SYNTHESIS AURA & CONTEXT TELEMETRY (Scenes 3 & 4: p ~ 0.34 -> 0.67)
+    // =========================================================================
+    if (biometricCore) {
+      const coreOpacity = smoothPulse(p, 0.33, 0.39, 0.60, 0.67);
+      biometricCore.style.opacity = coreOpacity;
+      if (coreOpacity > 0.001) {
+        const coreScaleT = smootherstep(0.33, 0.44, p);
+        const flashScaleT = smootherstep(0.54, 0.67, p);
+        const scale = lerp(0.82, 1.0, coreScaleT) + lerp(0, 0.25, flashScaleT);
+        biometricCore.style.transform = `translate3d(0px, ${(float1 * 0.3).toFixed(1)}px, 0px) scale(${(scale * baseScale).toFixed(3)})`;
       }
+    }
 
-      // Sneakers (Lower Right)
-      if (garments.sneakers) {
-        const x = lerp(isMobile ? 55 : 120, isMobile ? 60 : 130, ease);
-        const y = lerp(isMobile ? 110 : 130, isMobile ? 115 : 140, ease);
-        garments.sneakers.style.opacity = enterOpacity * 0.98;
-        garments.sneakers.style.filter = "none";
-        garments.sneakers.style.transform = `translate3d(${x}px, ${y + float4}px, 15px) rotate(-3deg) scale(${0.92 * baseScale})`;
+    // Streamlined Context Tags (Silhouette, Style, Weather)
+    contextTags.forEach((tag, idx) => {
+      const inStart = 0.34 + idx * 0.025;
+      const inEnd = inStart + 0.035;
+      const tagOpacity = smoothPulse(p, inStart, inEnd, 0.47, 0.51);
+      tag.style.opacity = tagOpacity;
+      if (tagOpacity > 0.001) {
+        tag.style.transform = `translateY(${lerp(8, 0, smootherstep(inStart, inEnd, p)).toFixed(1)}px)`;
       }
+    });
 
-      // Watch (Floating Center-Right Accent)
-      if (garments.accessory) {
-        const x = isMobile ? 80 : 175;
-        const y = isMobile ? 30 : 35;
-        garments.accessory.style.opacity = enterOpacity * 0.95;
+    // Ensure criteria pills remain cleanly invisible
+    criteriaPills.forEach((pill) => {
+      pill.style.opacity = 0;
+    });
+
+    // =========================================================================
+    // 3. CONTINUOUS GARMENT DYNAMICS & 3D METAMORPHOSIS (p: 0.00 -> 0.68)
+    // =========================================================================
+    // Enter fade-in at the very start
+    const introOpacity = smootherstep(0.0, 0.06, p);
+
+    // Initial Editorial Floating Coordinates
+    const initCoords = {
+      overshirt: { x: isMobile ? -50 : -90, y: isMobile ? -50 : -60, z: 20, rot: -3, scale: 1.02 },
+      tee: { x: isMobile ? 60 : 130, y: isMobile ? -50 : -55, z: 10, rot: 4, scale: 0.96 },
+      trousers: { x: isMobile ? -50 : -90, y: isMobile ? 110 : 130, z: -10, rot: 2, scale: 0.96 },
+      sneakers: { x: isMobile ? 60 : 130, y: isMobile ? 115 : 140, z: 15, rot: -3, scale: 0.92 },
+      accessory: { x: isMobile ? 80 : 175, y: isMobile ? 30 : 35, z: 25, rot: 0, scale: 0.85 },
+    };
+
+    // Staging / Convergence Coordinates (Scene 3 -> 4)
+    // Cleanly separated framing around the central pedestal (ZERO 2D collage stacking!)
+    const stageCoords = {
+      overshirt: { x: isMobile ? -35 : -55, y: isMobile ? -45 : -55, rot: -2 },
+      tee: { x: isMobile ? 35 : 55, y: isMobile ? -45 : -50, rot: 2 },
+      trousers: { x: isMobile ? -30 : -45, y: isMobile ? 95 : 110, rot: 1 },
+      sneakers: { x: isMobile ? 30 : 45, y: isMobile ? 100 : 120, rot: -2 },
+    };
+
+    // Metamorphosis Target Centers (Where garments vaporize into 3D light)
+    const centerCoords = {
+      overshirt: { x: 0, y: isMobile ? -40 : -48 },
+      tee: { x: 0, y: isMobile ? -40 : -46 },
+      trousers: { x: 0, y: isMobile ? 45 : 55 },
+      sneakers: { x: 0, y: isMobile ? 120 : 140 },
+    };
+
+    // Dissolution into Pure 3D Light Energy (Scene 4: p ~ 0.54 -> 0.67)
+    const dissolveT = smootherstep(0.54, 0.67, p);
+    const pieceOpacity = (1 - dissolveT) * introOpacity;
+    const dissolveBlur = dissolveT * 14;
+    const dissolveBright = 1.0 + dissolveT * 0.8;
+    const dissolveGlow = dissolveT > 0.01 
+      ? `blur(${dissolveBlur.toFixed(1)}px) brightness(${dissolveBright.toFixed(2)}) drop-shadow(0 0 ${(dissolveT * 24).toFixed(1)}px rgba(236, 72, 153, 0.65))` 
+      : "none";
+
+    // --- Overshirt ---
+    if (garments.overshirt) {
+      if (pieceOpacity <= 0.001) {
+        garments.overshirt.style.opacity = 0;
+      } else {
+        const s3T = smootherstep(0.33, 0.48, p);
+        const s4T = smootherstep(0.50, 0.64, p);
+        const x1 = lerp(initCoords.overshirt.x, stageCoords.overshirt.x, s3T);
+        const y1 = lerp(initCoords.overshirt.y, stageCoords.overshirt.y, s3T);
+        const curX = lerp(x1, centerCoords.overshirt.x, s4T);
+        const curY = lerp(y1, centerCoords.overshirt.y, s4T);
+        const curRot = lerp(initCoords.overshirt.rot, 0, s4T);
+        const curScale = lerp(initCoords.overshirt.scale, 0.94, s4T) * baseScale;
+        garments.overshirt.style.opacity = pieceOpacity;
+        garments.overshirt.style.filter = dissolveGlow;
+        garments.overshirt.style.transform = `translate3d(${curX.toFixed(1)}px, ${(curY + float1 * (1 - s4T * 0.7)).toFixed(1)}px, 20px) rotate(${curRot.toFixed(1)}deg) scale(${curScale.toFixed(3)})`;
+      }
+    }
+
+    // --- Tee ---
+    if (garments.tee) {
+      if (pieceOpacity <= 0.001) {
+        garments.tee.style.opacity = 0;
+      } else {
+        const s3T = smootherstep(0.33, 0.48, p);
+        const s4T = smootherstep(0.50, 0.64, p);
+        const x1 = lerp(initCoords.tee.x, stageCoords.tee.x, s3T);
+        const y1 = lerp(initCoords.tee.y, stageCoords.tee.y, s3T);
+        const curX = lerp(x1, centerCoords.tee.x, s4T);
+        const curY = lerp(y1, centerCoords.tee.y, s4T);
+        const curRot = lerp(initCoords.tee.rot, 0, s4T);
+        const curScale = lerp(initCoords.tee.scale, 0.88, s4T) * baseScale;
+        garments.tee.style.opacity = pieceOpacity * 0.98;
+        garments.tee.style.filter = dissolveGlow;
+        garments.tee.style.transform = `translate3d(${curX.toFixed(1)}px, ${(curY + float2 * (1 - s4T * 0.7)).toFixed(1)}px, 12px) rotate(${curRot.toFixed(1)}deg) scale(${curScale.toFixed(3)})`;
+      }
+    }
+
+    // --- Trousers ---
+    if (garments.trousers) {
+      if (pieceOpacity <= 0.001) {
+        garments.trousers.style.opacity = 0;
+      } else {
+        const s3T = smootherstep(0.33, 0.48, p);
+        const s4T = smootherstep(0.50, 0.64, p);
+        const x1 = lerp(initCoords.trousers.x, stageCoords.trousers.x, s3T);
+        const y1 = lerp(initCoords.trousers.y, stageCoords.trousers.y, s3T);
+        const curX = lerp(x1, centerCoords.trousers.x, s4T);
+        const curY = lerp(y1, centerCoords.trousers.y, s4T);
+        const curRot = lerp(initCoords.trousers.rot, 0, s4T);
+        const curScale = lerp(initCoords.trousers.scale, 0.90, s4T) * baseScale;
+        garments.trousers.style.opacity = pieceOpacity;
+        garments.trousers.style.filter = dissolveGlow;
+        garments.trousers.style.transform = `translate3d(${curX.toFixed(1)}px, ${(curY + float3 * (1 - s4T * 0.7)).toFixed(1)}px, 15px) rotate(${curRot.toFixed(1)}deg) scale(${curScale.toFixed(3)})`;
+      }
+    }
+
+    // --- Sneakers ---
+    if (garments.sneakers) {
+      if (pieceOpacity <= 0.001) {
+        garments.sneakers.style.opacity = 0;
+      } else {
+        const s3T = smootherstep(0.33, 0.48, p);
+        const s4T = smootherstep(0.50, 0.64, p);
+        const x1 = lerp(initCoords.sneakers.x, stageCoords.sneakers.x, s3T);
+        const y1 = lerp(initCoords.sneakers.y, stageCoords.sneakers.y, s3T);
+        const curX = lerp(x1, centerCoords.sneakers.x, s4T);
+        const curY = lerp(y1, centerCoords.sneakers.y, s4T);
+        const curRot = lerp(initCoords.sneakers.rot, 0, s4T);
+        const curScale = lerp(initCoords.sneakers.scale, 0.86, s4T) * baseScale;
+        garments.sneakers.style.opacity = pieceOpacity;
+        garments.sneakers.style.filter = dissolveGlow;
+        garments.sneakers.style.transform = `translate3d(${curX.toFixed(1)}px, ${(curY + float4 * (1 - s4T * 0.7)).toFixed(1)}px, 8px) rotate(${curRot.toFixed(1)}deg) scale(${curScale.toFixed(3)})`;
+      }
+    }
+
+    // --- Accessory (Watch fades out early during AI selection) ---
+    if (garments.accessory) {
+      const accFade = (1 - smootherstep(0.32, 0.42, p)) * introOpacity;
+      if (accFade <= 0.001) {
+        garments.accessory.style.opacity = 0;
+      } else {
+        const accZ = lerp(initCoords.accessory.z, -100, smootherstep(0.32, 0.42, p));
+        garments.accessory.style.opacity = accFade * 0.95;
         garments.accessory.style.filter = "none";
-        garments.accessory.style.transform = `translate3d(${x}px, ${y + float5}px, 25px) scale(${0.85 * baseScale})`;
-      }
-
-      // Overlays from other scenes hidden
-      if (scanner) scanner.style.opacity = 0;
-      container.querySelectorAll(".garment-hud-bracket").forEach((b) => (b.style.opacity = 0));
-      metaTags.forEach((t) => (t.style.opacity = 0));
-      if (biometricCore) biometricCore.style.opacity = 0;
-      contextTags.forEach((t) => (t.style.opacity = 0));
-      criteriaPills.forEach((pill) => (pill.style.opacity = 0));
-      if (lookCard) lookCard.classList.remove("active");
-      if (turntable) {
-        turntable.classList.remove("active");
-        turntable.classList.remove("shifted-desktop");
-        turntable.style.opacity = "0";
+        garments.accessory.style.transform = `translate3d(${initCoords.accessory.x}px, ${(initCoords.accessory.y + float5).toFixed(1)}px, ${accZ.toFixed(1)}px) scale(${(initCoords.accessory.scale * baseScale).toFixed(3)})`;
       }
     }
 
     // =========================================================================
-    // SCENE 2: INTELLIGENT VISION & SPECTRUM SCAN (0.167 -> 0.333)
+    // 4. 3D TURNTABLE STAGE & GHOST MANNEQUIN MATERIALIZATION (p ~ 0.36 -> 1.00)
     // =========================================================================
-    else if (p < 0.333) {
-      const s2Prog = (p - 0.167) / 0.166; // 0 -> 1
+    if (turntable) {
+      // Pedestal begins glowing in Scene 3
+      const pedestalFade = smootherstep(0.36, 0.48, p);
+      // Mannequin materializes out of light in Scene 4
+      const mannequinMaterialize = smootherstep(0.55, 0.68, p);
 
-      // Clothes stay grounded in their balanced positions with subtle 3D breathing
-      if (garments.overshirt) {
-        garments.overshirt.style.opacity = 1;
-        garments.overshirt.style.transform = `translate3d(${isMobile ? -50 : -90}px, ${-60 + float1}px, 20px) rotate(-3deg) scale(${1.02 * baseScale})`;
-      }
-      if (garments.tee) {
-        garments.tee.style.opacity = 0.98;
-        garments.tee.style.transform = `translate3d(${isMobile ? 60 : 130}px, ${-55 + float2}px, 10px) rotate(4deg) scale(${0.96 * baseScale})`;
-      }
-      if (garments.trousers) {
-        garments.trousers.style.opacity = 0.98;
-        garments.trousers.style.transform = `translate3d(${isMobile ? -50 : -90}px, ${130 + float3}px, -10px) rotate(2deg) scale(${0.96 * baseScale})`;
-      }
-      if (garments.sneakers) {
-        garments.sneakers.style.opacity = 0.98;
-        garments.sneakers.style.transform = `translate3d(${isMobile ? 60 : 130}px, ${140 + float4}px, 15px) rotate(-3deg) scale(${0.92 * baseScale})`;
-      }
-      if (garments.accessory) {
-        garments.accessory.style.opacity = 0.98;
-        garments.accessory.style.transform = `translate3d(${isMobile ? 80 : 175}px, ${35 + float5}px, 25px) scale(${0.85 * baseScale})`;
-      }
+      // Overall turntable opacity
+      const ttOpacity = p < 0.54 ? pedestalFade * 0.45 : lerp(0.45, 1.0, mannequinMaterialize);
 
-      // Laser Scanner sweeps smoothly top to bottom
-      if (scanner) {
-        const scanFade = s2Prog < 0.1 ? s2Prog / 0.1 : s2Prog > 0.9 ? (1 - s2Prog) / 0.1 : 1;
-        scanner.style.opacity = clamp(0, scanFade, 1);
-        const scanY = lerp(-25, 25, s2Prog);
-        scanner.style.transform = `translateY(${scanY}vh)`;
-      }
-
-      // HUD brackets pulse gently
-      container.querySelectorAll(".garment-hud-bracket").forEach((b) => {
-        b.style.opacity = mapRange(s2Prog, 0.08, 0.88, 0, 1);
-      });
-
-      // Telemetry tags appear sequentially beside their garments
-      metaTags.forEach((tag, idx) => {
-        const trigger = 0.08 + idx * 0.14;
-        const tagProg = mapRange(s2Prog, trigger, trigger + 0.16, 0, 1);
-        tag.style.opacity = tagProg;
-        tag.style.transform = `translateY(${lerp(10, 0, tagProg)}px)`;
-      });
-
-      if (biometricCore) biometricCore.style.opacity = 0;
-      contextTags.forEach((t) => (t.style.opacity = 0));
-      criteriaPills.forEach((pill) => (pill.style.opacity = 0));
-      if (lookCard) lookCard.classList.remove("active");
-      if (turntable) {
-        turntable.classList.remove("active");
-        turntable.classList.remove("shifted-desktop");
-        turntable.style.opacity = "0";
-      }
-    }
-
-    // =========================================================================
-    // SCENE 3: PERSONAL INTELLIGENCE & HOLOGRAPHIC STYLE CORE (0.333 -> 0.500)
-    // ZERO NUDE MANNEQUIN - Pure futuristic luxury biometric matrix
-    // =========================================================================
-    else if (p < 0.500) {
-      const s3Prog = (p - 0.333) / 0.167; // 0 -> 1
-      const ease = easeInOutCubic(s3Prog);
-
-      if (scanner) scanner.style.opacity = 0;
-      container.querySelectorAll(".garment-hud-bracket").forEach((b) => (b.style.opacity = 0));
-      metaTags.forEach((t) => (t.style.opacity = 0));
-
-      // Garments gracefully expand outward into an orbital halo, softly dimmed (18% opacity)
-      const pushZ = lerp(-10, -220, ease);
-      const pushOpacity = lerp(0.98, 0.18, ease);
-      const blurVal = lerp(0, 3.5, ease);
-
-      Object.values(garments).forEach((el) => {
-        if (!el) return;
-        el.style.opacity = pushOpacity;
-        el.style.filter = `blur(${blurVal}px) brightness(0.65)`;
-      });
-
-      if (garments.overshirt) {
-        const x = lerp(isMobile ? -50 : -90, isMobile ? -85 : -170, ease);
-        const y = lerp(isMobile ? -50 : -60, isMobile ? -65 : -95, ease);
-        garments.overshirt.style.transform = `translate3d(${x}px, ${y + float1 * 0.6}px, ${pushZ}px) scale(${0.82 * baseScale})`;
-      }
-      if (garments.tee) {
-        const x = lerp(isMobile ? 60 : 130, isMobile ? 85 : 170, ease);
-        const y = lerp(isMobile ? -50 : -55, isMobile ? -65 : -95, ease);
-        garments.tee.style.transform = `translate3d(${x}px, ${y + float2 * 0.6}px, ${pushZ}px) scale(${0.78 * baseScale})`;
-      }
-      if (garments.trousers) {
-        const x = lerp(isMobile ? -50 : -90, isMobile ? -80 : -160, ease);
-        const y = lerp(isMobile ? 110 : 130, isMobile ? 120 : 160, ease);
-        garments.trousers.style.transform = `translate3d(${x}px, ${y + float3 * 0.6}px, ${pushZ}px) scale(${0.78 * baseScale})`;
-      }
-      if (garments.sneakers) {
-        const x = lerp(isMobile ? 60 : 130, isMobile ? 80 : 160, ease);
-        const y = lerp(isMobile ? 115 : 140, isMobile ? 125 : 165, ease);
-        garments.sneakers.style.transform = `translate3d(${x}px, ${y + float4 * 0.6}px, ${pushZ}px) scale(${0.75 * baseScale})`;
-      }
-      if (garments.accessory) {
-        const x = lerp(isMobile ? 80 : 175, isMobile ? 100 : 200, ease);
-        const y = lerp(isMobile ? 30 : 35, isMobile ? 25 : 30, ease);
-        garments.accessory.style.transform = `translate3d(${x}px, ${y + float5 * 0.6}px, ${pushZ}px) scale(${0.72 * baseScale})`;
-      }
-
-      // Holographic Style Intelligence Core emerges in the center stage
-      if (biometricCore) {
-        const coreOpacity = mapRange(s3Prog, 0.06, 0.45, 0, 1);
-        const coreScale = mapRange(s3Prog, 0.02, 0.55, 0.82, 1.0);
-        biometricCore.style.opacity = coreOpacity;
-        biometricCore.style.transform = `translate3d(0px, ${float1 * 0.4}px, 0px) scale(${coreScale * baseScale})`;
-      }
-
-      // Context tags orbit in smoothly with guaranteed safety margins
-      contextTags.forEach((tag, idx) => {
-        const trigger = 0.12 + idx * 0.12;
-        const tagProg = mapRange(s3Prog, trigger, trigger + 0.18, 0, 1);
-        tag.style.opacity = tagProg;
-        tag.style.transform = `translateY(${lerp(10, 0, tagProg)}px)`;
-      });
-
-      criteriaPills.forEach((pill) => (pill.style.opacity = 0));
-      if (lookCard) lookCard.classList.remove("active");
-      if (turntable) {
-        turntable.classList.remove("active");
-        turntable.classList.remove("shifted-desktop");
-        turntable.style.opacity = "0";
-      }
-    }
-
-    // =========================================================================
-    // SCENE 4: AI HARMONIZATION & 3D ASSEMBLY (0.500 -> 0.667)
-    // Continuous curved convergence of garments directly into the 3D Turntable
-    // =========================================================================
-    else if (p < 0.667) {
-      const s4Prog = (p - 0.500) / 0.167; // 0 -> 1
-      const ease = easeInOutCubic(s4Prog);
-
-      // Biometric Core and Context tags dissolve smoothly
-      if (biometricCore) {
-        biometricCore.style.opacity = mapRange(s4Prog, 0.0, 0.35, 1, 0);
-        biometricCore.style.transform = `translate3d(0px, 0px, 0px) scale(${lerp(1.0, 0.82, s4Prog) * baseScale})`;
-      }
-      contextTags.forEach((t) => (t.style.opacity = 0));
-
-      // Watch gently fades out completely
-      if (garments.accessory) {
-        garments.accessory.style.opacity = mapRange(s4Prog, 0.0, 0.30, 0.18, 0);
-      }
-
-      // The 4 selected pieces smoothly fly inward from orbital positions
-      // into precise assembled look alignment, then dissolve into the 3D Turntable
-      const flightProg = mapRange(s4Prog, 0.0, 0.65, 0, 1);
-      const flightEase = easeInOutCubic(flightProg);
-      const pieceFade = mapRange(s4Prog, 0.55, 0.88, 1, 0);
-
-      if (garments.overshirt) {
-        const startX = isMobile ? -85 : -170;
-        const startY = isMobile ? -65 : -95;
-        const x = lerp(startX, 0, flightEase);
-        const y = lerp(startY, -60, flightEase);
-        garments.overshirt.style.opacity = pieceFade;
-        garments.overshirt.style.filter = "none";
-        garments.overshirt.style.transform = `translate3d(${x}px, ${y + float1}px, 35px) rotate(${lerp(-3, 0, flightEase)}deg) scale(${lerp(0.82, 0.95, flightEase) * baseScale})`;
-      }
-
-      if (garments.tee) {
-        const startX = isMobile ? 85 : 170;
-        const startY = isMobile ? -65 : -95;
-        const x = lerp(startX, 0, flightEase);
-        const y = lerp(startY, -55, flightEase);
-        garments.tee.style.opacity = pieceFade * 0.92;
-        garments.tee.style.filter = "none";
-        garments.tee.style.transform = `translate3d(${x}px, ${y + float2}px, 15px) rotate(${lerp(4, 0, flightEase)}deg) scale(${lerp(0.78, 0.88, flightEase) * baseScale})`;
-      }
-
-      if (garments.trousers) {
-        const startX = isMobile ? -80 : -160;
-        const startY = isMobile ? 120 : 160;
-        const x = lerp(startX, 0, flightEase);
-        const y = lerp(startY, 55, flightEase);
-        garments.trousers.style.opacity = pieceFade;
-        garments.trousers.style.filter = "none";
-        garments.trousers.style.transform = `translate3d(${x}px, ${y + float3}px, 20px) rotate(${lerp(2, 0, flightEase)}deg) scale(${lerp(0.78, 0.90, flightEase) * baseScale})`;
-      }
-
-      if (garments.sneakers) {
-        const startX = isMobile ? 80 : 160;
-        const startY = isMobile ? 125 : 165;
-        const x = lerp(startX, 0, flightEase);
-        const y = lerp(startY, 170, flightEase);
-        garments.sneakers.style.opacity = pieceFade;
-        garments.sneakers.style.filter = "none";
-        garments.sneakers.style.transform = `translate3d(${x}px, ${y + float4}px, 5px) rotate(${lerp(-3, 0, flightEase)}deg) scale(${lerp(0.75, 0.84, flightEase) * baseScale})`;
-      }
-
-      // Complete 3D Turntable emerges directly out of the AI synthesis
-      if (turntable) {
-        turntable.classList.remove("shifted-desktop");
-        const ttProg = mapRange(s4Prog, 0.52, 0.92, 0, 1);
-        if (ttProg > 0.01) {
-          turntable.classList.add("active");
-          turntable.style.opacity = ttProg;
-          turntable.style.transform = `scale(${lerp(0.88, 1.0, ttProg)})`;
-        } else {
-          turntable.classList.remove("active");
-          turntable.style.opacity = "0";
-        }
-      }
-
-      // Criteria evaluation pills flash and verify
-      criteriaPills.forEach((pill, idx) => {
-        const trigger = 0.08 + idx * 0.12;
-        const pillProg = mapRange(s4Prog, trigger, trigger + 0.18, 0, 1);
-        pill.style.opacity = pillProg;
-        pill.style.transform = `scale(${lerp(0.85, 1, pillProg)})`;
-      });
-
-      if (lookCard) lookCard.classList.remove("active");
-    }
-
-    // =========================================================================
-    // SCENE 5: THE COMPLETE 3D LOOK SHOWCASE (0.667 -> 0.833)
-    // =========================================================================
-    else if (p < 0.833) {
-      if (biometricCore) biometricCore.style.opacity = 0;
-      contextTags.forEach((t) => (t.style.opacity = 0));
-      criteriaPills.forEach((pill) => (pill.style.opacity = 0));
-      metaTags.forEach((t) => (t.style.opacity = 0));
-
-      // Hide individual 2D flat pieces in favor of the Complete 3D Look
-      Object.values(garments).forEach((el) => {
-        if (el) el.style.opacity = 0;
-      });
-
-      // The Complete 3D Ghost-Mannequin Turntable is the hero
-      if (turntable) {
+      if (ttOpacity > 0.005) {
         turntable.classList.add("active");
-        turntable.style.opacity = 1;
-        if (!isMobile) {
-          turntable.classList.add("shifted-desktop");
-        } else {
-          turntable.classList.remove("shifted-desktop");
-        }
-      }
+        turntable.style.opacity = ttOpacity.toFixed(3);
 
-      // Reveal Luxury Look Card
-      if (lookCard) {
+        // Volumetric aura glow as mannequin forms
+        const auraGlow = smoothPulse(p, 0.55, 0.63, 0.67, 0.72);
+        if (turntableCard) {
+          turntableCard.style.filter = auraGlow > 0.01 
+            ? `brightness(${(1.0 + auraGlow * 0.5).toFixed(2)}) drop-shadow(0 0 ${(auraGlow * 25).toFixed(1)}px rgba(124, 58, 237, 0.75))` 
+            : "none";
+        }
+
+        // Scene 5 Desktop Shift (Smooth interpolation to pair with Look Card)
+        const desktopShiftT = smoothPulse(p, 0.67, 0.73, 0.82, 0.86);
+        const shiftX = isMobile ? 0 : lerp(0, -120, desktopShiftT);
+        const ttScale = lerp(0.92, 1.0, smootherstep(0.36, 0.52, p)) * (isMobile ? 0.9 : 1.0);
+        turntable.style.transform = `translate3d(${shiftX.toFixed(1)}px, 0, 0) scale(${ttScale.toFixed(3)})`;
+      } else {
+        turntable.classList.remove("active");
+        turntable.style.opacity = "0";
+      }
+    }
+
+    // =========================================================================
+    // 5. TODAY'S 3D LOOK CARD (Scene 5: p ~ 0.68 -> 0.85)
+    // =========================================================================
+    if (lookCard) {
+      const cardOpacity = smoothPulse(p, 0.69, 0.74, 0.81, 0.85);
+      if (cardOpacity > 0.01) {
         lookCard.classList.add("active");
-      }
-    }
-
-    // =========================================================================
-    // SCENE 6: PERSONAL AI STYLIST & CONVERSION FINALE (0.833 -> 1.000)
-    // =========================================================================
-    else {
-      if (lookCard) lookCard.classList.remove("active");
-      if (biometricCore) biometricCore.style.opacity = 0;
-      contextTags.forEach((t) => (t.style.opacity = 0));
-      criteriaPills.forEach((pill) => (pill.style.opacity = 0));
-      metaTags.forEach((t) => (t.style.opacity = 0));
-
-      // Individual garments stay hidden
-      Object.values(garments).forEach((el) => {
-        if (el) el.style.opacity = 0;
-      });
-
-      // Turntable returns to center stage on desktop to showcase the 3D look alongside the final CTA
-      if (turntable) {
-        turntable.classList.add("active");
-        turntable.classList.remove("shifted-desktop");
-        turntable.style.opacity = 1;
+        lookCard.style.opacity = cardOpacity.toFixed(3);
+        const cardSlide = lerp(24, 0, smootherstep(0.69, 0.74, p));
+        lookCard.style.transform = `translateY(-50%) translateX(${cardSlide.toFixed(1)}px)`;
+      } else {
+        lookCard.classList.remove("active");
+        lookCard.style.opacity = 0;
       }
     }
   }
