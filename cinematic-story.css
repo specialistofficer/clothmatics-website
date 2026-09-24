@@ -1249,7 +1249,8 @@
    Full visual cohesion across color theme, typography, buttons, and layout
    ============================================================================= */
 
-body {
+body.marketing-active,
+body:has(#marketing-view:not(.hidden)) {
   background: #08070d;
   color: #ffffff;
   font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -1320,7 +1321,6 @@ footer .button {
   text-decoration: none !important;
 }
 
-.button-primary,
 #marketing-view .button-primary,
 .site-header .button-primary {
   background: linear-gradient(135deg, #7C3AED 0%, #EC4899 100%) !important;
@@ -1329,14 +1329,12 @@ footer .button {
   box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35) !important;
 }
 
-.button-primary:hover,
 #marketing-view .button-primary:hover,
 .site-header .button-primary:hover {
   transform: translateY(-2px) !important;
   box-shadow: 0 12px 30px rgba(124, 58, 237, 0.5) !important;
 }
 
-.button-ghost,
 #marketing-view .button-ghost,
 .site-header .button-ghost {
   background: rgba(255, 255, 255, 0.05) !important;
@@ -1345,7 +1343,6 @@ footer .button {
   backdrop-filter: blur(10px) !important;
 }
 
-.button-ghost:hover,
 #marketing-view .button-ghost:hover,
 .site-header .button-ghost:hover {
   background: rgba(255, 255, 255, 0.12) !important;
@@ -1884,4 +1881,121 @@ footer a:hover {
     align-items: center !important;
   }
 }
+
+/* =============================================================================
+   APP VIEW & DIALOG ISOLATION CONTRACT
+   Ensures #app-view and all modal dialogs preserve crisp light-theme surfaces
+   with high-contrast dark ink (#1a1a2e) typography without any dark-theme leakage.
+   ============================================================================= */
+
+body.app-authenticated,
+body:has(#app-view:not(.hidden)) {
+  background: #f8f7ff !important;
+  color: #1a1a2e !important;
+}
+
+.app-view {
+  background: radial-gradient(circle at 85% 0, rgba(255, 79, 163, 0.1), transparent 34rem), linear-gradient(145deg, #f8f7ff, #f1eeff 72%) !important;
+  color: #1a1a2e !important;
+}
+
+.app-content {
+  color: #1a1a2e !important;
+}
+
+.app-view h1,
+.app-view h2,
+.app-view h3,
+.app-view h4,
+.app-view h5,
+.app-view h6,
+.app-topbar h2,
+#panel-title,
+.today-copy h3,
+.camera-page-heading h3,
+.section-intro h3,
+.dash-title h3,
+.panel-heading-row h2,
+.generated-head h3,
+.stylist-form h3,
+.complete-outfit-head h2,
+.camera-tips h4,
+.camera-placeholder b,
+.camera-mode-card b,
+.month-controls b,
+.day-plans h3,
+.plan-card h4,
+.purchase-form-head h4,
+.purchase-placeholder h4,
+.style-result-card h4,
+.notification-card h4 {
+  color: #1a1a2e !important;
+}
+
+.stylist-promo h3,
+.style-score-card h3,
+.learned-style h3,
+.festival-strip h3,
+.full-look-unavailable b {
+  color: #ffffff !important;
+}
+
+.user-chip div b,
+#user-name {
+  color: #1a1a2e !important;
+}
+
+.user-chip div small,
+#user-email {
+  color: #6e6e8a !important;
+}
+
+.today-copy p,
+.camera-page-heading p,
+.section-intro p,
+.dash-title p {
+  color: #6e6e8a !important;
+}
+
+.month-controls button {
+  color: #1a1a2e !important;
+}
+
+dialog,
+.garment-dialog,
+.confirm-dialog,
+.look-builder-dialog,
+.garment-upload-dialog,
+#auth-dialog {
+  background: #ffffff !important;
+  color: #1a1a2e !important;
+}
+
+dialog h1, dialog h2, dialog h3, dialog h4,
+.garment-dialog h1, .garment-dialog h2, .garment-dialog h3, .garment-dialog h4,
+#auth-dialog h1, #auth-dialog h2, #auth-dialog h3, #auth-dialog h4 {
+  color: #1a1a2e !important;
+}
+
+dialog p,
+.garment-dialog p,
+#auth-dialog p {
+  color: #6e6e8a !important;
+}
+
+.app-view .button-ghost,
+dialog .button-ghost {
+  background: transparent !important;
+  color: #1a1a2e !important;
+  border: 1px solid #e6e2ff !important;
+  backdrop-filter: none !important;
+}
+
+.app-view .button-ghost:hover,
+dialog .button-ghost:hover {
+  background: #f1eeff !important;
+  color: #2d1b69 !important;
+  border-color: #6c63ff !important;
+}
+
 

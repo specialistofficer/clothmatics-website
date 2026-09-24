@@ -229,6 +229,8 @@ onAuthStateChanged(auth, async (user) => {
   state.user = user;
   if (!user) {
     if(previousUid)clearUserAiCache(previousUid);
+    document.body.classList.remove("app-authenticated");
+    document.body.classList.add("marketing-active");
     $("#marketing-view").classList.remove("hidden");
     $("#app-view").classList.add("hidden");
     $(".site-header").classList.remove("hidden");
@@ -236,6 +238,8 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
+  document.body.classList.remove("marketing-active");
+  document.body.classList.add("app-authenticated");
   $("#marketing-view").classList.add("hidden");
   $("#app-view").classList.remove("hidden");
   $(".site-header").classList.add("hidden");
